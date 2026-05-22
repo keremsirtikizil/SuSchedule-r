@@ -1,0 +1,708 @@
+{
+  "name": "Çağan Çakır",
+  "current_semester": 7,
+  "student_id": "00032254",
+  "admit_term_label": "Fall 2022-2023",
+  "admit_term": "202201",
+  "level": "Undergraduate",
+  "cumulative_credits": 106.0,
+  "cumulative_ects": 198.0,
+  "cgpa": 3.86,
+  "program_name": "Computer Science and Engineering",
+  "program": "BSCS-DM",
+  "minors": [
+    "Business Analytics",
+    "Finance"
+  ],
+  "intended_minor": "Business Analytics",
+  "advisor": "Hüsnü Yenigün",
+  "terms": [
+    {
+      "term": "Fall 2022-2023",
+      "term_code": "202201",
+      "level": "Foundation Development Year",
+      "status": "Active",
+      "program": "Programs of Engineering & Natural Sciences (FENS)",
+      "is_transfer": false,
+      "transferred_from": null,
+      "courses": [
+        {
+          "code": "ELAE 000",
+          "title": "Eng. Language Assessment Exam",
+          "level": "FDY",
+          "grade": "EL",
+          "credit": 0.0,
+          "ects": 0.0,
+          "raw_status": "Excluded",
+          "status": "excluded"
+        },
+        {
+          "code": "ELAE 000",
+          "title": "Eng. Language Assessment Exam",
+          "level": "FDY",
+          "grade": "UL",
+          "credit": 0.0,
+          "ects": 0.0,
+          "raw_status": "Excluded",
+          "status": "excluded"
+        },
+        {
+          "code": "ENG 0004",
+          "title": "English Route 4",
+          "level": "FDY",
+          "grade": "S",
+          "credit": 0.0,
+          "ects": 24.0,
+          "raw_status": "Excluded",
+          "status": "excluded"
+        }
+      ]
+    },
+    {
+      "term": "Spring 2022-2023",
+      "term_code": "202202",
+      "level": "Undergraduate",
+      "status": "Active",
+      "program": "Programs of Engineering & Natural Sciences (FENS)",
+      "is_transfer": false,
+      "transferred_from": null,
+      "courses": [
+        {
+          "code": "CIP 101N",
+          "title": "Civic Involvement Projects I-N",
+          "level": "UG",
+          "grade": "S",
+          "credit": 0.0,
+          "ects": 1.0,
+          "raw_status": "",
+          "status": "completed"
+        },
+        {
+          "code": "HIST 191",
+          "title": "Principles of Atatürk I",
+          "level": "UG",
+          "grade": "B",
+          "credit": 2.0,
+          "ects": 3.0,
+          "raw_status": "",
+          "status": "completed"
+        },
+        {
+          "code": "IF 100",
+          "title": "Comput.Approac.to Prob.Solving",
+          "level": "UG",
+          "grade": "A",
+          "credit": 3.0,
+          "ects": 5.0,
+          "raw_status": "",
+          "status": "completed"
+        },
+        {
+          "code": "MATH 101",
+          "title": "Calculus I",
+          "level": "UG",
+          "grade": "A",
+          "credit": 3.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "completed"
+        },
+        {
+          "code": "NS 101",
+          "title": "Science of Nature I",
+          "level": "UG",
+          "grade": "A",
+          "credit": 4.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "completed"
+        },
+        {
+          "code": "SPS 101",
+          "title": "Humanity & Society I",
+          "level": "UG",
+          "grade": "B+",
+          "credit": 3.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "completed"
+        },
+        {
+          "code": "TLL 101",
+          "title": "Turkish Language&Literature I",
+          "level": "UG",
+          "grade": "A-",
+          "credit": 2.0,
+          "ects": 3.0,
+          "raw_status": "",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "term": "Fall 2023-2024",
+      "term_code": "202301",
+      "level": "Undergraduate",
+      "status": "Active",
+      "program": "Programs of Engineering & Natural Sciences (FENS)",
+      "is_transfer": false,
+      "transferred_from": null,
+      "courses": [
+        {
+          "code": "AL 102",
+          "title": "Academic Literacies",
+          "level": "UG",
+          "grade": "A",
+          "credit": 3.0,
+          "ects": 5.0,
+          "raw_status": "",
+          "status": "completed"
+        },
+        {
+          "code": "CS 201",
+          "title": "Programming Fundamentals",
+          "level": "UG",
+          "grade": "A",
+          "credit": 3.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "completed"
+        },
+        {
+          "code": "HIST 192",
+          "title": "Principles of Atatürk II",
+          "level": "UG",
+          "grade": "A",
+          "credit": 2.0,
+          "ects": 3.0,
+          "raw_status": "",
+          "status": "completed"
+        },
+        {
+          "code": "MATH 102",
+          "title": "Calculus II",
+          "level": "UG",
+          "grade": "A",
+          "credit": 3.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "completed"
+        },
+        {
+          "code": "NS 102",
+          "title": "Science of Nature II",
+          "level": "UG",
+          "grade": "A",
+          "credit": 4.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "completed"
+        },
+        {
+          "code": "SPS 102",
+          "title": "Humanity & Society II",
+          "level": "UG",
+          "grade": "A",
+          "credit": 3.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "completed"
+        },
+        {
+          "code": "TLL 102",
+          "title": "Turkish Language&Literature II",
+          "level": "UG",
+          "grade": "A",
+          "credit": 2.0,
+          "ects": 3.0,
+          "raw_status": "",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "term": "Spring 2023-2024",
+      "term_code": "202302",
+      "level": "Undergraduate",
+      "status": "Active",
+      "program": "Computer Science and Engineering (FENS)",
+      "is_transfer": false,
+      "transferred_from": null,
+      "courses": [
+        {
+          "code": "CS 204",
+          "title": "Advanced Programming",
+          "level": "UG",
+          "grade": "A",
+          "credit": 3.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "completed"
+        },
+        {
+          "code": "ECON 202",
+          "title": "Macroeconomics",
+          "level": "UG",
+          "grade": "A",
+          "credit": 3.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "completed"
+        },
+        {
+          "code": "ECON 204",
+          "title": "Microeconomics",
+          "level": "UG",
+          "grade": "A",
+          "credit": 3.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "completed"
+        },
+        {
+          "code": "HUM 201",
+          "title": "Major Works of Literature",
+          "level": "UG",
+          "grade": "A",
+          "credit": 3.0,
+          "ects": 5.0,
+          "raw_status": "",
+          "status": "completed"
+        },
+        {
+          "code": "MATH 201",
+          "title": "Linear Algebra",
+          "level": "UG",
+          "grade": "A",
+          "credit": 3.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "completed"
+        },
+        {
+          "code": "MATH 203",
+          "title": "Introduction to Probability",
+          "level": "UG",
+          "grade": "A",
+          "credit": 3.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "completed"
+        },
+        {
+          "code": "PROJ 201",
+          "title": "Undergraduate Project Course",
+          "level": "UG",
+          "grade": "A",
+          "credit": 1.0,
+          "ects": 1.0,
+          "raw_status": "",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "term": "Fall 2024-2025",
+      "term_code": "202401",
+      "level": "Undergraduate",
+      "status": "Active",
+      "program": "Computer Science and Engineering (FENS)",
+      "is_transfer": false,
+      "transferred_from": null,
+      "courses": [
+        {
+          "code": "ACC 201",
+          "title": "Int.to Financial Acc.&Report.",
+          "level": "UG",
+          "grade": "A",
+          "credit": 3.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "completed"
+        },
+        {
+          "code": "CS 300",
+          "title": "Data Structures",
+          "level": "UG",
+          "grade": "A",
+          "credit": 3.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "completed"
+        },
+        {
+          "code": "CS 303",
+          "title": "Logic&Digital System Design",
+          "level": "UG",
+          "grade": "A",
+          "credit": 4.0,
+          "ects": 7.0,
+          "raw_status": "",
+          "status": "completed"
+        },
+        {
+          "code": "CS 310",
+          "title": "Mobile Application Development",
+          "level": "UG",
+          "grade": "B+",
+          "credit": 3.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "completed"
+        },
+        {
+          "code": "DSA 210",
+          "title": "Introduction to Data Science",
+          "level": "UG",
+          "grade": "W",
+          "credit": 3.0,
+          "ects": 0.0,
+          "raw_status": "",
+          "status": "withdrawn"
+        },
+        {
+          "code": "MATH 204",
+          "title": "Discrete Mathematics",
+          "level": "UG",
+          "grade": "A",
+          "credit": 3.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "term": "Spring 2024-2025",
+      "term_code": "202402",
+      "level": "Undergraduate",
+      "status": "Exchange - Socrates Erasmus A.",
+      "program": "Computer Science and Engineering (FENS)",
+      "is_transfer": true,
+      "transferred_from": "The Hong Kong Polytechnic Univ",
+      "courses": [
+        {
+          "code": "CORE 100",
+          "title": "Artificial Intelligence of Th.",
+          "level": "UG",
+          "grade": "B",
+          "credit": 3.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "transfer"
+        },
+        {
+          "code": "CORE 101",
+          "title": "Algorithms Engineering",
+          "level": "UG",
+          "grade": "A",
+          "credit": 3.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "transfer"
+        },
+        {
+          "code": "CORE 102",
+          "title": "Database System",
+          "level": "UG",
+          "grade": "A-",
+          "credit": 3.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "transfer"
+        },
+        {
+          "code": "CS 307",
+          "title": "Operating Systems",
+          "level": "UG",
+          "grade": "A-",
+          "credit": 3.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "transfer"
+        },
+        {
+          "code": "CS 408",
+          "title": "Computer Networks",
+          "level": "UG",
+          "grade": "B+",
+          "credit": 3.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "transfer"
+        }
+      ]
+    },
+    {
+      "term": "Summer 2024-2025",
+      "term_code": "202403",
+      "level": "Undergraduate",
+      "status": "Active",
+      "program": "Computer Science and Engineering (FENS)",
+      "is_transfer": false,
+      "transferred_from": null,
+      "courses": [
+        {
+          "code": "MATH 306",
+          "title": "Statistical Modelling",
+          "level": "UG",
+          "grade": "A",
+          "credit": 3.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "term": "Fall 2025-2026",
+      "term_code": "202501",
+      "level": "Undergraduate",
+      "status": "Active",
+      "program": "Computer Science and Engineering (FENS)",
+      "is_transfer": false,
+      "transferred_from": null,
+      "courses": [
+        {
+          "code": "CS 308",
+          "title": "Software Engineering",
+          "level": "UG",
+          "grade": "A",
+          "credit": 4.0,
+          "ects": 7.0,
+          "raw_status": "",
+          "status": "completed"
+        },
+        {
+          "code": "CS 404",
+          "title": "Artificial Intelligence",
+          "level": "UG",
+          "grade": "A",
+          "credit": 3.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "completed"
+        },
+        {
+          "code": "CS 412",
+          "title": "Machine Learning",
+          "level": "UG",
+          "grade": "A",
+          "credit": 3.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "completed"
+        },
+        {
+          "code": "FIN 301",
+          "title": "Financial Management",
+          "level": "UG",
+          "grade": "A",
+          "credit": 3.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "completed"
+        },
+        {
+          "code": "SPS 303",
+          "title": "Law and Ethics",
+          "level": "UG",
+          "grade": "A-",
+          "credit": 3.0,
+          "ects": 5.0,
+          "raw_status": "",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "term": "Spring 2025-2026",
+      "term_code": "202502",
+      "level": "Undergraduate",
+      "status": "Active",
+      "program": "Computer Science and Engineering (FENS)",
+      "is_transfer": false,
+      "transferred_from": null,
+      "courses": [
+        {
+          "code": "CS 301",
+          "title": "Algorithms",
+          "level": "UG",
+          "grade": "Registered",
+          "credit": 3.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "in_progress"
+        },
+        {
+          "code": "CS 302",
+          "title": "Formal Lang&Automata Theory",
+          "level": "UG",
+          "grade": "Registered",
+          "credit": 3.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "in_progress"
+        },
+        {
+          "code": "CS 305",
+          "title": "Programming Languages",
+          "level": "UG",
+          "grade": "Registered",
+          "credit": 3.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "in_progress"
+        },
+        {
+          "code": "CS 455",
+          "title": "LLMs: Foundations and Practice",
+          "level": "UG",
+          "grade": "Registered",
+          "credit": 3.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "in_progress"
+        },
+        {
+          "code": "ENS 491",
+          "title": "Graduation Project (Design)",
+          "level": "UG",
+          "grade": "Registered",
+          "credit": 1.0,
+          "ects": 2.0,
+          "raw_status": "",
+          "status": "in_progress"
+        },
+        {
+          "code": "FIN 401",
+          "title": "Corporate Finance",
+          "level": "UG",
+          "grade": "Registered",
+          "credit": 3.0,
+          "ects": 6.0,
+          "raw_status": "",
+          "status": "in_progress"
+        }
+      ]
+    },
+    {
+      "term": "Summer 2025-2026",
+      "term_code": "202503",
+      "level": "Undergraduate",
+      "status": "Active",
+      "program": "Computer Science and Engineering (FENS)",
+      "is_transfer": false,
+      "transferred_from": null,
+      "courses": [
+        {
+          "code": "CS 395",
+          "title": "Internship Project",
+          "level": "UG",
+          "grade": "Registered",
+          "credit": 0.0,
+          "ects": 5.0,
+          "raw_status": "",
+          "status": "in_progress"
+        }
+      ]
+    }
+  ],
+  "completed": [
+    "CIP 101N",
+    "HIST 191",
+    "IF 100",
+    "MATH 101",
+    "NS 101",
+    "SPS 101",
+    "TLL 101",
+    "AL 102",
+    "CS 201",
+    "HIST 192",
+    "MATH 102",
+    "NS 102",
+    "SPS 102",
+    "TLL 102",
+    "CS 204",
+    "ECON 202",
+    "ECON 204",
+    "HUM 201",
+    "MATH 201",
+    "MATH 203",
+    "PROJ 201",
+    "ACC 201",
+    "CS 300",
+    "CS 303",
+    "CS 310",
+    "MATH 204",
+    "MATH 306",
+    "CS 308",
+    "CS 404",
+    "CS 412",
+    "FIN 301",
+    "SPS 303"
+  ],
+  "in_progress": [
+    "CS 301",
+    "CS 302",
+    "CS 305",
+    "CS 455",
+    "ENS 491",
+    "FIN 401",
+    "CS 395"
+  ],
+  "failed": [],
+  "withdrawn": [
+    "DSA 210"
+  ],
+  "excluded": [
+    "ELAE 000",
+    "ENG 0004"
+  ],
+  "transfer": [
+    "CORE 100",
+    "CORE 101",
+    "CORE 102",
+    "CS 307",
+    "CS 408"
+  ],
+  "completed_for_eligibility": [
+    "CIP 101N",
+    "HIST 191",
+    "IF 100",
+    "MATH 101",
+    "NS 101",
+    "SPS 101",
+    "TLL 101",
+    "AL 102",
+    "CS 201",
+    "HIST 192",
+    "MATH 102",
+    "NS 102",
+    "SPS 102",
+    "TLL 102",
+    "CS 204",
+    "ECON 202",
+    "ECON 204",
+    "HUM 201",
+    "MATH 201",
+    "MATH 203",
+    "PROJ 201",
+    "ACC 201",
+    "CS 300",
+    "CS 303",
+    "CS 310",
+    "MATH 204",
+    "MATH 306",
+    "CS 308",
+    "CS 404",
+    "CS 412",
+    "FIN 301",
+    "SPS 303",
+    "CORE 100",
+    "CORE 101",
+    "CORE 102",
+    "CS 307",
+    "CS 408"
+  ]
+}

@@ -1,0 +1,38 @@
+Program: BSCS-DM
+Admit term: 202601
+
+Nodes (total):           671
+  in catalog:            648
+  external prereqs only: 23
+Edges (total):           675
+  required:              437
+  alternative:           238
+
+Isolates (no edges):           207
+Source nodes (no prereqs in):  273
+Sink nodes (no successors):    521
+
+Is DAG?                  True
+Cycle count (simple):    0
+
+External prereq course codes (sample 20):
+  CS 210
+  CS 48001
+  CULT 201
+  CULT 341
+  EE 301
+  EL 202
+  EL 204
+  EL 302
+  EL 303
+  EL 401
+  HUM 204
+  HUM 212
+  HUM 214
+  IE 301
+  MGMT 202
+  MS 301
+  MS 309
+  MS 401
+  PROJ 102
+  PSY 365
