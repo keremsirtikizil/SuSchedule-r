@@ -1,0 +1,4724 @@
+{
+  "AL 102": [
+    {
+      "crn": "30223",
+      "section": "0",
+      "title": "Academic Literacies",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 520,
+          "end": 690,
+          "where": "Fac.of Arts and Social Sci. 1080",
+          "instructor": "Ali Nihat Eken"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 520,
+          "end": 690,
+          "where": "Fac.of Arts and Social Sci. 1079",
+          "instructor": "Ali Nihat Eken"
+        }
+      ],
+      "instructors": [
+        "Ali Nihat Eken"
+      ],
+      "locations": [
+        "Fac.of Arts and Social Sci. 1079",
+        "Fac.of Arts and Social Sci. 1080"
+      ]
+    }
+  ],
+  "ACC 201": [
+    {
+      "crn": "30205",
+      "section": "0",
+      "title": "Introduction to Financial Accounting and Reporting",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 820,
+          "end": 990,
+          "where": "Sabancı Business School G060",
+          "instructor": "Turgay Sakin"
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 520,
+          "end": 690,
+          "where": "Sabancı Business School G060",
+          "instructor": "Turgay Sakin"
+        }
+      ],
+      "instructors": [
+        "Turgay Sakin"
+      ],
+      "locations": [
+        "Sabancı Business School G060"
+      ]
+    }
+  ],
+  "CS 201": [
+    {
+      "crn": "30206",
+      "section": "0",
+      "title": "Programming Fundamentals",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 820,
+          "end": 990,
+          "where": "Fac. of Engin. and Nat. Sci. L056",
+          "instructor": "Mohammad Yusaf Azimi"
+        },
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 520,
+          "end": 690,
+          "where": "Fac. of Engin. and Nat. Sci. L056",
+          "instructor": "Mohammad Yusaf Azimi"
+        }
+      ],
+      "instructors": [
+        "Mohammad Yusaf Azimi"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. L056"
+      ]
+    }
+  ],
+  "CS 201R": [
+    {
+      "crn": "30207",
+      "section": "A",
+      "title": "Programming Fundamentals Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 940,
+          "end": 1050,
+          "where": "Fac. of Engin. and Nat. Sci. L048",
+          "instructor": "Mohammad Yusaf Azimi"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 940,
+          "end": 1050,
+          "where": "Fac. of Engin. and Nat. Sci. L048",
+          "instructor": "Mohammad Yusaf Azimi"
+        }
+      ],
+      "instructors": [
+        "Mohammad Yusaf Azimi"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. L048"
+      ]
+    },
+    {
+      "crn": "30208",
+      "section": "B",
+      "title": "Programming Fundamentals Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 1060,
+          "end": 1170,
+          "where": "Fac. of Engin. and Nat. Sci. L029",
+          "instructor": "Mohammad Yusaf Azimi"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 1060,
+          "end": 1170,
+          "where": "Fac. of Engin. and Nat. Sci. L048",
+          "instructor": "Mohammad Yusaf Azimi"
+        }
+      ],
+      "instructors": [
+        "Mohammad Yusaf Azimi"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. L029",
+        "Fac. of Engin. and Nat. Sci. L048"
+      ]
+    }
+  ],
+  "CS 204": [
+    {
+      "crn": "30093",
+      "section": "0",
+      "title": "Advanced Programming",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 880,
+          "end": 1050,
+          "where": "Fac.of Arts and Social Sci. G062",
+          "instructor": "Duygu Karaoğlan Altop"
+        },
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 580,
+          "end": 750,
+          "where": "Fac.of Arts and Social Sci. G062",
+          "instructor": "Duygu Karaoğlan Altop"
+        }
+      ],
+      "instructors": [
+        "Duygu Karaoğlan Altop"
+      ],
+      "locations": [
+        "Fac.of Arts and Social Sci. G062"
+      ]
+    }
+  ],
+  "CS 204L": [
+    {
+      "crn": "30094",
+      "section": "A1",
+      "title": "Advanced Programming Lab",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 1000,
+          "end": 1110,
+          "where": "Fac.of Arts and Social Sci. G049",
+          "instructor": "Duygu Karaoğlan Altop"
+        },
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 1060,
+          "end": 1170,
+          "where": "Fac.of Arts and Social Sci. G049",
+          "instructor": "Duygu Karaoğlan Altop"
+        }
+      ],
+      "instructors": [
+        "Duygu Karaoğlan Altop"
+      ],
+      "locations": [
+        "Fac.of Arts and Social Sci. G049"
+      ]
+    },
+    {
+      "crn": "30095",
+      "section": "A2",
+      "title": "Advanced Programming Lab",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 1000,
+          "end": 1110,
+          "where": "Fac.of Arts and Social Sci. G056",
+          "instructor": "Duygu Karaoğlan Altop"
+        },
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 1060,
+          "end": 1170,
+          "where": "Fac.of Arts and Social Sci. G056",
+          "instructor": "Duygu Karaoğlan Altop"
+        }
+      ],
+      "instructors": [
+        "Duygu Karaoğlan Altop"
+      ],
+      "locations": [
+        "Fac.of Arts and Social Sci. G056"
+      ]
+    },
+    {
+      "crn": "30096",
+      "section": "B",
+      "title": "Advanced Programming Lab",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 1060,
+          "end": 1170,
+          "where": "Fac.of Arts and Social Sci. G052",
+          "instructor": "Duygu Karaoğlan Altop"
+        },
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 1060,
+          "end": 1170,
+          "where": "Fac. of Engin. and Nat. Sci. L029",
+          "instructor": "Duygu Karaoğlan Altop"
+        }
+      ],
+      "instructors": [
+        "Duygu Karaoğlan Altop"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. L029",
+        "Fac.of Arts and Social Sci. G052"
+      ]
+    }
+  ],
+  "CS 300": [
+    {
+      "crn": "30097",
+      "section": "0",
+      "title": "Data Structures",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 520,
+          "end": 690,
+          "where": "Fac. of Engin. and Nat. Sci. L055",
+          "instructor": "Yalçın Can Kılıç"
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 520,
+          "end": 690,
+          "where": "Fac. of Engin. and Nat. Sci. L055",
+          "instructor": "Yalçın Can Kılıç"
+        }
+      ],
+      "instructors": [
+        "Yalçın Can Kılıç"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. L055"
+      ]
+    }
+  ],
+  "CS 300R": [
+    {
+      "crn": "30098",
+      "section": "0",
+      "title": "Data Structures-Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 820,
+          "end": 1050,
+          "where": "Fac. of Engin. and Nat. Sci. L056",
+          "instructor": "Yalçın Can Kılıç"
+        }
+      ],
+      "instructors": [
+        "Yalçın Can Kılıç"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. L056"
+      ]
+    }
+  ],
+  "CS 301": [
+    {
+      "crn": "30099",
+      "section": "0",
+      "title": "Algorithms",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 520,
+          "end": 690,
+          "where": "Fac.of Arts and Social Sci. G062",
+          "instructor": ""
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 520,
+          "end": 690,
+          "where": "Fac.of Arts and Social Sci. G062",
+          "instructor": ""
+        }
+      ],
+      "instructors": [],
+      "locations": [
+        "Fac.of Arts and Social Sci. G062"
+      ]
+    }
+  ],
+  "CS 301R": [
+    {
+      "crn": "30100",
+      "section": "0",
+      "title": "Algorithms-Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 820,
+          "end": 930,
+          "where": "Fac. of Engin. and Nat. Sci. L035",
+          "instructor": ""
+        }
+      ],
+      "instructors": [],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. L035"
+      ]
+    }
+  ],
+  "CS 395": [
+    {
+      "crn": "30014",
+      "section": "01",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30015",
+      "section": "02",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30016",
+      "section": "03",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30017",
+      "section": "04",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30018",
+      "section": "05",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30019",
+      "section": "06",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30020",
+      "section": "07",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30021",
+      "section": "08",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30022",
+      "section": "09",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30023",
+      "section": "10",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30024",
+      "section": "11",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30025",
+      "section": "12",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30026",
+      "section": "13",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30027",
+      "section": "14",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30028",
+      "section": "15",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30029",
+      "section": "16",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30030",
+      "section": "17",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30031",
+      "section": "18",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30032",
+      "section": "19",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30033",
+      "section": "20",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30034",
+      "section": "21",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30035",
+      "section": "22",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    }
+  ],
+  "DA 519": [
+    {
+      "crn": "30229",
+      "section": "0",
+      "title": "Causal Data Science",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 1140,
+          "end": 1320,
+          "where": "Altunizade Campus G08",
+          "instructor": "Özgür Asar"
+        },
+        {
+          "type": "Class",
+          "days_raw": "S",
+          "days": [
+            5
+          ],
+          "start": 780,
+          "end": 960,
+          "where": "Altunizade Campus G08",
+          "instructor": "Özgür Asar"
+        }
+      ],
+      "instructors": [
+        "Özgür Asar"
+      ],
+      "locations": [
+        "Altunizade Campus G08"
+      ]
+    }
+  ],
+  "DA 521": [
+    {
+      "crn": "30230",
+      "section": "0",
+      "title": "Generative AI Applications with Large Language Models",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 1140,
+          "end": 1320,
+          "where": "Altunizade Campus G09",
+          "instructor": "Ahmet Onur Durahim"
+        },
+        {
+          "type": "Class",
+          "days_raw": "S",
+          "days": [
+            5
+          ],
+          "start": 540,
+          "end": 720,
+          "where": "Altunizade Campus",
+          "instructor": "Ahmet Onur Durahim"
+        }
+      ],
+      "instructors": [
+        "Ahmet Onur Durahim"
+      ],
+      "locations": [
+        "Altunizade Campus",
+        "Altunizade Campus G09"
+      ]
+    }
+  ],
+  "DA 523": [
+    {
+      "crn": "30231",
+      "section": "0",
+      "title": "AI Ethics and Regulations",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 1140,
+          "end": 1320,
+          "where": "Altunizade Campus G09",
+          "instructor": "Polat Göktaş"
+        },
+        {
+          "type": "Class",
+          "days_raw": "S",
+          "days": [
+            5
+          ],
+          "start": 780,
+          "end": 960,
+          "where": "Altunizade Campus",
+          "instructor": "Polat Göktaş"
+        }
+      ],
+      "instructors": [
+        "Polat Göktaş"
+      ],
+      "locations": [
+        "Altunizade Campus",
+        "Altunizade Campus G09"
+      ]
+    }
+  ],
+  "DA 525": [
+    {
+      "crn": "30232",
+      "section": "0",
+      "title": "Project Management and Business Communication",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 1140,
+          "end": 1320,
+          "where": "Altunizade Campus G08",
+          "instructor": "Hasan Sait Ölmez"
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 1140,
+          "end": 1320,
+          "where": "Altunizade Campus G08",
+          "instructor": "Hasan Sait Ölmez"
+        }
+      ],
+      "instructors": [
+        "Hasan Sait Ölmez"
+      ],
+      "locations": [
+        "Altunizade Campus G08"
+      ]
+    }
+  ],
+  "DA 592": [
+    {
+      "crn": "30233",
+      "section": "0",
+      "title": "Term Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    }
+  ],
+  "DSA 395": [
+    {
+      "crn": "30087",
+      "section": "01",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30088",
+      "section": "02",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30089",
+      "section": "03",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30090",
+      "section": "04",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30091",
+      "section": "05",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    }
+  ],
+  "ECON 201": [
+    {
+      "crn": "30225",
+      "section": "0",
+      "title": "Games and Strategies",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 880,
+          "end": 990,
+          "where": "Fac.of Arts and Social Sci. 1096",
+          "instructor": "Mustafa Oğuz Afacan, Yasemin Tosun"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 880,
+          "end": 990,
+          "where": "Fac.of Arts and Social Sci. 1096",
+          "instructor": "Mustafa Oğuz Afacan, Yasemin Tosun"
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 880,
+          "end": 990,
+          "where": "Fac.of Arts and Social Sci. 1096",
+          "instructor": "Mustafa Oğuz Afacan, Yasemin Tosun"
+        }
+      ],
+      "instructors": [
+        "Mustafa Oğuz Afacan, Yasemin Tosun"
+      ],
+      "locations": [
+        "Fac.of Arts and Social Sci. 1096"
+      ]
+    }
+  ],
+  "ECON 201R": [
+    {
+      "crn": "30226",
+      "section": "0",
+      "title": "Games and Strategies - Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 880,
+          "end": 990,
+          "where": "Fac.of Arts and Social Sci. 1096",
+          "instructor": "Mustafa Oğuz Afacan, Yasemin Tosun"
+        }
+      ],
+      "instructors": [
+        "Mustafa Oğuz Afacan, Yasemin Tosun"
+      ],
+      "locations": [
+        "Fac.of Arts and Social Sci. 1096"
+      ]
+    }
+  ],
+  "ECON 300": [
+    {
+      "crn": "30001",
+      "section": "0",
+      "title": "Project and Internship",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    }
+  ],
+  "EE 395": [
+    {
+      "crn": "30036",
+      "section": "01",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30037",
+      "section": "02",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30038",
+      "section": "03",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30039",
+      "section": "04",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30040",
+      "section": "05",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30041",
+      "section": "06",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30042",
+      "section": "07",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30043",
+      "section": "08",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30044",
+      "section": "09",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30045",
+      "section": "10",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    }
+  ],
+  "ENS 203": [
+    {
+      "crn": "30105",
+      "section": "0",
+      "title": "Electronic Circuits I",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 1000,
+          "end": 1170,
+          "where": "Fac. of Engin. and Nat. Sci. L029",
+          "instructor": "Ömer Ceylan"
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 820,
+          "end": 990,
+          "where": "Fac. of Engin. and Nat. Sci. L047",
+          "instructor": "Ömer Ceylan"
+        }
+      ],
+      "instructors": [
+        "Ömer Ceylan"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. L029",
+        "Fac. of Engin. and Nat. Sci. L047"
+      ]
+    }
+  ],
+  "ENS 203R": [
+    {
+      "crn": "30106",
+      "section": "0",
+      "title": "Electronic Circuits I - Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 580,
+          "end": 750,
+          "where": "Fac. of Engin. and Nat. Sci. G025",
+          "instructor": "Ömer Ceylan"
+        }
+      ],
+      "instructors": [
+        "Ömer Ceylan"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. G025"
+      ]
+    }
+  ],
+  "ENS 205": [
+    {
+      "crn": "30109",
+      "section": "0",
+      "title": "Introduction to Materials Science",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 880,
+          "end": 1050,
+          "where": "Fac. of Engin. and Nat. Sci. L029",
+          "instructor": ""
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 520,
+          "end": 690,
+          "where": "Fac. of Engin. and Nat. Sci. L030",
+          "instructor": ""
+        }
+      ],
+      "instructors": [],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. L029",
+        "Fac. of Engin. and Nat. Sci. L030"
+      ]
+    }
+  ],
+  "ENS 205R": [
+    {
+      "crn": "30110",
+      "section": "0",
+      "title": "Introduction to Materials Science - Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 1060,
+          "end": 1170,
+          "where": "Fac. of Engin. and Nat. Sci. L048",
+          "instructor": ""
+        }
+      ],
+      "instructors": [],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. L048"
+      ]
+    }
+  ],
+  "ENS 208": [
+    {
+      "crn": "30111",
+      "section": "0",
+      "title": "Introduction to Industrial Engineering",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 520,
+          "end": 690,
+          "where": "Sabancı Business School L014",
+          "instructor": "İhsan Sadati"
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 520,
+          "end": 690,
+          "where": "Sabancı Business School L014",
+          "instructor": "İhsan Sadati"
+        }
+      ],
+      "instructors": [
+        "İhsan Sadati"
+      ],
+      "locations": [
+        "Sabancı Business School L014"
+      ]
+    }
+  ],
+  "ENG 0004": [
+    {
+      "crn": "30183",
+      "section": "4A3",
+      "title": "English Route 4",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1025",
+          "instructor": "Mine Gündüz Kartal, Ali Aydın , Melek Didem Beyazoğlu Turan , Deniz Çiçekoğlu Daryavuz , Ebru Yamaç"
+        },
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 820,
+          "end": 930,
+          "where": "School of Languages Building 1025",
+          "instructor": "Mine Gündüz Kartal, Ali Aydın , Melek Didem Beyazoğlu Turan , Deniz Çiçekoğlu Daryavuz , Ebru Yamaç"
+        },
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1026",
+          "instructor": "Mine Gündüz Kartal, Ali Aydın , Melek Didem Beyazoğlu Turan , Deniz Çiçekoğlu Daryavuz , Ebru Yamaç"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1027",
+          "instructor": "Mine Gündüz Kartal, Ali Aydın , Melek Didem Beyazoğlu Turan , Deniz Çiçekoğlu Daryavuz , Ebru Yamaç"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 820,
+          "end": 930,
+          "where": "School of Languages Building 1027",
+          "instructor": "Mine Gündüz Kartal, Ali Aydın , Melek Didem Beyazoğlu Turan , Deniz Çiçekoğlu Daryavuz , Ebru Yamaç"
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1031",
+          "instructor": "Mine Gündüz Kartal, Ali Aydın , Melek Didem Beyazoğlu Turan , Deniz Çiçekoğlu Daryavuz , Ebru Yamaç"
+        },
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1037",
+          "instructor": "Mine Gündüz Kartal, Ali Aydın , Melek Didem Beyazoğlu Turan , Deniz Çiçekoğlu Daryavuz , Ebru Yamaç"
+        }
+      ],
+      "instructors": [
+        "Mine Gündüz Kartal, Ali Aydın , Melek Didem Beyazoğlu Turan , Deniz Çiçekoğlu Daryavuz , Ebru Yamaç"
+      ],
+      "locations": [
+        "School of Languages Building 1025",
+        "School of Languages Building 1026",
+        "School of Languages Building 1027",
+        "School of Languages Building 1031",
+        "School of Languages Building 1037"
+      ]
+    },
+    {
+      "crn": "30184",
+      "section": "4B3",
+      "title": "English Route 4",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1026",
+          "instructor": "Kenneth Mark Fıne, Ali Aydın , Eren Benderli , Melek Didem Beyazoğlu Turan , Mine Gündüz Kartal , Ebru Yamaç"
+        },
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 820,
+          "end": 930,
+          "where": "School of Languages Building 1026",
+          "instructor": "Kenneth Mark Fıne, Ali Aydın , Eren Benderli , Melek Didem Beyazoğlu Turan , Mine Gündüz Kartal , Ebru Yamaç"
+        },
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1027",
+          "instructor": "Kenneth Mark Fıne, Ali Aydın , Eren Benderli , Melek Didem Beyazoğlu Turan , Mine Gündüz Kartal , Ebru Yamaç"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1030",
+          "instructor": "Kenneth Mark Fıne, Ali Aydın , Eren Benderli , Melek Didem Beyazoğlu Turan , Mine Gündüz Kartal , Ebru Yamaç"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 820,
+          "end": 930,
+          "where": "School of Languages Building 1030",
+          "instructor": "Kenneth Mark Fıne, Ali Aydın , Eren Benderli , Melek Didem Beyazoğlu Turan , Mine Gündüz Kartal , Ebru Yamaç"
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1048",
+          "instructor": "Kenneth Mark Fıne, Ali Aydın , Eren Benderli , Melek Didem Beyazoğlu Turan , Mine Gündüz Kartal , Ebru Yamaç"
+        },
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1025",
+          "instructor": "Kenneth Mark Fıne, Ali Aydın , Eren Benderli , Melek Didem Beyazoğlu Turan , Mine Gündüz Kartal , Ebru Yamaç"
+        }
+      ],
+      "instructors": [
+        "Kenneth Mark Fıne, Ali Aydın , Eren Benderli , Melek Didem Beyazoğlu Turan , Mine Gündüz Kartal , Ebru Yamaç"
+      ],
+      "locations": [
+        "School of Languages Building 1025",
+        "School of Languages Building 1026",
+        "School of Languages Building 1027",
+        "School of Languages Building 1030",
+        "School of Languages Building 1048"
+      ]
+    },
+    {
+      "crn": "30185",
+      "section": "4C3",
+      "title": "English Route 4",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1027",
+          "instructor": "Özlem Yanar, Eren Benderli , Kenneth Mark Fıne , İrem Gedil , Selin Şenay"
+        },
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 820,
+          "end": 930,
+          "where": "School of Languages Building 1027",
+          "instructor": "Özlem Yanar, Eren Benderli , Kenneth Mark Fıne , İrem Gedil , Selin Şenay"
+        },
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1030",
+          "instructor": "Özlem Yanar, Eren Benderli , Kenneth Mark Fıne , İrem Gedil , Selin Şenay"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1023",
+          "instructor": "Özlem Yanar, Eren Benderli , Kenneth Mark Fıne , İrem Gedil , Selin Şenay"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 820,
+          "end": 930,
+          "where": "School of Languages Building 1023",
+          "instructor": "Özlem Yanar, Eren Benderli , Kenneth Mark Fıne , İrem Gedil , Selin Şenay"
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1023",
+          "instructor": "Özlem Yanar, Eren Benderli , Kenneth Mark Fıne , İrem Gedil , Selin Şenay"
+        },
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1026",
+          "instructor": "Özlem Yanar, Eren Benderli , Kenneth Mark Fıne , İrem Gedil , Selin Şenay"
+        }
+      ],
+      "instructors": [
+        "Özlem Yanar, Eren Benderli , Kenneth Mark Fıne , İrem Gedil , Selin Şenay"
+      ],
+      "locations": [
+        "School of Languages Building 1023",
+        "School of Languages Building 1026",
+        "School of Languages Building 1027",
+        "School of Languages Building 1030"
+      ]
+    },
+    {
+      "crn": "30186",
+      "section": "4D3",
+      "title": "English Route 4",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1030",
+          "instructor": "Ceyda Gümüş, Andrew Christopher Bosson , Gülçin Coşgun , Gökçen Gök Kaça , Bayram Mustafa Zor"
+        },
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 820,
+          "end": 930,
+          "where": "School of Languages Building 1030",
+          "instructor": "Ceyda Gümüş, Andrew Christopher Bosson , Gülçin Coşgun , Gökçen Gök Kaça , Bayram Mustafa Zor"
+        },
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1023",
+          "instructor": "Ceyda Gümüş, Andrew Christopher Bosson , Gülçin Coşgun , Gökçen Gök Kaça , Bayram Mustafa Zor"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1031",
+          "instructor": "Ceyda Gümüş, Andrew Christopher Bosson , Gülçin Coşgun , Gökçen Gök Kaça , Bayram Mustafa Zor"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 820,
+          "end": 930,
+          "where": "School of Languages Building 1031",
+          "instructor": "Ceyda Gümüş, Andrew Christopher Bosson , Gülçin Coşgun , Gökçen Gök Kaça , Bayram Mustafa Zor"
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1046",
+          "instructor": "Ceyda Gümüş, Andrew Christopher Bosson , Gülçin Coşgun , Gökçen Gök Kaça , Bayram Mustafa Zor"
+        },
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1027",
+          "instructor": "Ceyda Gümüş, Andrew Christopher Bosson , Gülçin Coşgun , Gökçen Gök Kaça , Bayram Mustafa Zor"
+        }
+      ],
+      "instructors": [
+        "Ceyda Gümüş, Andrew Christopher Bosson , Gülçin Coşgun , Gökçen Gök Kaça , Bayram Mustafa Zor"
+      ],
+      "locations": [
+        "School of Languages Building 1023",
+        "School of Languages Building 1027",
+        "School of Languages Building 1030",
+        "School of Languages Building 1031",
+        "School of Languages Building 1046"
+      ]
+    },
+    {
+      "crn": "30187",
+      "section": "4E3",
+      "title": "English Route 4",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1023",
+          "instructor": "Gökçen Gök Kaça, Andrew Christopher Bosson , Gülçin Coşgun , Nezaket Özgirin , Suant Jane Sezgin , Bayram Mustafa Zor"
+        },
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 820,
+          "end": 930,
+          "where": "School of Languages Building 1023",
+          "instructor": "Gökçen Gök Kaça, Andrew Christopher Bosson , Gülçin Coşgun , Nezaket Özgirin , Suant Jane Sezgin , Bayram Mustafa Zor"
+        },
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1031",
+          "instructor": "Gökçen Gök Kaça, Andrew Christopher Bosson , Gülçin Coşgun , Nezaket Özgirin , Suant Jane Sezgin , Bayram Mustafa Zor"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1048",
+          "instructor": "Gökçen Gök Kaça, Andrew Christopher Bosson , Gülçin Coşgun , Nezaket Özgirin , Suant Jane Sezgin , Bayram Mustafa Zor"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 820,
+          "end": 930,
+          "where": "School of Languages Building 1048",
+          "instructor": "Gökçen Gök Kaça, Andrew Christopher Bosson , Gülçin Coşgun , Nezaket Özgirin , Suant Jane Sezgin , Bayram Mustafa Zor"
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1037",
+          "instructor": "Gökçen Gök Kaça, Andrew Christopher Bosson , Gülçin Coşgun , Nezaket Özgirin , Suant Jane Sezgin , Bayram Mustafa Zor"
+        },
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1030",
+          "instructor": "Gökçen Gök Kaça, Andrew Christopher Bosson , Gülçin Coşgun , Nezaket Özgirin , Suant Jane Sezgin , Bayram Mustafa Zor"
+        }
+      ],
+      "instructors": [
+        "Gökçen Gök Kaça, Andrew Christopher Bosson , Gülçin Coşgun , Nezaket Özgirin , Suant Jane Sezgin , Bayram Mustafa Zor"
+      ],
+      "locations": [
+        "School of Languages Building 1023",
+        "School of Languages Building 1030",
+        "School of Languages Building 1031",
+        "School of Languages Building 1037",
+        "School of Languages Building 1048"
+      ]
+    },
+    {
+      "crn": "30188",
+      "section": "4F3",
+      "title": "English Route 4",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1031",
+          "instructor": "Bünyamin Mengi, Feyza Sena Avşar , Ahmed Elmahi , Ceyda Gümüş , Celile Gürsu"
+        },
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 820,
+          "end": 930,
+          "where": "School of Languages Building 1031",
+          "instructor": "Bünyamin Mengi, Feyza Sena Avşar , Ahmed Elmahi , Ceyda Gümüş , Celile Gürsu"
+        },
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1048",
+          "instructor": "Bünyamin Mengi, Feyza Sena Avşar , Ahmed Elmahi , Ceyda Gümüş , Celile Gürsu"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1049",
+          "instructor": "Bünyamin Mengi, Feyza Sena Avşar , Ahmed Elmahi , Ceyda Gümüş , Celile Gürsu"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 820,
+          "end": 930,
+          "where": "School of Languages Building 1049",
+          "instructor": "Bünyamin Mengi, Feyza Sena Avşar , Ahmed Elmahi , Ceyda Gümüş , Celile Gürsu"
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1025",
+          "instructor": "Bünyamin Mengi, Feyza Sena Avşar , Ahmed Elmahi , Ceyda Gümüş , Celile Gürsu"
+        },
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1023",
+          "instructor": "Bünyamin Mengi, Feyza Sena Avşar , Ahmed Elmahi , Ceyda Gümüş , Celile Gürsu"
+        }
+      ],
+      "instructors": [
+        "Bünyamin Mengi, Feyza Sena Avşar , Ahmed Elmahi , Ceyda Gümüş , Celile Gürsu"
+      ],
+      "locations": [
+        "School of Languages Building 1023",
+        "School of Languages Building 1025",
+        "School of Languages Building 1031",
+        "School of Languages Building 1048",
+        "School of Languages Building 1049"
+      ]
+    },
+    {
+      "crn": "30189",
+      "section": "4G3",
+      "title": "English Route 4",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1048",
+          "instructor": "Ahmed Elmahi, Feyza Sena Avşar , Arda Bayraktaroğlu , Celile Gürsu , Bünyamin Mengi , Nezaket Özgirin"
+        },
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 820,
+          "end": 930,
+          "where": "School of Languages Building 1048",
+          "instructor": "Ahmed Elmahi, Feyza Sena Avşar , Arda Bayraktaroğlu , Celile Gürsu , Bünyamin Mengi , Nezaket Özgirin"
+        },
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1049",
+          "instructor": "Ahmed Elmahi, Feyza Sena Avşar , Arda Bayraktaroğlu , Celile Gürsu , Bünyamin Mengi , Nezaket Özgirin"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1046",
+          "instructor": "Ahmed Elmahi, Feyza Sena Avşar , Arda Bayraktaroğlu , Celile Gürsu , Bünyamin Mengi , Nezaket Özgirin"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 820,
+          "end": 930,
+          "where": "School of Languages Building 1046",
+          "instructor": "Ahmed Elmahi, Feyza Sena Avşar , Arda Bayraktaroğlu , Celile Gürsu , Bünyamin Mengi , Nezaket Özgirin"
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1026",
+          "instructor": "Ahmed Elmahi, Feyza Sena Avşar , Arda Bayraktaroğlu , Celile Gürsu , Bünyamin Mengi , Nezaket Özgirin"
+        },
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1031",
+          "instructor": "Ahmed Elmahi, Feyza Sena Avşar , Arda Bayraktaroğlu , Celile Gürsu , Bünyamin Mengi , Nezaket Özgirin"
+        }
+      ],
+      "instructors": [
+        "Ahmed Elmahi, Feyza Sena Avşar , Arda Bayraktaroğlu , Celile Gürsu , Bünyamin Mengi , Nezaket Özgirin"
+      ],
+      "locations": [
+        "School of Languages Building 1026",
+        "School of Languages Building 1031",
+        "School of Languages Building 1046",
+        "School of Languages Building 1048",
+        "School of Languages Building 1049"
+      ]
+    },
+    {
+      "crn": "30190",
+      "section": "4H3",
+      "title": "English Route 4",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1049",
+          "instructor": "Adam Michael Rackham, Aybüke Filiz Gürer , David Hill , Züleyha Tülay , Mutlu Üstünkaya Bosson"
+        },
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 820,
+          "end": 930,
+          "where": "School of Languages Building 1049",
+          "instructor": "Adam Michael Rackham, Aybüke Filiz Gürer , David Hill , Züleyha Tülay , Mutlu Üstünkaya Bosson"
+        },
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1046",
+          "instructor": "Adam Michael Rackham, Aybüke Filiz Gürer , David Hill , Züleyha Tülay , Mutlu Üstünkaya Bosson"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1037",
+          "instructor": "Adam Michael Rackham, Aybüke Filiz Gürer , David Hill , Züleyha Tülay , Mutlu Üstünkaya Bosson"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 820,
+          "end": 930,
+          "where": "School of Languages Building 1037",
+          "instructor": "Adam Michael Rackham, Aybüke Filiz Gürer , David Hill , Züleyha Tülay , Mutlu Üstünkaya Bosson"
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1027",
+          "instructor": "Adam Michael Rackham, Aybüke Filiz Gürer , David Hill , Züleyha Tülay , Mutlu Üstünkaya Bosson"
+        },
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1048",
+          "instructor": "Adam Michael Rackham, Aybüke Filiz Gürer , David Hill , Züleyha Tülay , Mutlu Üstünkaya Bosson"
+        }
+      ],
+      "instructors": [
+        "Adam Michael Rackham, Aybüke Filiz Gürer , David Hill , Züleyha Tülay , Mutlu Üstünkaya Bosson"
+      ],
+      "locations": [
+        "School of Languages Building 1027",
+        "School of Languages Building 1037",
+        "School of Languages Building 1046",
+        "School of Languages Building 1048",
+        "School of Languages Building 1049"
+      ]
+    },
+    {
+      "crn": "30191",
+      "section": "4J3",
+      "title": "English Route 4",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1038",
+          "instructor": "Büşra Nur Özer Musaoğlu, Aybüke Filiz Gürer , David Hill , Züleyha Tülay , Mutlu Üstünkaya Bosson"
+        },
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 820,
+          "end": 930,
+          "where": "School of Languages Building 1038",
+          "instructor": "Büşra Nur Özer Musaoğlu, Aybüke Filiz Gürer , David Hill , Züleyha Tülay , Mutlu Üstünkaya Bosson"
+        },
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building G025",
+          "instructor": "Büşra Nur Özer Musaoğlu, Aybüke Filiz Gürer , David Hill , Züleyha Tülay , Mutlu Üstünkaya Bosson"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building 1038",
+          "instructor": "Büşra Nur Özer Musaoğlu, Aybüke Filiz Gürer , David Hill , Züleyha Tülay , Mutlu Üstünkaya Bosson"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 820,
+          "end": 930,
+          "where": "School of Languages Building 1038",
+          "instructor": "Büşra Nur Özer Musaoğlu, Aybüke Filiz Gürer , David Hill , Züleyha Tülay , Mutlu Üstünkaya Bosson"
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building G024",
+          "instructor": "Büşra Nur Özer Musaoğlu, Aybüke Filiz Gürer , David Hill , Züleyha Tülay , Mutlu Üstünkaya Bosson"
+        },
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 540,
+          "end": 770,
+          "where": "School of Languages Building G039",
+          "instructor": "Büşra Nur Özer Musaoğlu, Aybüke Filiz Gürer , David Hill , Züleyha Tülay , Mutlu Üstünkaya Bosson"
+        }
+      ],
+      "instructors": [
+        "Büşra Nur Özer Musaoğlu, Aybüke Filiz Gürer , David Hill , Züleyha Tülay , Mutlu Üstünkaya Bosson"
+      ],
+      "locations": [
+        "School of Languages Building 1038",
+        "School of Languages Building G024",
+        "School of Languages Building G025",
+        "School of Languages Building G039"
+      ]
+    }
+  ],
+  "FIN 301": [
+    {
+      "crn": "30119",
+      "section": "0",
+      "title": "Financial Management",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 880,
+          "end": 1050,
+          "where": "Sabancı Business School G060",
+          "instructor": "Onur Tosun"
+        },
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 580,
+          "end": 750,
+          "where": "Sabancı Business School G060",
+          "instructor": "Onur Tosun"
+        }
+      ],
+      "instructors": [
+        "Onur Tosun"
+      ],
+      "locations": [
+        "Sabancı Business School G060"
+      ]
+    }
+  ],
+  "FIN 301R": [
+    {
+      "crn": "30120",
+      "section": "0",
+      "title": "Financial Management-Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 880,
+          "end": 990,
+          "where": "Sabancı Business School G060",
+          "instructor": "Onur Tosun"
+        }
+      ],
+      "instructors": [
+        "Onur Tosun"
+      ],
+      "locations": [
+        "Sabancı Business School G060"
+      ]
+    }
+  ],
+  "HART 234": [
+    {
+      "crn": "30125",
+      "section": "0",
+      "title": "Classical Mythology in Art",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 700,
+          "end": 810,
+          "where": "Fac.of Arts and Social Sci. 1103",
+          "instructor": "Zeynep Nevin Yelçe"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 760,
+          "end": 870,
+          "where": "Fac.of Arts and Social Sci. 1101",
+          "instructor": "Zeynep Nevin Yelçe"
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 760,
+          "end": 870,
+          "where": "Fac.of Arts and Social Sci. 1101",
+          "instructor": "Zeynep Nevin Yelçe"
+        }
+      ],
+      "instructors": [
+        "Zeynep Nevin Yelçe"
+      ],
+      "locations": [
+        "Fac.of Arts and Social Sci. 1101",
+        "Fac.of Arts and Social Sci. 1103"
+      ]
+    }
+  ],
+  "HIST 191": [
+    {
+      "crn": "30224",
+      "section": "0",
+      "title": "Principles of Atatürk and the History of the Turkish Revolution I",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 1000,
+          "end": 1110,
+          "where": "Fac.of Arts and Social Sci. 1080",
+          "instructor": "Mehmet Kuru"
+        },
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 760,
+          "end": 870,
+          "where": "Fac.of Arts and Social Sci. 1079",
+          "instructor": "Mehmet Kuru"
+        }
+      ],
+      "instructors": [
+        "Mehmet Kuru"
+      ],
+      "locations": [
+        "Fac.of Arts and Social Sci. 1079",
+        "Fac.of Arts and Social Sci. 1080"
+      ]
+    }
+  ],
+  "HIST 192": [
+    {
+      "crn": "30124",
+      "section": "0",
+      "title": "Principles of Atatürk and the History of the Turkish Revolution II",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 700,
+          "end": 810,
+          "where": "Fac.of Arts and Social Sci. G056",
+          "instructor": "Mehmet Kuru"
+        },
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 1000,
+          "end": 1110,
+          "where": "Fac.of Arts and Social Sci. G056",
+          "instructor": "Mehmet Kuru"
+        }
+      ],
+      "instructors": [
+        "Mehmet Kuru"
+      ],
+      "locations": [
+        "Fac.of Arts and Social Sci. G056"
+      ]
+    }
+  ],
+  "HUM 202": [
+    {
+      "crn": "30220",
+      "section": "0",
+      "title": "Major Works of Western Art",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 580,
+          "end": 690,
+          "where": "Fac.of Arts and Social Sci. 1080",
+          "instructor": "Sinem Erdoğan İşkorkutan"
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 580,
+          "end": 690,
+          "where": "Fac.of Arts and Social Sci. 1080",
+          "instructor": "Sinem Erdoğan İşkorkutan"
+        }
+      ],
+      "instructors": [
+        "Sinem Erdoğan İşkorkutan"
+      ],
+      "locations": [
+        "Fac.of Arts and Social Sci. 1080"
+      ]
+    }
+  ],
+  "HUM 202D": [
+    {
+      "crn": "30221",
+      "section": "0",
+      "title": "Major Works of Western Art - Discussion",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 820,
+          "end": 870,
+          "where": "Fac.of Arts and Social Sci. 1079",
+          "instructor": "Sinem Erdoğan İşkorkutan"
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 760,
+          "end": 810,
+          "where": "Fac.of Arts and Social Sci. 1080",
+          "instructor": "Sinem Erdoğan İşkorkutan"
+        }
+      ],
+      "instructors": [
+        "Sinem Erdoğan İşkorkutan"
+      ],
+      "locations": [
+        "Fac.of Arts and Social Sci. 1079",
+        "Fac.of Arts and Social Sci. 1080"
+      ]
+    }
+  ],
+  "HUM 311": [
+    {
+      "crn": "30222",
+      "section": "0",
+      "title": "Major Works of Literature: The World Before Modernity",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 820,
+          "end": 930,
+          "where": "Fac.of Arts and Social Sci. G025",
+          "instructor": "Zeynep Nevin Yelçe"
+        },
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 880,
+          "end": 990,
+          "where": "Fac.of Arts and Social Sci. G025",
+          "instructor": "Zeynep Nevin Yelçe"
+        },
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 880,
+          "end": 990,
+          "where": "Fac.of Arts and Social Sci. G025",
+          "instructor": "Zeynep Nevin Yelçe"
+        }
+      ],
+      "instructors": [
+        "Zeynep Nevin Yelçe"
+      ],
+      "locations": [
+        "Fac.of Arts and Social Sci. G025"
+      ]
+    }
+  ],
+  "IE 303": [
+    {
+      "crn": "30209",
+      "section": "0",
+      "title": "Decision Economics",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 520,
+          "end": 690,
+          "where": "Fac. of Engin. and Nat. Sci. L063",
+          "instructor": ""
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 520,
+          "end": 690,
+          "where": "Fac. of Engin. and Nat. Sci. L063",
+          "instructor": ""
+        }
+      ],
+      "instructors": [],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. L063"
+      ]
+    }
+  ],
+  "IE 305": [
+    {
+      "crn": "30129",
+      "section": "0",
+      "title": "Simulation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 580,
+          "end": 750,
+          "where": "Fac.of Arts and Social Sci. G052",
+          "instructor": "Murat Fadıloğlu"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 640,
+          "end": 810,
+          "where": "Fac.of Arts and Social Sci. G052",
+          "instructor": "Murat Fadıloğlu"
+        }
+      ],
+      "instructors": [
+        "Murat Fadıloğlu"
+      ],
+      "locations": [
+        "Fac.of Arts and Social Sci. G052"
+      ]
+    }
+  ],
+  "IE 305R": [
+    {
+      "crn": "30130",
+      "section": "0",
+      "title": "Simulation - Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 820,
+          "end": 930,
+          "where": "Sabancı Business School L014",
+          "instructor": "Murat Fadıloğlu"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 880,
+          "end": 990,
+          "where": "Sabancı Business School L014",
+          "instructor": "Murat Fadıloğlu"
+        }
+      ],
+      "instructors": [
+        "Murat Fadıloğlu"
+      ],
+      "locations": [
+        "Sabancı Business School L014"
+      ]
+    }
+  ],
+  "IE 311": [
+    {
+      "crn": "30131",
+      "section": "0",
+      "title": "Operations Research I",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 820,
+          "end": 990,
+          "where": "Fac. of Engin. and Nat. Sci. L055",
+          "instructor": "Erhun Kundakcıoğlu"
+        },
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 880,
+          "end": 1050,
+          "where": "Fac. of Engin. and Nat. Sci. L055",
+          "instructor": "Erhun Kundakcıoğlu"
+        }
+      ],
+      "instructors": [
+        "Erhun Kundakcıoğlu"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. L055"
+      ]
+    }
+  ],
+  "IE 311R": [
+    {
+      "crn": "30132",
+      "section": "A",
+      "title": "Operations Research I Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 1000,
+          "end": 1110,
+          "where": "Fac. of Engin. and Nat. Sci. L029",
+          "instructor": "Erhun Kundakcıoğlu"
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 880,
+          "end": 990,
+          "where": "Fac. of Engin. and Nat. Sci. L029",
+          "instructor": "Erhun Kundakcıoğlu"
+        }
+      ],
+      "instructors": [
+        "Erhun Kundakcıoğlu"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. L029"
+      ]
+    },
+    {
+      "crn": "30133",
+      "section": "B",
+      "title": "Operations Research I Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 1060,
+          "end": 1170,
+          "where": "Fac. of Engin. and Nat. Sci. L048",
+          "instructor": "Erhun Kundakcıoğlu"
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 1000,
+          "end": 1110,
+          "where": "Fac. of Engin. and Nat. Sci. L029",
+          "instructor": "Erhun Kundakcıoğlu"
+        }
+      ],
+      "instructors": [
+        "Erhun Kundakcıoğlu"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. L029",
+        "Fac. of Engin. and Nat. Sci. L048"
+      ]
+    }
+  ],
+  "IE 312": [
+    {
+      "crn": "30134",
+      "section": "0",
+      "title": "Operations Research II",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 940,
+          "end": 1110,
+          "where": "Fac.of Arts and Social Sci. G049",
+          "instructor": "Ece Naz Duman"
+        },
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 940,
+          "end": 1110,
+          "where": "Fac.of Arts and Social Sci. G049",
+          "instructor": "Ece Naz Duman"
+        }
+      ],
+      "instructors": [
+        "Ece Naz Duman"
+      ],
+      "locations": [
+        "Fac.of Arts and Social Sci. G049"
+      ]
+    }
+  ],
+  "IE 312R": [
+    {
+      "crn": "30135",
+      "section": "0",
+      "title": "Operations Research II Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 1060,
+          "end": 1170,
+          "where": "Fac. of Engin. and Nat. Sci. G025",
+          "instructor": "Ece Naz Duman"
+        }
+      ],
+      "instructors": [
+        "Ece Naz Duman"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. G025"
+      ]
+    }
+  ],
+  "IE 395": [
+    {
+      "crn": "30046",
+      "section": "01",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30047",
+      "section": "02",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30048",
+      "section": "03",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30049",
+      "section": "04",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30050",
+      "section": "05",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30051",
+      "section": "06",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30052",
+      "section": "07",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30053",
+      "section": "08",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30054",
+      "section": "09",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30055",
+      "section": "10",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30056",
+      "section": "11",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30057",
+      "section": "12",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30058",
+      "section": "13",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30059",
+      "section": "14",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30060",
+      "section": "15",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30061",
+      "section": "16",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30062",
+      "section": "17",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30063",
+      "section": "18",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30064",
+      "section": "19",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30065",
+      "section": "20",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    }
+  ],
+  "IE 405": [
+    {
+      "crn": "30210",
+      "section": "0",
+      "title": "Decision Analysis",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 760,
+          "end": 930,
+          "where": "Fac. of Engin. and Nat. Sci. G025",
+          "instructor": "Faran Ahmed"
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 760,
+          "end": 930,
+          "where": "Fac. of Engin. and Nat. Sci. G025",
+          "instructor": "Faran Ahmed"
+        }
+      ],
+      "instructors": [
+        "Faran Ahmed"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. G025"
+      ]
+    }
+  ],
+  "IT 535": [
+    {
+      "crn": "30235",
+      "section": "0",
+      "title": "Mobile Programming",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 1140,
+          "end": 1320,
+          "where": "Altunizade Campus 104",
+          "instructor": "Çağrı Güzay"
+        },
+        {
+          "type": "Class",
+          "days_raw": "S",
+          "days": [
+            5
+          ],
+          "start": 780,
+          "end": 960,
+          "where": "Altunizade Campus 104",
+          "instructor": "Çağrı Güzay"
+        }
+      ],
+      "instructors": [
+        "Çağrı Güzay"
+      ],
+      "locations": [
+        "Altunizade Campus 104"
+      ]
+    }
+  ],
+  "IT 566": [
+    {
+      "crn": "30234",
+      "section": "0",
+      "title": "IT Governance",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 1140,
+          "end": 1320,
+          "where": "Altunizade Campus 104",
+          "instructor": "Yasemin Turkan"
+        },
+        {
+          "type": "Class",
+          "days_raw": "S",
+          "days": [
+            5
+          ],
+          "start": 540,
+          "end": 720,
+          "where": "Altunizade Campus 104",
+          "instructor": "Yasemin Turkan"
+        }
+      ],
+      "instructors": [
+        "Yasemin Turkan"
+      ],
+      "locations": [
+        "Altunizade Campus 104"
+      ]
+    }
+  ],
+  "IT 580": [
+    {
+      "crn": "30236",
+      "section": "0",
+      "title": "Special Topics in Information Technologies I",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 1140,
+          "end": 1320,
+          "where": "Altunizade Campus 104",
+          "instructor": "Emre Kaplan"
+        },
+        {
+          "type": "Class",
+          "days_raw": "S",
+          "days": [
+            5
+          ],
+          "start": 540,
+          "end": 720,
+          "where": "Altunizade Campus 104",
+          "instructor": "Emre Kaplan"
+        }
+      ],
+      "instructors": [
+        "Emre Kaplan"
+      ],
+      "locations": [
+        "Altunizade Campus 104"
+      ]
+    }
+  ],
+  "IT 592": [
+    {
+      "crn": "30237",
+      "section": "0",
+      "title": "Project Course",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    }
+  ],
+  "IF 100": [
+    {
+      "crn": "30148",
+      "section": "0",
+      "title": "Computational Approaches to Problem Solving",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 1060,
+          "end": 1170,
+          "where": "Fac. of Engin. and Nat. Sci. G035",
+          "instructor": "İnanç Arın"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 1060,
+          "end": 1170,
+          "where": "Fac. of Engin. and Nat. Sci. G035",
+          "instructor": "İnanç Arın"
+        }
+      ],
+      "instructors": [
+        "İnanç Arın"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. G035"
+      ]
+    }
+  ],
+  "IF 100R": [
+    {
+      "crn": "30149",
+      "section": "0",
+      "title": "Computational Approaches to Problem Solving – Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 700,
+          "end": 810,
+          "where": "Fac. of Engin. and Nat. Sci. G015",
+          "instructor": "İnanç Arın"
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 820,
+          "end": 930,
+          "where": "Fac. of Engin. and Nat. Sci. G015",
+          "instructor": "İnanç Arın"
+        }
+      ],
+      "instructors": [
+        "İnanç Arın"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. G015"
+      ]
+    }
+  ],
+  "MGMT 300": [
+    {
+      "crn": "30002",
+      "section": "0",
+      "title": "Summer Internship",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    }
+  ],
+  "MGMT 402": [
+    {
+      "crn": "30164",
+      "section": "0",
+      "title": "Entrepreneurship",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 880,
+          "end": 1050,
+          "where": "Sabancı Business School G060",
+          "instructor": "Türkan Yosun"
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 700,
+          "end": 870,
+          "where": "Sabancı Business School G060",
+          "instructor": "Türkan Yosun"
+        }
+      ],
+      "instructors": [
+        "Türkan Yosun"
+      ],
+      "locations": [
+        "Sabancı Business School G060"
+      ]
+    }
+  ],
+  "MGMT 499": [
+    {
+      "crn": "30211",
+      "section": "0",
+      "title": "Independent Study",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 820,
+          "end": 870,
+          "where": "Sabancı Business School G060",
+          "instructor": "Altuğ Tanaltay"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 700,
+          "end": 810,
+          "where": "Sabancı Business School G060",
+          "instructor": "Altuğ Tanaltay"
+        }
+      ],
+      "instructors": [
+        "Altuğ Tanaltay"
+      ],
+      "locations": [
+        "Sabancı Business School G060"
+      ]
+    }
+  ],
+  "MAT 395": [
+    {
+      "crn": "30066",
+      "section": "01",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30067",
+      "section": "02",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30068",
+      "section": "03",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30069",
+      "section": "04",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30070",
+      "section": "05",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30071",
+      "section": "06",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30072",
+      "section": "07",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30073",
+      "section": "08",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30074",
+      "section": "09",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30075",
+      "section": "10",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30076",
+      "section": "11",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30092",
+      "section": "12",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    }
+  ],
+  "MATH 101": [
+    {
+      "crn": "30138",
+      "section": "0",
+      "title": "Calculus I",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 520,
+          "end": 690,
+          "where": "Fac.of Arts and Social Sci. 1102",
+          "instructor": "Çiğdem Çelik"
+        },
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 700,
+          "end": 870,
+          "where": "Fac.of Arts and Social Sci. 1102",
+          "instructor": "Çiğdem Çelik"
+        }
+      ],
+      "instructors": [
+        "Çiğdem Çelik"
+      ],
+      "locations": [
+        "Fac.of Arts and Social Sci. 1102"
+      ]
+    }
+  ],
+  "MATH 101R": [
+    {
+      "crn": "30139",
+      "section": "0",
+      "title": "Calculus I - Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 820,
+          "end": 930,
+          "where": "Fac.of Arts and Social Sci. 1102",
+          "instructor": "Çiğdem Çelik"
+        },
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 1000,
+          "end": 1110,
+          "where": "Fac.of Arts and Social Sci. 1102",
+          "instructor": "Çiğdem Çelik"
+        }
+      ],
+      "instructors": [
+        "Çiğdem Çelik"
+      ],
+      "locations": [
+        "Fac.of Arts and Social Sci. 1102"
+      ]
+    }
+  ],
+  "MATH 102": [
+    {
+      "crn": "30140",
+      "section": "0",
+      "title": "Calculus II",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 820,
+          "end": 990,
+          "where": "Fac.of Arts and Social Sci. 1050",
+          "instructor": "Burçin Güneş"
+        },
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 700,
+          "end": 870,
+          "where": "Fac.of Arts and Social Sci. 1050",
+          "instructor": "Burçin Güneş"
+        }
+      ],
+      "instructors": [
+        "Burçin Güneş"
+      ],
+      "locations": [
+        "Fac.of Arts and Social Sci. 1050"
+      ]
+    }
+  ],
+  "MATH 102R": [
+    {
+      "crn": "30141",
+      "section": "A1",
+      "title": "Calculus II - Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 700,
+          "end": 810,
+          "where": "Fac. of Engin. and Nat. Sci. L056",
+          "instructor": "Burçin Güneş"
+        },
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 1000,
+          "end": 1110,
+          "where": "Fac. of Engin. and Nat. Sci. L048",
+          "instructor": "Burçin Güneş"
+        }
+      ],
+      "instructors": [
+        "Burçin Güneş"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. L048",
+        "Fac. of Engin. and Nat. Sci. L056"
+      ]
+    },
+    {
+      "crn": "30142",
+      "section": "A2",
+      "title": "Calculus II - Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 700,
+          "end": 810,
+          "where": "Fac. of Engin. and Nat. Sci. G015",
+          "instructor": "Burçin Güneş"
+        },
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 1000,
+          "end": 1110,
+          "where": "Fac. of Engin. and Nat. Sci. G025",
+          "instructor": "Burçin Güneş"
+        }
+      ],
+      "instructors": [
+        "Burçin Güneş"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. G015",
+        "Fac. of Engin. and Nat. Sci. G025"
+      ]
+    },
+    {
+      "crn": "30217",
+      "section": "A3",
+      "title": "Calculus II - Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 700,
+          "end": 810,
+          "where": "Fac. of Engin. and Nat. Sci. 2019",
+          "instructor": "Burçin Güneş"
+        },
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 1000,
+          "end": 1110,
+          "where": "Fac. of Engin. and Nat. Sci. G015",
+          "instructor": "Burçin Güneş"
+        }
+      ],
+      "instructors": [
+        "Burçin Güneş"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. 2019",
+        "Fac. of Engin. and Nat. Sci. G015"
+      ]
+    }
+  ],
+  "MATH 201": [
+    {
+      "crn": "30144",
+      "section": "0",
+      "title": "Linear Algebra",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 640,
+          "end": 810,
+          "where": "Fac. of Engin. and Nat. Sci. L035",
+          "instructor": "Canan Kaşıkcı"
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 640,
+          "end": 810,
+          "where": "Fac. of Engin. and Nat. Sci. L035",
+          "instructor": "Canan Kaşıkcı"
+        }
+      ],
+      "instructors": [
+        "Canan Kaşıkcı"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. L035"
+      ]
+    }
+  ],
+  "MATH 201R": [
+    {
+      "crn": "30145",
+      "section": "A1",
+      "title": "Linear Algebra - Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 940,
+          "end": 1050,
+          "where": "Fac. of Engin. and Nat. Sci. L030",
+          "instructor": "Canan Kaşıkcı"
+        }
+      ],
+      "instructors": [
+        "Canan Kaşıkcı"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. L030"
+      ]
+    },
+    {
+      "crn": "30213",
+      "section": "A2",
+      "title": "Linear Algebra - Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 940,
+          "end": 1050,
+          "where": "Fac. of Engin. and Nat. Sci. 2019",
+          "instructor": "Canan Kaşıkcı"
+        }
+      ],
+      "instructors": [
+        "Canan Kaşıkcı"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. 2019"
+      ]
+    }
+  ],
+  "MATH 202": [
+    {
+      "crn": "30150",
+      "section": "0",
+      "title": "Differential Equations",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 820,
+          "end": 990,
+          "where": "Fac. of Engin. and Nat. Sci. L062",
+          "instructor": "Umutcan Erdur"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 820,
+          "end": 990,
+          "where": "Fac. of Engin. and Nat. Sci. L035",
+          "instructor": "Umutcan Erdur"
+        }
+      ],
+      "instructors": [
+        "Umutcan Erdur"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. L035",
+        "Fac. of Engin. and Nat. Sci. L062"
+      ]
+    }
+  ],
+  "MATH 202R": [
+    {
+      "crn": "30151",
+      "section": "A1",
+      "title": "Differential Equations - Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 880,
+          "end": 990,
+          "where": "Fac. of Engin. and Nat. Sci. L048",
+          "instructor": "Umutcan Erdur"
+        }
+      ],
+      "instructors": [
+        "Umutcan Erdur"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. L048"
+      ]
+    },
+    {
+      "crn": "30214",
+      "section": "A2",
+      "title": "Differential Equations - Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 880,
+          "end": 990,
+          "where": "Fac. of Engin. and Nat. Sci. G025",
+          "instructor": "Umutcan Erdur"
+        }
+      ],
+      "instructors": [
+        "Umutcan Erdur"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. G025"
+      ]
+    }
+  ],
+  "MATH 203": [
+    {
+      "crn": "30153",
+      "section": "0",
+      "title": "Introduction to Probability",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 820,
+          "end": 990,
+          "where": "Fac. of Engin. and Nat. Sci. L062",
+          "instructor": "Gamze Kuruk"
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 820,
+          "end": 990,
+          "where": "Fac. of Engin. and Nat. Sci. L063",
+          "instructor": "Gamze Kuruk"
+        }
+      ],
+      "instructors": [
+        "Gamze Kuruk"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. L062",
+        "Fac. of Engin. and Nat. Sci. L063"
+      ]
+    }
+  ],
+  "MATH 203R": [
+    {
+      "crn": "30154",
+      "section": "A1",
+      "title": "Introduction to Probability - Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 940,
+          "end": 1050,
+          "where": "Fac. of Engin. and Nat. Sci. L047",
+          "instructor": "Gamze Kuruk"
+        }
+      ],
+      "instructors": [
+        "Gamze Kuruk"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. L047"
+      ]
+    },
+    {
+      "crn": "30155",
+      "section": "A2",
+      "title": "Introduction to Probability - Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 940,
+          "end": 1050,
+          "where": "Fac. of Engin. and Nat. Sci. L063",
+          "instructor": "Gamze Kuruk"
+        }
+      ],
+      "instructors": [
+        "Gamze Kuruk"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. L063"
+      ]
+    }
+  ],
+  "MATH 204": [
+    {
+      "crn": "30156",
+      "section": "0",
+      "title": "Discrete Mathematics",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 700,
+          "end": 870,
+          "where": "Fac.of Arts and Social Sci. 1050",
+          "instructor": "Aslı Tuğcuoğlu Musapaşaoğlu"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 640,
+          "end": 810,
+          "where": "Fac.of Arts and Social Sci. 1050",
+          "instructor": "Aslı Tuğcuoğlu Musapaşaoğlu"
+        }
+      ],
+      "instructors": [
+        "Aslı Tuğcuoğlu Musapaşaoğlu"
+      ],
+      "locations": [
+        "Fac.of Arts and Social Sci. 1050"
+      ]
+    }
+  ],
+  "MATH 204R": [
+    {
+      "crn": "30157",
+      "section": "A1",
+      "title": "Discrete Mathematics - Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 940,
+          "end": 1050,
+          "where": "Fac. of Engin. and Nat. Sci. L062",
+          "instructor": "Aslı Tuğcuoğlu Musapaşaoğlu"
+        }
+      ],
+      "instructors": [
+        "Aslı Tuğcuoğlu Musapaşaoğlu"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. L062"
+      ]
+    },
+    {
+      "crn": "30158",
+      "section": "A2",
+      "title": "Discrete Mathematics - Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 940,
+          "end": 1050,
+          "where": "Fac. of Engin. and Nat. Sci. L055",
+          "instructor": "Aslı Tuğcuoğlu Musapaşaoğlu"
+        }
+      ],
+      "instructors": [
+        "Aslı Tuğcuoğlu Musapaşaoğlu"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. L055"
+      ]
+    },
+    {
+      "crn": "30215",
+      "section": "A3",
+      "title": "Discrete Mathematics - Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 940,
+          "end": 1050,
+          "where": "Fac. of Engin. and Nat. Sci. L030",
+          "instructor": "Aslı Tuğcuoğlu Musapaşaoğlu"
+        }
+      ],
+      "instructors": [
+        "Aslı Tuğcuoğlu Musapaşaoğlu"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. L030"
+      ]
+    }
+  ],
+  "MATH 306": [
+    {
+      "crn": "30160",
+      "section": "0",
+      "title": "Statistical Modelling",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 520,
+          "end": 690,
+          "where": "Fac.of Arts and Social Sci. G062",
+          "instructor": "Melike Efe"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 520,
+          "end": 690,
+          "where": "Fac.of Arts and Social Sci. G062",
+          "instructor": "Melike Efe"
+        }
+      ],
+      "instructors": [
+        "Melike Efe"
+      ],
+      "locations": [
+        "Fac.of Arts and Social Sci. G062"
+      ]
+    }
+  ],
+  "MATH 306R": [
+    {
+      "crn": "30161",
+      "section": "A1",
+      "title": "Statistical Modelling - Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 820,
+          "end": 930,
+          "where": "Fac. of Engin. and Nat. Sci. L055",
+          "instructor": "Melike Efe"
+        }
+      ],
+      "instructors": [
+        "Melike Efe"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. L055"
+      ]
+    },
+    {
+      "crn": "30162",
+      "section": "A2",
+      "title": "Statistical Modelling - Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 820,
+          "end": 930,
+          "where": "Fac. of Engin. and Nat. Sci. L063",
+          "instructor": "Melike Efe"
+        }
+      ],
+      "instructors": [
+        "Melike Efe"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. L063"
+      ]
+    },
+    {
+      "crn": "30163",
+      "section": "A3",
+      "title": "Statistical Modelling - Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 820,
+          "end": 930,
+          "where": "Fac. of Engin. and Nat. Sci. L056",
+          "instructor": "Melike Efe"
+        }
+      ],
+      "instructors": [
+        "Melike Efe"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. L056"
+      ]
+    }
+  ],
+  "ME 395": [
+    {
+      "crn": "30077",
+      "section": "01",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30078",
+      "section": "02",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30079",
+      "section": "03",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30080",
+      "section": "04",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30081",
+      "section": "05",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30082",
+      "section": "06",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30083",
+      "section": "07",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30084",
+      "section": "08",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30085",
+      "section": "09",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30086",
+      "section": "10",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    }
+  ],
+  "BIO 395": [
+    {
+      "crn": "30006",
+      "section": "01",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30007",
+      "section": "02",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30008",
+      "section": "03",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30009",
+      "section": "04",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30010",
+      "section": "05",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30011",
+      "section": "06",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30012",
+      "section": "07",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    },
+    {
+      "crn": "30013",
+      "section": "08",
+      "title": "Internship Project",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    }
+  ],
+  "NS 101": [
+    {
+      "crn": "30166",
+      "section": "0",
+      "title": "Science of Nature I",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 580,
+          "end": 690,
+          "where": "Fac.of Arts and Social Sci. 2128",
+          "instructor": "Çiğdem Altıntaş, Aslıhan Muazzez Ünsal"
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 580,
+          "end": 690,
+          "where": "Fac.of Arts and Social Sci. 2128",
+          "instructor": "Çiğdem Altıntaş, Aslıhan Muazzez Ünsal"
+        }
+      ],
+      "instructors": [
+        "Çiğdem Altıntaş, Aslıhan Muazzez Ünsal"
+      ],
+      "locations": [
+        "Fac.of Arts and Social Sci. 2128"
+      ]
+    }
+  ],
+  "NS 101R": [
+    {
+      "crn": "30167",
+      "section": "0",
+      "title": "Science of Nature I - Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 880,
+          "end": 990,
+          "where": "Fac.of Arts and Social Sci. 2031",
+          "instructor": "Çiğdem Altıntaş, Aslıhan Muazzez Ünsal"
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 880,
+          "end": 990,
+          "where": "Fac.of Arts and Social Sci. 2031",
+          "instructor": "Çiğdem Altıntaş, Aslıhan Muazzez Ünsal"
+        }
+      ],
+      "instructors": [
+        "Çiğdem Altıntaş, Aslıhan Muazzez Ünsal"
+      ],
+      "locations": [
+        "Fac.of Arts and Social Sci. 2031"
+      ]
+    }
+  ],
+  "NS 102": [
+    {
+      "crn": "30168",
+      "section": "0",
+      "title": "Science of Nature II",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 640,
+          "end": 750,
+          "where": "Fac.of Arts and Social Sci. 2128",
+          "instructor": "Ezgi Gülçay Özcan, Emine Süphan Bakkal"
+        },
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 580,
+          "end": 690,
+          "where": "Fac.of Arts and Social Sci. 2128",
+          "instructor": "Ezgi Gülçay Özcan, Emine Süphan Bakkal"
+        }
+      ],
+      "instructors": [
+        "Ezgi Gülçay Özcan, Emine Süphan Bakkal"
+      ],
+      "locations": [
+        "Fac.of Arts and Social Sci. 2128"
+      ]
+    }
+  ],
+  "NS 102R": [
+    {
+      "crn": "30169",
+      "section": "0",
+      "title": "Science of Nature II - Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 880,
+          "end": 990,
+          "where": "Fac.of Arts and Social Sci. 2031",
+          "instructor": "Ezgi Gülçay Özcan, Emine Süphan Bakkal"
+        },
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 880,
+          "end": 990,
+          "where": "Fac.of Arts and Social Sci. 2031",
+          "instructor": "Ezgi Gülçay Özcan, Emine Süphan Bakkal"
+        }
+      ],
+      "instructors": [
+        "Ezgi Gülçay Özcan, Emine Süphan Bakkal"
+      ],
+      "locations": [
+        "Fac.of Arts and Social Sci. 2031"
+      ]
+    }
+  ],
+  "OPIM 301": [
+    {
+      "crn": "30170",
+      "section": "0",
+      "title": "Operations Management",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 700,
+          "end": 870,
+          "where": "Sabancı Business School L018",
+          "instructor": "Kemal Berkay Tüzün"
+        },
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 640,
+          "end": 810,
+          "where": "Sabancı Business School L018",
+          "instructor": "Kemal Berkay Tüzün"
+        }
+      ],
+      "instructors": [
+        "Kemal Berkay Tüzün"
+      ],
+      "locations": [
+        "Sabancı Business School L018"
+      ]
+    }
+  ],
+  "OPIM 301R": [
+    {
+      "crn": "30171",
+      "section": "0",
+      "title": "Operations Management - Recitation",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 880,
+          "end": 990,
+          "where": "Sabancı Business School L018",
+          "instructor": "Kemal Berkay Tüzün"
+        }
+      ],
+      "instructors": [
+        "Kemal Berkay Tüzün"
+      ],
+      "locations": [
+        "Sabancı Business School L018"
+      ]
+    }
+  ],
+  "PSIR 300": [
+    {
+      "crn": "30003",
+      "section": "0",
+      "title": "Project and Internship",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    }
+  ],
+  "PSY 201": [
+    {
+      "crn": "30173",
+      "section": "0",
+      "title": "Mind and Behavior",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 580,
+          "end": 750,
+          "where": "Fac.of Arts and Social Sci. 2031",
+          "instructor": "Müjde Peker Booth"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 580,
+          "end": 750,
+          "where": "Fac.of Arts and Social Sci. 2031",
+          "instructor": "Müjde Peker Booth"
+        }
+      ],
+      "instructors": [
+        "Müjde Peker Booth"
+      ],
+      "locations": [
+        "Fac.of Arts and Social Sci. 2031"
+      ]
+    }
+  ],
+  "PSY 300": [
+    {
+      "crn": "30004",
+      "section": "0",
+      "title": "Project and Internship",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    }
+  ],
+  "SEC 511": [
+    {
+      "crn": "30227",
+      "section": "0",
+      "title": "Cyber Security Planning and Management",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 1140,
+          "end": 1320,
+          "where": "Altunizade Campus 111",
+          "instructor": "Orçun Çetin"
+        },
+        {
+          "type": "Class",
+          "days_raw": "S",
+          "days": [
+            5
+          ],
+          "start": 780,
+          "end": 960,
+          "where": "Altunizade Campus 111",
+          "instructor": "Orçun Çetin"
+        }
+      ],
+      "instructors": [
+        "Orçun Çetin"
+      ],
+      "locations": [
+        "Altunizade Campus 111"
+      ]
+    }
+  ],
+  "SEC 512": [
+    {
+      "crn": "30228",
+      "section": "0",
+      "title": "Advanced Malware and Code Analysis",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 1140,
+          "end": 1320,
+          "where": "Altunizade Campus 111",
+          "instructor": "Orçun Çetin"
+        },
+        {
+          "type": "Class",
+          "days_raw": "S",
+          "days": [
+            5
+          ],
+          "start": 540,
+          "end": 720,
+          "where": "Altunizade Campus 111",
+          "instructor": "Orçun Çetin"
+        }
+      ],
+      "instructors": [
+        "Orçun Çetin"
+      ],
+      "locations": [
+        "Altunizade Campus 111"
+      ]
+    }
+  ],
+  "SEC 592": [
+    {
+      "crn": "30216",
+      "section": "0",
+      "title": "Project Course",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    }
+  ],
+  "SPS 101": [
+    {
+      "crn": "30218",
+      "section": "0",
+      "title": "Humanity and Society I",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 760,
+          "end": 870,
+          "where": "Fac. of Engin. and Nat. Sci. G015",
+          "instructor": "Marloes Cornelissen Aydemir, Gizem Damla Çakmak , Burhan İzgin , Berna Kamay"
+        },
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 880,
+          "end": 990,
+          "where": "Fac. of Engin. and Nat. Sci. G015",
+          "instructor": "Marloes Cornelissen Aydemir, Gizem Damla Çakmak , Burhan İzgin , Berna Kamay"
+        }
+      ],
+      "instructors": [
+        "Marloes Cornelissen Aydemir, Gizem Damla Çakmak , Burhan İzgin , Berna Kamay"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. G015"
+      ]
+    }
+  ],
+  "SPS 101D": [
+    {
+      "crn": "30219",
+      "section": "0",
+      "title": "Humanity and Society I - Discussion",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 640,
+          "end": 750,
+          "where": "Fac. of Engin. and Nat. Sci. G015",
+          "instructor": "Marloes Cornelissen Aydemir, Gizem Damla Çakmak , Elif Çam , Berna Kamay"
+        },
+        {
+          "type": "Class",
+          "days_raw": "F",
+          "days": [
+            4
+          ],
+          "start": 580,
+          "end": 690,
+          "where": "Fac. of Engin. and Nat. Sci. G015",
+          "instructor": "Marloes Cornelissen Aydemir, Gizem Damla Çakmak , Elif Çam , Berna Kamay"
+        }
+      ],
+      "instructors": [
+        "Marloes Cornelissen Aydemir, Gizem Damla Çakmak , Elif Çam , Berna Kamay"
+      ],
+      "locations": [
+        "Fac. of Engin. and Nat. Sci. G015"
+      ]
+    }
+  ],
+  "SPS 102": [
+    {
+      "crn": "30176",
+      "section": "0",
+      "title": "Humanity and Society II",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 580,
+          "end": 690,
+          "where": "Fac.of Arts and Social Sci. 1096",
+          "instructor": "Melike Ayşe Kocacık Şenol, Marloes Cornelissen Aydemir , Gizem Damla Çakmak , Burhan İzgin , Berna Kamay"
+        },
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 520,
+          "end": 630,
+          "where": "Fac.of Arts and Social Sci. 1096",
+          "instructor": "Melike Ayşe Kocacık Şenol, Marloes Cornelissen Aydemir , Gizem Damla Çakmak , Burhan İzgin , Berna Kamay"
+        }
+      ],
+      "instructors": [
+        "Melike Ayşe Kocacık Şenol, Marloes Cornelissen Aydemir , Gizem Damla Çakmak , Burhan İzgin , Berna Kamay"
+      ],
+      "locations": [
+        "Fac.of Arts and Social Sci. 1096"
+      ]
+    }
+  ],
+  "SPS 102D": [
+    {
+      "crn": "30177",
+      "section": "0",
+      "title": "Humanity and Society II - Discussion",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 880,
+          "end": 990,
+          "where": "Fac.of Arts and Social Sci. 1102",
+          "instructor": "Melike Ayşe Kocacık Şenol, Marloes Cornelissen Aydemir , Gizem Damla Çakmak , Burhan İzgin , Esra Kaliber , Berna Kamay"
+        },
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 760,
+          "end": 870,
+          "where": "Fac.of Arts and Social Sci. 1102",
+          "instructor": "Melike Ayşe Kocacık Şenol, Marloes Cornelissen Aydemir , Gizem Damla Çakmak , Burhan İzgin , Esra Kaliber , Berna Kamay"
+        }
+      ],
+      "instructors": [
+        "Melike Ayşe Kocacık Şenol, Marloes Cornelissen Aydemir , Gizem Damla Çakmak , Burhan İzgin , Esra Kaliber , Berna Kamay"
+      ],
+      "locations": [
+        "Fac.of Arts and Social Sci. 1102"
+      ]
+    }
+  ],
+  "SPS 303": [
+    {
+      "crn": "30178",
+      "section": "0",
+      "title": "Law and Ethics",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 700,
+          "end": 810,
+          "where": "Fac.of Arts and Social Sci. 1001",
+          "instructor": "Faruk Aksoy"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 700,
+          "end": 810,
+          "where": "Fac.of Arts and Social Sci. 1001",
+          "instructor": "Faruk Aksoy"
+        }
+      ],
+      "instructors": [
+        "Faruk Aksoy"
+      ],
+      "locations": [
+        "Fac.of Arts and Social Sci. 1001"
+      ]
+    }
+  ],
+  "SPS 303D": [
+    {
+      "crn": "30179",
+      "section": "0",
+      "title": "Law and Ethics - Discussion",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 880,
+          "end": 930,
+          "where": "Fac.of Arts and Social Sci. 1001",
+          "instructor": "Faruk Aksoy"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 880,
+          "end": 930,
+          "where": "Fac.of Arts and Social Sci. 1001",
+          "instructor": "Faruk Aksoy"
+        }
+      ],
+      "instructors": [
+        "Faruk Aksoy"
+      ],
+      "locations": [
+        "Fac.of Arts and Social Sci. 1001"
+      ]
+    }
+  ],
+  "TLL 101": [
+    {
+      "crn": "30180",
+      "section": "0",
+      "title": "Turkish Language and Literature I",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "T",
+          "days": [
+            1
+          ],
+          "start": 760,
+          "end": 870,
+          "where": "School of Languages Building 1050",
+          "instructor": "Aykun Özgen"
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 700,
+          "end": 810,
+          "where": "School of Languages Building 1050",
+          "instructor": "Aykun Özgen"
+        }
+      ],
+      "instructors": [
+        "Aykun Özgen"
+      ],
+      "locations": [
+        "School of Languages Building 1050"
+      ]
+    }
+  ],
+  "TLL 102": [
+    {
+      "crn": "30181",
+      "section": "0",
+      "title": "Turkish Language and Literature II",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 700,
+          "end": 810,
+          "where": "School of Languages Building 1050",
+          "instructor": "Aykun Özgen"
+        },
+        {
+          "type": "Class",
+          "days_raw": "R",
+          "days": [
+            3
+          ],
+          "start": 880,
+          "end": 990,
+          "where": "School of Languages Building 1050",
+          "instructor": "Aykun Özgen"
+        }
+      ],
+      "instructors": [
+        "Aykun Özgen"
+      ],
+      "locations": [
+        "School of Languages Building 1050"
+      ]
+    }
+  ],
+  "VA 300": [
+    {
+      "crn": "30005",
+      "section": "0",
+      "title": "Project and Internship",
+      "meetings": [],
+      "instructors": [],
+      "locations": []
+    }
+  ],
+  "VA 328": [
+    {
+      "crn": "30212",
+      "section": "0",
+      "title": "Digital and Photographic Imaging",
+      "meetings": [
+        {
+          "type": "Class",
+          "days_raw": "M",
+          "days": [
+            0
+          ],
+          "start": 760,
+          "end": 930,
+          "where": "Fac.of Arts and Social Sci. 1015",
+          "instructor": "Murat Durusoy"
+        },
+        {
+          "type": "Class",
+          "days_raw": "W",
+          "days": [
+            2
+          ],
+          "start": 760,
+          "end": 930,
+          "where": "Fac.of Arts and Social Sci. 1015",
+          "instructor": "Murat Durusoy"
+        }
+      ],
+      "instructors": [
+        "Murat Durusoy"
+      ],
+      "locations": [
+        "Fac.of Arts and Social Sci. 1015"
+      ]
+    }
+  ]
+}
