@@ -1,0 +1,17 @@
+Program: BAMAN-DM
+Section: Free Elective
+Source:  SU_full_slice
+
+Nodes (total):              549
+  in this section:          508
+  upstream prereqs only:    41
+Edges (total):              561
+  required:                 374
+  alternative:              187
+
+Isolates (no edges):              154
+Source nodes (no prereqs in):     220
+Sink nodes (no successors):       404
+
+Is DAG?                     True
+Courses with unparsed text: 0

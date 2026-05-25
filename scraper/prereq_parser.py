@@ -173,6 +173,174 @@ def parse_prereq(text: str | None) -> dict | None:
     return tree
 
 
+# ---------------------------------------------------------------------------
+# Lenient layer
+#
+# parse_prereq() above is strict — it raises on anything outside the observed
+# CS grammar. As we expand the scrape to all SU programs, prereq_text values
+# surface that the strict parser rejects (different level keyword, bare codes
+# without a min-grade suffix, free-text notes like "Consent of Instructor").
+#
+# parse_prereq_lenient() never raises. It first tries the strict path; on
+# failure it applies broader patterns and, as a last resort, returns a leaf
+# tagged {"raw": text, "unparsed": True}. The downstream grapher can then
+# surface unparsed leaves as UI warnings (per Risk 2 in the proposal).
+#
+# Crucially, this function leaves parse_prereq() and its outputs untouched,
+# so the CS-only graph remains a clean regression baseline.
+# ---------------------------------------------------------------------------
+
+
+_LENIENT_ATOM_RE = re.compile(
+    r"(?P<subj>[A-Z]{2,5})\s+(?P<num>\d{2,5}[A-Z]?)"
+    r"(?:\s*-\s*(?:Undergraduate|Graduate|UG|GR)"
+    r"\s*-\s*Min\s*Grade\s*(?P<grade>[A-Z][+-]?))?"
+    r"(?P<concurrent>\s*\(\s*can\s+be\s+taken\s+concurrently\s*\))?",
+    re.IGNORECASE,
+)
+
+_NOTE_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("consent_of_instructor", re.compile(r"\bconsent\s+of\s+(?:the\s+)?instructor\b", re.I)),
+    ("permission_of_instructor", re.compile(r"\bpermission\s+of\s+(?:the\s+)?instructor\b", re.I)),
+    ("class_standing", re.compile(
+        r"\b(?:min(?:imum)?\s+)?class\s+standing\s*:?\s*"
+        r"(freshman|sophomore|junior|senior)", re.I
+    )),
+    ("min_cgpa", re.compile(r"\b(?:min(?:imum)?\s+)?(?:cumulative\s+)?gpa\s*(?:of)?\s*(\d\.\d{1,2})\b", re.I)),
+)
+
+
+def _split_top_level(text: str, sep: str) -> list[str] | None:
+    """Split text on whitespace-wrapped 'and'/'or' but only at paren-depth 0.
+
+    Returns None if the separator doesn't appear at the top level.
+    """
+    depth = 0
+    parts: list[str] = []
+    last = 0
+    pat = re.compile(rf"\b{sep}\b", re.IGNORECASE)
+    for m in pat.finditer(text):
+        # Recompute depth up to m.start()
+        d = 0
+        for c in text[:m.start()]:
+            if c == "(":
+                d += 1
+            elif c == ")":
+                d -= 1
+        if d == 0:
+            parts.append(text[last:m.start()])
+            last = m.end()
+    if not parts:
+        return None
+    parts.append(text[last:])
+    cleaned = [p.strip() for p in parts if p.strip()]
+    return cleaned if len(cleaned) >= 2 else None
+
+
+def _parse_lenient(text: str) -> dict | None:
+    """Recursive lenient parser. Returns a leaf, an op-node, or None."""
+    text = text.strip().strip("-,").strip()
+    if not text:
+        return None
+    # Strip a single matching outer pair of parens, repeatedly.
+    while text.startswith("(") and text.endswith(")"):
+        # Make sure they actually match each other (not "(a) and (b)").
+        depth = 0
+        matched = True
+        for i, c in enumerate(text):
+            if c == "(":
+                depth += 1
+            elif c == ")":
+                depth -= 1
+                if depth == 0 and i != len(text) - 1:
+                    matched = False
+                    break
+        if not matched:
+            break
+        text = text[1:-1].strip()
+
+    # Try OR first (lower precedence), then AND.
+    or_parts = _split_top_level(text, "or")
+    if or_parts:
+        operands = [op for p in or_parts if (op := _parse_lenient(p)) is not None]
+        if not operands:
+            return None
+        if len(operands) == 1:
+            return operands[0]
+        return {"op": "or", "operands": operands}
+
+    and_parts = _split_top_level(text, "and")
+    if and_parts:
+        operands = [op for p in and_parts if (op := _parse_lenient(p)) is not None]
+        if not operands:
+            return None
+        if len(operands) == 1:
+            return operands[0]
+        return {"op": "and", "operands": operands}
+
+    # Single atom path.
+    # 1) Free-text note patterns
+    for label, pat in _NOTE_PATTERNS:
+        m = pat.search(text)
+        if m:
+            note: dict = {"note": label}
+            if m.groups():
+                note["value"] = m.group(1)
+            return note
+
+    # 2) Course-code atom (with or without "- Undergraduate - Min Grade X")
+    m = _LENIENT_ATOM_RE.search(text)
+    if m:
+        leaf = {
+            "course": f"{m.group('subj').upper()} {m.group('num').upper()}",
+            "min_grade": (m.group("grade") or "D").upper(),
+            "concurrent": bool(m.group("concurrent")),
+        }
+        # If the regex didn't cover the whole text, salvage the rest as a
+        # trailing note so we don't lose information silently.
+        leftover = (text[:m.start()] + text[m.end():]).strip(" -,()")
+        if leftover:
+            return {
+                "op": "and",
+                "operands": [leaf, {"raw": leftover, "unparsed": True}],
+            }
+        return leaf
+
+    # 3) Give up — keep the raw text so the UI can warn the user.
+    return {"raw": text, "unparsed": True}
+
+
+def parse_prereq_lenient(text: str | None) -> dict | None:
+    """Forgiving version of parse_prereq.
+
+    Returns the strict parse if possible; otherwise a best-effort tree that
+    may contain {"raw": ..., "unparsed": True} leaves for un-handled spans.
+    Never raises.
+    """
+    if text is None:
+        return None
+    stripped = text.strip()
+    if stripped in EMPTY_MARKERS or stripped.startswith("__"):
+        return None
+    try:
+        return parse_prereq(stripped)
+    except Exception:
+        pass
+    return _parse_lenient(stripped)
+
+
+def has_unparsed(expr: dict | None) -> bool:
+    """Walk a (possibly lenient) tree and report whether any leaf is unparsed."""
+    if expr is None:
+        return False
+    if expr.get("unparsed"):
+        return True
+    for op in expr.get("operands", []):
+        if has_unparsed(op):
+            return True
+    return False
+
+
 def flatten_courses(expr: dict | None) -> list[str]:
     """Return every course code appearing in an expression tree."""
     if expr is None:
@@ -193,11 +361,24 @@ def flatten_courses(expr: dict | None) -> list[str]:
 
 
 def expr_satisfied(expr: dict | None, completed: set[str]) -> bool:
-    """Evaluate the expression against a set of completed course codes."""
+    """Evaluate the expression against a set of completed course codes.
+
+    Non-course leaves produced by the lenient parser:
+      - {"note": ...}            — soft constraint (consent, GPA, standing).
+                                   Treated as satisfied; the UI should still
+                                   surface it as an informational warning.
+      - {"raw": ..., "unparsed":} — unrecognised input. Treated as NOT
+                                   satisfied so the eligibility check fails
+                                   safe (forces manual review).
+    """
     if expr is None:
         return True
     if "course" in expr:
         return expr["course"] in completed
+    if expr.get("unparsed"):
+        return False
+    if "note" in expr:
+        return True
     op = expr["op"]
     operands = expr["operands"]
     if op == "and":

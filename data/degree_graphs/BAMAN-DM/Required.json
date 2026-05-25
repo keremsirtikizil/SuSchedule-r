@@ -1,0 +1,1857 @@
+{
+  "program": "BAMAN-DM",
+  "section": "Required",
+  "source": "SU_full_slice",
+  "nodes": [
+    {
+      "code": "ECON 202",
+      "title": "Macroeconomics",
+      "subj": "ECON",
+      "num": "202",
+      "su_credit": 3.0,
+      "ects_text": "6 ECTS (ENGINEERING: / BASIC:)",
+      "description": "Basic concepts of accounting and determination of national income. Classical theory of output and employment, determination of national savings, investment and consumption. Theories of economic growth. The balance of payments, exchange rate systems, trade and financial flows; monetary and fiscal policy; labour market adjustment at the macroeconomic level; inflation and anti-inflationary policies.",
+      "coreq_text": "ECON 202R",
+      "prereq_text": "__",
+      "offered_terms": [
+        "Spring 2026-2027",
+        "Fall 2026-2027",
+        "Spring 2025-2026",
+        "Fall 2025-2026",
+        "Summer 2024-2025",
+        "Spring 2024-2025",
+        "Fall 2024-2025",
+        "Spring 2023-2024",
+        "Fall 2023-2024",
+        "Summer 2022-2023",
+        "Spring 2022-2023",
+        "Fall 2022-2023",
+        "Summer 2021-2022",
+        "Spring 2021-2022",
+        "Fall 2021-2022",
+        "Summer 2020-2021",
+        "Spring 2020-2021",
+        "Fall 2020-2021",
+        "Summer 2019-2020",
+        "Spring 2019-2020",
+        "Fall 2019-2020",
+        "Summer 2018-2019",
+        "Spring 2018-2019",
+        "Fall 2018-2019",
+        "Summer 2017-2018",
+        "Spring 2017-2018",
+        "Fall 2017-2018",
+        "Summer 2016-2017",
+        "Spring 2016-2017",
+        "Fall 2016-2017",
+        "Summer 2015-2016",
+        "Spring 2015-2016",
+        "Fall 2015-2016",
+        "Summer 2014-2015",
+        "Spring 2014-2015",
+        "Fall 2014-2015",
+        "Summer 2013-2014",
+        "Spring 2013-2014",
+        "Fall 2013-2014",
+        "Summer 2012-2013",
+        "Spring 2012-2013",
+        "Fall 2012-2013",
+        "Summer 2011-2012",
+        "Spring 2011-2012",
+        "Fall 2011-2012",
+        "Summer 2010-2011",
+        "Spring 2010-2011",
+        "Fall 2010-2011",
+        "Summer 2009-2010",
+        "Spring 2009-2010",
+        "Fall 2009-2010",
+        "Summer 2008-2009",
+        "Spring 2008-2009",
+        "Fall 2008-2009",
+        "Summer 2007-2008",
+        "Spring 2007-2008",
+        "Fall 2007-2008",
+        "Summer 2006-2007",
+        "Spring 2006-2007",
+        "Fall 2006-2007",
+        "Summer 2005-2006",
+        "Spring 2005-2006",
+        "Fall 2005-2006",
+        "Summer 2004-2005",
+        "Spring 2004-2005",
+        "Fall 2004-2005",
+        "Summer 2003-2004",
+        "Spring 2003-2004",
+        "Fall 2003-2004",
+        "Spring 2002-2003",
+        "Fall 2002-2003",
+        "Summer 2001-2002",
+        "Spring 2001-2002",
+        "Fall 2001-2002",
+        "Spring 2000-2001"
+      ],
+      "terms_in_section": [
+        "202501",
+        "202502",
+        "202601"
+      ],
+      "in_slice": true,
+      "in_catalog": true,
+      "program_sections": [
+        {
+          "program": "BSCS-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSCS-DM",
+          "term": "202501",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSCS-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSCS-DM",
+          "term": "202502",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSCS-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSCS-DM",
+          "term": "202601",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSDSA-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSDSA-DM",
+          "term": "202501",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSDSA-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSDSA-DM",
+          "term": "202502",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSDSA-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSDSA-DM",
+          "term": "202601",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAECON-DM",
+          "term": "202501",
+          "section": "Required"
+        },
+        {
+          "program": "BAECON-DM",
+          "term": "202501",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAECON-DM",
+          "term": "202502",
+          "section": "Required"
+        },
+        {
+          "program": "BAECON-DM",
+          "term": "202502",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAECON-DM",
+          "term": "202601",
+          "section": "Required"
+        },
+        {
+          "program": "BAECON-DM",
+          "term": "202601",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSEE-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSEE-DM",
+          "term": "202501",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSEE-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSEE-DM",
+          "term": "202502",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSEE-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSEE-DM",
+          "term": "202601",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSIE-DM",
+          "term": "202501",
+          "section": "Area Elective"
+        },
+        {
+          "program": "BSIE-DM",
+          "term": "202501",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSIE-DM",
+          "term": "202502",
+          "section": "Area Elective"
+        },
+        {
+          "program": "BSIE-DM",
+          "term": "202502",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSIE-DM",
+          "term": "202601",
+          "section": "Area Elective"
+        },
+        {
+          "program": "BSIE-DM",
+          "term": "202601",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAIS-DM",
+          "term": "202501",
+          "section": "Required"
+        },
+        {
+          "program": "BAIS-DM",
+          "term": "202501",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAIS-DM",
+          "term": "202502",
+          "section": "Required"
+        },
+        {
+          "program": "BAIS-DM",
+          "term": "202502",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAIS-DM",
+          "term": "202601",
+          "section": "Required"
+        },
+        {
+          "program": "BAIS-DM",
+          "term": "202601",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAMAN-DM",
+          "term": "202501",
+          "section": "Required"
+        },
+        {
+          "program": "BAMAN-DM",
+          "term": "202501",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAMAN-DM",
+          "term": "202502",
+          "section": "Required"
+        },
+        {
+          "program": "BAMAN-DM",
+          "term": "202502",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAMAN-DM",
+          "term": "202601",
+          "section": "Required"
+        },
+        {
+          "program": "BAMAN-DM",
+          "term": "202601",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSMAT-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSMAT-DM",
+          "term": "202501",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSMAT-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSMAT-DM",
+          "term": "202502",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSMAT-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSMAT-DM",
+          "term": "202601",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSME-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSME-DM",
+          "term": "202501",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSME-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSME-DM",
+          "term": "202502",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSME-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSME-DM",
+          "term": "202601",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSBIO-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSBIO-DM",
+          "term": "202501",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSBIO-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSBIO-DM",
+          "term": "202502",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSBIO-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSBIO-DM",
+          "term": "202601",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAPOLS-DM",
+          "term": "202501",
+          "section": "Required"
+        },
+        {
+          "program": "BAPOLS-DM",
+          "term": "202501",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAPOLS-DM",
+          "term": "202502",
+          "section": "Required"
+        },
+        {
+          "program": "BAPOLS-DM",
+          "term": "202502",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAPOLS-DM",
+          "term": "202601",
+          "section": "Required"
+        },
+        {
+          "program": "BAPOLS-DM",
+          "term": "202601",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAPSIR-DM",
+          "term": "202501",
+          "section": "Required"
+        },
+        {
+          "program": "BAPSIR-DM",
+          "term": "202501",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAPSIR-DM",
+          "term": "202502",
+          "section": "Required"
+        },
+        {
+          "program": "BAPSIR-DM",
+          "term": "202502",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAPSIR-DM",
+          "term": "202601",
+          "section": "Required"
+        },
+        {
+          "program": "BAPSIR-DM",
+          "term": "202601",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAPSY-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPSY-DM",
+          "term": "202501",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAPSY-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPSY-DM",
+          "term": "202502",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAPSY-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPSY-DM",
+          "term": "202601",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAVACD-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAVACD-DM",
+          "term": "202501",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAVACD-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAVACD-DM",
+          "term": "202502",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAVACD-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAVACD-DM",
+          "term": "202601",
+          "section": "Faculty Courses"
+        }
+      ],
+      "prereq_expr": null
+    },
+    {
+      "code": "ECON 204",
+      "title": "Microeconomics",
+      "subj": "ECON",
+      "num": "204",
+      "su_credit": 3.0,
+      "ects_text": "6 ECTS (ENGINEERING:0 / BASIC:0)",
+      "description": "Consumer theory and demand; production, costs and supply; analysis of market structure; welfare, market failures, imperfect information and the role of the government in a market economy.",
+      "coreq_text": "ECON 204R",
+      "prereq_text": "__",
+      "offered_terms": [
+        "Spring 2026-2027",
+        "Fall 2026-2027",
+        "Spring 2025-2026",
+        "Fall 2025-2026",
+        "Spring 2024-2025",
+        "Fall 2024-2025",
+        "Spring 2023-2024",
+        "Fall 2023-2024",
+        "Summer 2022-2023",
+        "Spring 2022-2023",
+        "Fall 2022-2023",
+        "Summer 2021-2022",
+        "Spring 2021-2022",
+        "Fall 2021-2022",
+        "Summer 2020-2021",
+        "Spring 2020-2021",
+        "Fall 2020-2021",
+        "Summer 2019-2020",
+        "Spring 2019-2020",
+        "Fall 2019-2020",
+        "Summer 2018-2019",
+        "Spring 2018-2019",
+        "Fall 2018-2019",
+        "Summer 2017-2018",
+        "Spring 2017-2018",
+        "Fall 2017-2018",
+        "Summer 2016-2017",
+        "Spring 2016-2017",
+        "Fall 2016-2017",
+        "Summer 2015-2016",
+        "Spring 2015-2016",
+        "Fall 2015-2016",
+        "Summer 2014-2015",
+        "Spring 2014-2015",
+        "Fall 2014-2015",
+        "Summer 2013-2014",
+        "Spring 2013-2014",
+        "Fall 2013-2014",
+        "Summer 2012-2013",
+        "Spring 2012-2013",
+        "Fall 2012-2013",
+        "Summer 2011-2012",
+        "Spring 2011-2012",
+        "Fall 2011-2012",
+        "Summer 2010-2011",
+        "Spring 2010-2011",
+        "Fall 2010-2011",
+        "Summer 2009-2010",
+        "Spring 2009-2010",
+        "Fall 2009-2010",
+        "Summer 2008-2009",
+        "Spring 2008-2009",
+        "Fall 2008-2009",
+        "Summer 2007-2008",
+        "Spring 2007-2008",
+        "Fall 2007-2008",
+        "Summer 2006-2007",
+        "Spring 2006-2007",
+        "Fall 2006-2007",
+        "Summer 2005-2006",
+        "Spring 2005-2006",
+        "Fall 2005-2006",
+        "Summer 2004-2005",
+        "Spring 2004-2005",
+        "Fall 2004-2005",
+        "Summer 2003-2004",
+        "Spring 2003-2004",
+        "Fall 2003-2004",
+        "Summer 2002-2003",
+        "Spring 2002-2003",
+        "Fall 2002-2003",
+        "Spring 2001-2002",
+        "Spring 2000-2001"
+      ],
+      "terms_in_section": [
+        "202501",
+        "202502",
+        "202601"
+      ],
+      "in_slice": true,
+      "in_catalog": true,
+      "program_sections": [
+        {
+          "program": "BSCS-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSCS-DM",
+          "term": "202501",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSCS-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSCS-DM",
+          "term": "202502",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSCS-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSCS-DM",
+          "term": "202601",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSDSA-DM",
+          "term": "202501",
+          "section": "Area Elective"
+        },
+        {
+          "program": "BSDSA-DM",
+          "term": "202501",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSDSA-DM",
+          "term": "202502",
+          "section": "Area Elective"
+        },
+        {
+          "program": "BSDSA-DM",
+          "term": "202502",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSDSA-DM",
+          "term": "202601",
+          "section": "Area Elective"
+        },
+        {
+          "program": "BSDSA-DM",
+          "term": "202601",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAECON-DM",
+          "term": "202501",
+          "section": "Required"
+        },
+        {
+          "program": "BAECON-DM",
+          "term": "202501",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAECON-DM",
+          "term": "202502",
+          "section": "Required"
+        },
+        {
+          "program": "BAECON-DM",
+          "term": "202502",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAECON-DM",
+          "term": "202601",
+          "section": "Required"
+        },
+        {
+          "program": "BAECON-DM",
+          "term": "202601",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSEE-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSEE-DM",
+          "term": "202501",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSEE-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSEE-DM",
+          "term": "202502",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSEE-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSEE-DM",
+          "term": "202601",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSIE-DM",
+          "term": "202501",
+          "section": "Area Elective"
+        },
+        {
+          "program": "BSIE-DM",
+          "term": "202501",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSIE-DM",
+          "term": "202502",
+          "section": "Area Elective"
+        },
+        {
+          "program": "BSIE-DM",
+          "term": "202502",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSIE-DM",
+          "term": "202601",
+          "section": "Area Elective"
+        },
+        {
+          "program": "BSIE-DM",
+          "term": "202601",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAIS-DM",
+          "term": "202501",
+          "section": "Required"
+        },
+        {
+          "program": "BAIS-DM",
+          "term": "202501",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAIS-DM",
+          "term": "202502",
+          "section": "Required"
+        },
+        {
+          "program": "BAIS-DM",
+          "term": "202502",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAIS-DM",
+          "term": "202601",
+          "section": "Required"
+        },
+        {
+          "program": "BAIS-DM",
+          "term": "202601",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAMAN-DM",
+          "term": "202501",
+          "section": "Required"
+        },
+        {
+          "program": "BAMAN-DM",
+          "term": "202501",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAMAN-DM",
+          "term": "202502",
+          "section": "Required"
+        },
+        {
+          "program": "BAMAN-DM",
+          "term": "202502",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAMAN-DM",
+          "term": "202601",
+          "section": "Required"
+        },
+        {
+          "program": "BAMAN-DM",
+          "term": "202601",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSMAT-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSMAT-DM",
+          "term": "202501",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSMAT-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSMAT-DM",
+          "term": "202502",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSMAT-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSMAT-DM",
+          "term": "202601",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSME-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSME-DM",
+          "term": "202501",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSME-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSME-DM",
+          "term": "202502",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSME-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSME-DM",
+          "term": "202601",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSBIO-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSBIO-DM",
+          "term": "202501",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSBIO-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSBIO-DM",
+          "term": "202502",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BSBIO-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSBIO-DM",
+          "term": "202601",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAPOLS-DM",
+          "term": "202501",
+          "section": "Core Elective"
+        },
+        {
+          "program": "BAPOLS-DM",
+          "term": "202501",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAPOLS-DM",
+          "term": "202502",
+          "section": "Core Elective"
+        },
+        {
+          "program": "BAPOLS-DM",
+          "term": "202502",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAPOLS-DM",
+          "term": "202601",
+          "section": "Core Elective"
+        },
+        {
+          "program": "BAPOLS-DM",
+          "term": "202601",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAPSIR-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPSIR-DM",
+          "term": "202501",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAPSIR-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPSIR-DM",
+          "term": "202502",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAPSIR-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPSIR-DM",
+          "term": "202601",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAPSY-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPSY-DM",
+          "term": "202501",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAPSY-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPSY-DM",
+          "term": "202502",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAPSY-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPSY-DM",
+          "term": "202601",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAVACD-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAVACD-DM",
+          "term": "202501",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAVACD-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAVACD-DM",
+          "term": "202502",
+          "section": "Faculty Courses"
+        },
+        {
+          "program": "BAVACD-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAVACD-DM",
+          "term": "202601",
+          "section": "Faculty Courses"
+        }
+      ],
+      "prereq_expr": null
+    },
+    {
+      "code": "ENG 300",
+      "title": "Professional Communication Skills in English",
+      "subj": "ENG",
+      "num": "300",
+      "su_credit": 3.0,
+      "ects_text": "5 ECTS (ENGINEERING: / BASIC:)",
+      "description": "This course aims to equip students with professional communication skills in English. The purpose of the course is to develop and enhance the skills students will need to operate effectively in a business context. By building students? confidence in approaching the transition to work and increasing their awareness of the business environment, the course also aims to place them at an advantage in the world of work. This will be done by developing business related language skills and knowledge through context-based input and practical, communicative task-based sessions.",
+      "coreq_text": "__",
+      "prereq_text": "__",
+      "offered_terms": [
+        "Spring 2026-2027",
+        "Fall 2026-2027",
+        "Spring 2025-2026",
+        "Fall 2025-2026",
+        "Spring 2024-2025",
+        "Fall 2024-2025",
+        "Spring 2023-2024",
+        "Fall 2023-2024",
+        "Spring 2022-2023",
+        "Fall 2022-2023",
+        "Spring 2021-2022",
+        "Fall 2021-2022",
+        "Spring 2020-2021",
+        "Fall 2020-2021",
+        "Spring 2019-2020",
+        "Fall 2019-2020",
+        "Spring 2018-2019",
+        "Fall 2018-2019",
+        "Spring 2017-2018",
+        "Fall 2017-2018",
+        "Spring 2016-2017",
+        "Fall 2016-2017",
+        "Spring 2015-2016",
+        "Fall 2015-2016",
+        "Spring 2014-2015",
+        "Fall 2014-2015",
+        "Spring 2013-2014",
+        "Fall 2013-2014",
+        "Spring 2012-2013",
+        "Fall 2012-2013",
+        "Spring 2011-2012",
+        "Fall 2011-2012",
+        "Spring 2010-2011",
+        "Fall 2010-2011",
+        "Spring 2009-2010",
+        "Fall 2009-2010"
+      ],
+      "terms_in_section": [
+        "202501",
+        "202502",
+        "202601"
+      ],
+      "in_slice": true,
+      "in_catalog": true,
+      "program_sections": [
+        {
+          "program": "BAECON-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAECON-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAECON-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAMAN-DM",
+          "term": "202501",
+          "section": "Required"
+        },
+        {
+          "program": "BAMAN-DM",
+          "term": "202502",
+          "section": "Required"
+        },
+        {
+          "program": "BAMAN-DM",
+          "term": "202601",
+          "section": "Required"
+        },
+        {
+          "program": "BAPOLS-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPOLS-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPOLS-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPSIR-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPSIR-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPSIR-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPSY-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPSY-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPSY-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAVACD-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAVACD-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAVACD-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        }
+      ],
+      "prereq_expr": null
+    },
+    {
+      "code": "MGMT 201",
+      "title": "Introduction to Management",
+      "subj": "MGMT",
+      "num": "201",
+      "su_credit": 3.0,
+      "ects_text": "6 ECTS (ENGINEERING:0 / BASIC:0)",
+      "description": "The objectives of this course are to introduce the students to fundamentals that will serve as a basis / background for courses in later stages of the program, introduce them to the functional areas of management, improve their analytical, descriptive statistics, introductory probability models for decision making, computer, presentation and group work skills. To this end, the course requires students to prepare a business plan as a group project, uses case studies to introduce some of the fundamental concepts in management, brings in guest speakers to inform students about different areas of management and career choices.",
+      "coreq_text": "MGMT 201R",
+      "prereq_text": "__",
+      "offered_terms": [
+        "Spring 2026-2027",
+        "Fall 2026-2027",
+        "Spring 2025-2026",
+        "Fall 2025-2026",
+        "Spring 2024-2025",
+        "Fall 2024-2025",
+        "Spring 2023-2024",
+        "Fall 2023-2024",
+        "Spring 2022-2023",
+        "Fall 2022-2023",
+        "Spring 2021-2022",
+        "Fall 2021-2022",
+        "Spring 2020-2021",
+        "Fall 2020-2021",
+        "Spring 2019-2020",
+        "Fall 2019-2020",
+        "Spring 2018-2019",
+        "Fall 2018-2019",
+        "Spring 2017-2018",
+        "Fall 2010-2011",
+        "Summer 2009-2010",
+        "Spring 2009-2010",
+        "Fall 2009-2010",
+        "Spring 2008-2009",
+        "Fall 2008-2009",
+        "Spring 2007-2008",
+        "Fall 2007-2008",
+        "Spring 2006-2007",
+        "Fall 2006-2007",
+        "Spring 2005-2006",
+        "Fall 2005-2006",
+        "Fall 2004-2005"
+      ],
+      "terms_in_section": [
+        "202501",
+        "202502",
+        "202601"
+      ],
+      "in_slice": true,
+      "in_catalog": true,
+      "program_sections": [
+        {
+          "program": "BSCS-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSCS-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSCS-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSDSA-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSDSA-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSDSA-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAECON-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAECON-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAECON-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSEE-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSEE-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSEE-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSIE-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSIE-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSIE-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAIS-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAIS-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAIS-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAMAN-DM",
+          "term": "202501",
+          "section": "Required"
+        },
+        {
+          "program": "BAMAN-DM",
+          "term": "202502",
+          "section": "Required"
+        },
+        {
+          "program": "BAMAN-DM",
+          "term": "202601",
+          "section": "Required"
+        },
+        {
+          "program": "BSMAT-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSMAT-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSMAT-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSME-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSME-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSME-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSBIO-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSBIO-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSBIO-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPOLS-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPOLS-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPOLS-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPSIR-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPSIR-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPSIR-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPSY-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPSY-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPSY-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAVACD-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAVACD-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAVACD-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        }
+      ],
+      "prereq_expr": null
+    },
+    {
+      "code": "MGMT 203",
+      "title": "Introduction to Data Analysis and Research in Business",
+      "subj": "MGMT",
+      "num": "203",
+      "su_credit": 3.0,
+      "ects_text": "6 ECTS (ENGINEERING:0 / BASIC:0)",
+      "description": "This course teaches practical perspectives on research design, data collection, and analysis useful for managers. The scientific method, defining a hypothesis, sources and validity of data, sampling, examining distributions of and relationships between data, basic inferential statistics, linear regression, and ethics in research are topics covered in the course. The course follows a hands-on, skill-building approach using mainly MS Excel and appropriate add-ins for statistical analysis.",
+      "coreq_text": "MGMT 203R",
+      "prereq_text": "MGMT 201 - Undergraduate - Min Grade D",
+      "offered_terms": [
+        "Spring 2026-2027",
+        "Fall 2026-2027",
+        "Spring 2025-2026",
+        "Fall 2025-2026",
+        "Spring 2024-2025",
+        "Fall 2024-2025",
+        "Spring 2023-2024",
+        "Fall 2023-2024",
+        "Spring 2022-2023",
+        "Fall 2022-2023",
+        "Spring 2021-2022",
+        "Fall 2021-2022",
+        "Spring 2020-2021",
+        "Fall 2020-2021",
+        "Spring 2019-2020",
+        "Fall 2019-2020",
+        "Summer 2018-2019",
+        "Spring 2018-2019",
+        "Fall 2018-2019",
+        "Summer 2017-2018",
+        "Spring 2017-2018",
+        "Fall 2017-2018",
+        "Spring 2016-2017",
+        "Fall 2016-2017",
+        "Spring 2015-2016",
+        "Fall 2015-2016",
+        "Spring 2014-2015",
+        "Fall 2014-2015",
+        "Spring 2013-2014",
+        "Fall 2013-2014",
+        "Spring 2012-2013",
+        "Fall 2012-2013",
+        "Spring 2011-2012",
+        "Fall 2011-2012",
+        "Spring 2010-2011"
+      ],
+      "terms_in_section": [
+        "202501",
+        "202502",
+        "202601"
+      ],
+      "in_slice": true,
+      "in_catalog": true,
+      "program_sections": [
+        {
+          "program": "BSCS-DM",
+          "term": "202501",
+          "section": "Area Elective"
+        },
+        {
+          "program": "BSCS-DM",
+          "term": "202502",
+          "section": "Area Elective"
+        },
+        {
+          "program": "BSCS-DM",
+          "term": "202601",
+          "section": "Area Elective"
+        },
+        {
+          "program": "BSDSA-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSDSA-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSDSA-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAECON-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAECON-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAECON-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSEE-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSEE-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSEE-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSIE-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSIE-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSIE-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAIS-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAIS-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAIS-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAMAN-DM",
+          "term": "202501",
+          "section": "Required"
+        },
+        {
+          "program": "BAMAN-DM",
+          "term": "202502",
+          "section": "Required"
+        },
+        {
+          "program": "BAMAN-DM",
+          "term": "202601",
+          "section": "Required"
+        },
+        {
+          "program": "BSMAT-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSMAT-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSMAT-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSME-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSME-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSME-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSBIO-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSBIO-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BSBIO-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPOLS-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPOLS-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPOLS-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPSIR-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPSIR-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPSIR-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPSY-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPSY-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAPSY-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAVACD-DM",
+          "term": "202501",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAVACD-DM",
+          "term": "202502",
+          "section": "Free Elective"
+        },
+        {
+          "program": "BAVACD-DM",
+          "term": "202601",
+          "section": "Free Elective"
+        }
+      ],
+      "prereq_expr": {
+        "course": "MGMT 201",
+        "min_grade": "D",
+        "concurrent": false
+      }
+    },
+    {
+      "code": "MGMT 300",
+      "title": "Summer Internship",
+      "subj": "MGMT",
+      "num": "300",
+      "su_credit": 0.0,
+      "ects_text": "5 ECTS (ENGINEERING: / BASIC:)",
+      "description": "This is a non-credit required course that aims to foster field work experience in the student's chosen area of study. The course offers the students the opportunities to gain insights into the nuances of business and social environments; to learn about specific issues facing firms in the domestic and the global market; to improve their understanding of other cultures and societies; to foster research; to outreach to the global community. The course aims to enable students to learn about the conditions under which they would launch successful start-ups and expose them to the breadth of various issues. In order to realise these goals, the course includes experiential opportunities for students to put their new skills to work in real-world settings in line with their program requirements.",
+      "coreq_text": "__",
+      "prereq_text": "ENG 300 - Undergraduate - Min Grade D and (PROJ 102 - Undergraduate - Min Grade D or PROJ 201 - Undergraduate - Min Grade D)",
+      "offered_terms": [
+        "Fall 2026-2027",
+        "Summer 2025-2026",
+        "Fall 2025-2026",
+        "Summer 2024-2025",
+        "Fall 2024-2025",
+        "Summer 2023-2024",
+        "Fall 2023-2024",
+        "Summer 2022-2023",
+        "Fall 2022-2023",
+        "Summer 2021-2022",
+        "Spring 2021-2022",
+        "Summer 2020-2021",
+        "Spring 2020-2021",
+        "Fall 2020-2021",
+        "Summer 2019-2020",
+        "Fall 2019-2020",
+        "Summer 2018-2019",
+        "Summer 2017-2018",
+        "Summer 2016-2017",
+        "Summer 2015-2016",
+        "Summer 2014-2015",
+        "Summer 2013-2014",
+        "Summer 2012-2013",
+        "Summer 2011-2012"
+      ],
+      "terms_in_section": [
+        "202501",
+        "202502",
+        "202601"
+      ],
+      "in_slice": true,
+      "in_catalog": true,
+      "program_sections": [
+        {
+          "program": "BAMAN-DM",
+          "term": "202501",
+          "section": "Required"
+        },
+        {
+          "program": "BAMAN-DM",
+          "term": "202502",
+          "section": "Required"
+        },
+        {
+          "program": "BAMAN-DM",
+          "term": "202601",
+          "section": "Required"
+        }
+      ],
+      "prereq_expr": {
+        "op": "and",
+        "operands": [
+          {
+            "course": "ENG 300",
+            "min_grade": "D",
+            "concurrent": false
+          },
+          {
+            "op": "or",
+            "operands": [
+              {
+                "course": "PROJ 102",
+                "min_grade": "D",
+                "concurrent": false
+              },
+              {
+                "course": "PROJ 201",
+                "min_grade": "D",
+                "concurrent": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "code": "PROJ 102",
+      "title": "",
+      "in_slice": false,
+      "in_catalog": false,
+      "prereq_expr": null
+    },
+    {
+      "code": "PROJ 201",
+      "title": "",
+      "in_slice": false,
+      "in_catalog": false,
+      "prereq_expr": null
+    }
+  ],
+  "edges": [
+    {
+      "prereq": "ENG 300",
+      "course": "MGMT 300",
+      "role": "required",
+      "min_grade": "D",
+      "concurrent": false
+    },
+    {
+      "prereq": "MGMT 201",
+      "course": "MGMT 203",
+      "role": "required",
+      "min_grade": "D",
+      "concurrent": false
+    },
+    {
+      "prereq": "PROJ 102",
+      "course": "MGMT 300",
+      "role": "alternative",
+      "min_grade": "D",
+      "concurrent": false
+    },
+    {
+      "prereq": "PROJ 201",
+      "course": "MGMT 300",
+      "role": "alternative",
+      "min_grade": "D",
+      "concurrent": false
+    }
+  ]
+}

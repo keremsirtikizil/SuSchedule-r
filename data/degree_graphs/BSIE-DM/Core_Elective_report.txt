@@ -1,0 +1,17 @@
+Program: BSIE-DM
+Section: Core Elective
+Source:  SU_full_slice
+
+Nodes (total):              51
+  in this section:          33
+  upstream prereqs only:    18
+Edges (total):              44
+  required:                 26
+  alternative:              18
+
+Isolates (no edges):              3
+Source nodes (no prereqs in):     23
+Sink nodes (no successors):       23
+
+Is DAG?                     True
+Courses with unparsed text: 0

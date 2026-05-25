@@ -1,0 +1,17 @@
+Program: BSDSA-DM
+Section: Core Elective
+Source:  SU_full_slice
+
+Nodes (total):              54
+  in this section:          32
+  upstream prereqs only:    22
+Edges (total):              43
+  required:                 23
+  alternative:              20
+
+Isolates (no edges):              7
+Source nodes (no prereqs in):     30
+Sink nodes (no successors):       28
+
+Is DAG?                     True
+Courses with unparsed text: 0

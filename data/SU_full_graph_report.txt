@@ -1,0 +1,39 @@
+Source: SU_full
+Program: (multi)
+Admit term: (multi)
+
+Nodes (total):           721
+  in catalog:            688
+  external prereqs only: 33
+Edges (total):           729
+  required:              443
+  alternative:           286
+
+Isolates (no edges):           212
+Source nodes (no prereqs in):  295
+Sink nodes (no successors):    545
+
+Is DAG?                  True
+Cycle count (simple):    0
+
+External prereq course codes (sample 20):
+  CS 210
+  CS 48001
+  CULT 201
+  CULT 341
+  EE 301
+  EL 202
+  EL 204
+  EL 302
+  EL 303
+  EL 401
+  FRE 102
+  FRE 201
+  FRE 202
+  GER 102
+  GER 201
+  GER 202
+  HUM 204
+  HUM 212
+  HUM 214
+  IE 301

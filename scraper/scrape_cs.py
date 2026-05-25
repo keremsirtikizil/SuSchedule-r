@@ -34,22 +34,74 @@ REQUEST_DELAY_S = 0.4  # be polite
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
-SNAP_DEG = ROOT / "snapshots" / "degrees"
-SNAP_CRS = ROOT / "snapshots" / "courses"
-SNAP_POOL = ROOT / "snapshots" / "pools"
+SNAP_DEG = ROOT / "degrees"
+SNAP_CRS = ROOT / "courses"
+SNAP_POOL = ROOT / "pools"
 for d in (DATA_DIR, SNAP_DEG, SNAP_CRS, SNAP_POOL):
     d.mkdir(parents=True, exist_ok=True)
 
-SECTION_LABELS = {
+
+# Faculty-wide section anchors are program-independent; program-specific ones
+# (Required / Core / Area / Free) carry the program code as a prefix.
+GLOBAL_SECTION_LABELS = {
     "UC_FENS": "University Courses",
+    "UC_FASS": "University Courses",
+    "UC_SOM": "University Courses",
     "FC_FENS": "Faculty Courses",
+    "FC_FASS": "Faculty Courses",
+    "FC_SOM": "Faculty Courses",
+    "FC_DSA": "Faculty Courses",
     "ENG_SCIE": "Engineering",
     "BASIC_SCIE": "Basic Science",
-    f"{PROGRAM}_R": "Required",
-    f"{PROGRAM}_C": "Core Elective",
-    f"{PROGRAM}_A": "Area Elective",
-    f"{PROGRAM}_F": "Free Elective",
 }
+
+
+# SU's degree pages use four naming conventions for the per-program section
+# anchors. Mapping every observed code to a canonical label here:
+#   R           -> Required
+#   C, C1..C4   -> Core Elective   (some programs split Core into groups)
+#   A           -> Area Elective
+#   F           -> Free Elective
+#   M           -> Math Requirement (BAECON-DM)
+#   PH          -> Pre-PhD Track (BAPSY-DM)
+_SECTION_CODE_TO_LABEL: dict[str, str] = {
+    "R": "Required",
+    "C": "Core Elective",
+    "C1": "Core Elective",
+    "C2": "Core Elective",
+    "C3": "Core Elective",
+    "C4": "Core Elective",
+    "A": "Area Elective",
+    "F": "Free Elective",
+    "M": "Math Requirement",
+    "PH": "Pre-PhD Track",
+}
+
+# One-off typos / non-canonical prefixes seen on real SU pages.
+_EXTRA_PROGRAM_PREFIXES: dict[str, tuple[str, ...]] = {
+    "BAVACD-DM": ("BAVACDD",),  # the C1/C2 anchors on this page drop a 'D'
+}
+
+
+def section_labels_for(program: str) -> dict[str, str]:
+    """Return the {anchor_name: section_label} map for a given program.
+
+    Generates all observed naming variants:
+      - canonical with dash:    BSCS-DM_R, BSCS-DM_C, BSCS-DM_C1
+      - no-dash variant:        BAECONDM_R, BAECONDM_C
+      - no-dash no-underscore:  BAPOLSDMC1, BAPSIRDMC2
+      - any program-specific typo overrides from _EXTRA_PROGRAM_PREFIXES
+    """
+    labels: dict[str, str] = dict(GLOBAL_SECTION_LABELS)
+    prefixes = [program, program.replace("-", ""), *_EXTRA_PROGRAM_PREFIXES.get(program, ())]
+    for prefix in prefixes:
+        for code, label in _SECTION_CODE_TO_LABEL.items():
+            labels[f"{prefix}_{code}"] = label  # with underscore
+            labels[f"{prefix}{code}"] = label   # without underscore (BAPOLSDMC1 style)
+    return labels
+
+
+SECTION_LABELS = section_labels_for(PROGRAM)
 
 session = requests.Session()
 session.headers.update({"User-Agent": "sucheduler-scraper/0.1 (course catalog research)"})
@@ -67,12 +119,12 @@ def fetch(url: str, snapshot_path: Path | None = None) -> str:
     return html
 
 
-def fetch_degree_page(term: str) -> str:
+def fetch_degree_page(term: str, program: str = PROGRAM) -> str:
     url = (
         f"{BASE}SU_DEGREE.p_degree_detail"
-        f"?P_PROGRAM={PROGRAM}&P_LANG=EN&P_LEVEL=UG&P_TERM={term}&P_SUBMIT=Select"
+        f"?P_PROGRAM={program}&P_LANG=EN&P_LEVEL=UG&P_TERM={term}&P_SUBMIT=Select"
     )
-    return fetch(url, SNAP_DEG / f"{PROGRAM}_{term}.html")
+    return fetch(url, SNAP_DEG / f"{program}_{term}.html")
 
 
 COURSE_HREF_RE = re.compile(
@@ -107,7 +159,10 @@ def parse_pool_page(html: str) -> list[tuple[str, str]]:
     return out
 
 
-def parse_degree_page(html: str) -> tuple[list[dict], list[dict]]:
+def parse_degree_page(
+    html: str,
+    section_labels: dict[str, str] | None = None,
+) -> tuple[list[dict], list[dict]]:
     """Parse the degree page.
 
     Returns (inline_courses, pool_links):
@@ -116,6 +171,7 @@ def parse_degree_page(html: str) -> tuple[list[dict], list[dict]]:
       pool_links:     {area_key, section, href} pairs for each elective pool
                       page that must be followed.
     """
+    labels = section_labels if section_labels is not None else SECTION_LABELS
     soup = BeautifulSoup(html, "html.parser")
     inline: list[dict] = []
     pools: list[dict] = []
@@ -126,9 +182,9 @@ def parse_degree_page(html: str) -> tuple[list[dict], list[dict]]:
 
     for el in soup.find_all("a"):
         name = el.get("name")
-        if name and name in SECTION_LABELS:
+        if name and name in labels:
             current_section_key = name
-            current_section_label = SECTION_LABELS[name]
+            current_section_label = labels[name]
             continue
         href = el.get("href") or ""
         m_course = COURSE_HREF_RE.search(href)

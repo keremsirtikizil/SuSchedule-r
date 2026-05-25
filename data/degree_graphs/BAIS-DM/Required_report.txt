@@ -1,0 +1,17 @@
+Program: BAIS-DM
+Section: Required
+Source:  SU_full_slice
+
+Nodes (total):              12
+  in this section:          8
+  upstream prereqs only:    4
+Edges (total):              15
+  required:                 11
+  alternative:              4
+
+Isolates (no edges):              1
+Source nodes (no prereqs in):     6
+Sink nodes (no successors):       6
+
+Is DAG?                     True
+Courses with unparsed text: 0

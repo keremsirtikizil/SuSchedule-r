@@ -1,0 +1,17 @@
+Program: BAECON-DM
+Section: Free Elective
+Source:  SU_full_slice
+
+Nodes (total):              652
+  in this section:          602
+  upstream prereqs only:    50
+Edges (total):              617
+  required:                 378
+  alternative:              239
+
+Isolates (no edges):              200
+Source nodes (no prereqs in):     280
+Sink nodes (no successors):       487
+
+Is DAG?                     True
+Courses with unparsed text: 0

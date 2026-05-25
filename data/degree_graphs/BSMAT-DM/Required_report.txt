@@ -1,0 +1,17 @@
+Program: BSMAT-DM
+Section: Required
+Source:  SU_full_slice
+
+Nodes (total):              19
+  in this section:          13
+  upstream prereqs only:    6
+Edges (total):              16
+  required:                 13
+  alternative:              3
+
+Isolates (no edges):              2
+Source nodes (no prereqs in):     9
+Sink nodes (no successors):       9
+
+Is DAG?                     True
+Courses with unparsed text: 0

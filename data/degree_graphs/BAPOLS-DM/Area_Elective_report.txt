@@ -1,0 +1,17 @@
+Program: BAPOLS-DM
+Section: Area Elective
+Source:  SU_full_slice
+
+Nodes (total):              49
+  in this section:          44
+  upstream prereqs only:    5
+Edges (total):              67
+  required:                 31
+  alternative:              36
+
+Isolates (no edges):              11
+Source nodes (no prereqs in):     16
+Sink nodes (no successors):       44
+
+Is DAG?                     True
+Courses with unparsed text: 0

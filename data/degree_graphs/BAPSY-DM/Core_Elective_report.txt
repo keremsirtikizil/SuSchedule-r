@@ -1,0 +1,17 @@
+Program: BAPSY-DM
+Section: Core Elective
+Source:  SU_full_slice
+
+Nodes (total):              20
+  in this section:          14
+  upstream prereqs only:    6
+Edges (total):              28
+  required:                 25
+  alternative:              3
+
+Isolates (no edges):              1
+Source nodes (no prereqs in):     7
+Sink nodes (no successors):       14
+
+Is DAG?                     True
+Courses with unparsed text: 0

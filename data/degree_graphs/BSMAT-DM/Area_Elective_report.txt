@@ -1,0 +1,17 @@
+Program: BSMAT-DM
+Section: Area Elective
+Source:  SU_full_slice
+
+Nodes (total):              211
+  in this section:          172
+  upstream prereqs only:    39
+Edges (total):              188
+  required:                 119
+  alternative:              69
+
+Isolates (no edges):              44
+Source nodes (no prereqs in):     90
+Sink nodes (no successors):       134
+
+Is DAG?                     True
+Courses with unparsed text: 0

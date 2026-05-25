@@ -1,0 +1,17 @@
+Program: BAMAN-DM
+Section: Required
+Source:  SU_full_slice
+
+Nodes (total):              8
+  in this section:          6
+  upstream prereqs only:    2
+Edges (total):              4
+  required:                 2
+  alternative:              2
+
+Isolates (no edges):              2
+Source nodes (no prereqs in):     6
+Sink nodes (no successors):       4
+
+Is DAG?                     True
+Courses with unparsed text: 0
