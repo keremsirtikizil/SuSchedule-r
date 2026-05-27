@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SuSchedule-r</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+<!-- ──────────────────────────────── SIDEBAR ──────────────────────────── -->
+<aside id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">SuSchedule<span class="logo-r">-r</span></div>
+    <div class="logo-sub">AI Course Planner · Sabancı University</div>
+  </div>
+
+  <!-- Upload panel -->
+  <div class="panel" id="upload-panel">
+    <div class="panel-title">📄 Transcript</div>
+    <div id="drop-zone" class="drop-zone">
+      <span id="drop-label">Drop transcript here<br/><small>JSON or PDF</small></span>
+      <input type="file" id="file-input" accept=".json,.pdf" hidden />
+    </div>
+    <div id="student-info" class="student-info hidden"></div>
+  </div>
+
+  <!-- Current plan panel -->
+  <div class="panel" id="plan-panel">
+    <div class="panel-title">📚 Current Plan</div>
+    <div id="plan-list" class="plan-list">
+      <div class="plan-empty">No plan yet — chat to get started.</div>
+    </div>
+    <div id="plan-credits" class="plan-credits hidden"></div>
+  </div>
+
+  <!-- Stats -->
+  <div class="panel" id="stats-panel">
+    <div class="panel-title">📊 Session</div>
+    <div id="stats-body" class="stats-body">—</div>
+  </div>
+</aside>
+
+<!-- ──────────────────────────────── CHAT ──────────────────────────── -->
+<main id="chat-main">
+  <div id="chat-messages"></div>
+
+  <div id="input-area">
+    <div id="suggestions">
+      <span class="chip" onclick="sendSuggestion(this)">Plan my semester</span>
+      <span class="chip" onclick="sendSuggestion(this)">I want ML and databases</span>
+      <span class="chip" onclick="sendSuggestion(this)">Explain the plan</span>
+      <span class="chip" onclick="sendSuggestion(this)">Drop the physics course</span>
+    </div>
+    <div id="input-row">
+      <textarea id="msg-input"
+                placeholder="Ask the planner… (Shift+Enter for newline)"
+                rows="1"></textarea>
+      <button id="send-btn" onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+</main>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

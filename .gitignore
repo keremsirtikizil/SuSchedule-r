@@ -13,3 +13,11 @@ env/
 # Editors
 .idea/
 .vscode/
+
+# Secrets — never commit these
+.env
+*.env
+
+# Generated artifacts (large; re-producible from notebooks/)
+embeddings/*.npy
+embeddings/*.index
