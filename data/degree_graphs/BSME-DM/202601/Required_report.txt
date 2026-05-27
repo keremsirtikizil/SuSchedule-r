@@ -1,0 +1,18 @@
+Program: BSME-DM
+Term:    202601
+Section: Required
+Source:  SU_full_slice
+
+Nodes (total):              28
+  in this section:          18
+  upstream prereqs only:    10
+Edges (total):              24
+  required:                 11
+  alternative:              13
+
+Isolates (no edges):              2
+Source nodes (no prereqs in):     13
+Sink nodes (no successors):       13
+
+Is DAG?                     True
+Courses with unparsed text: 0

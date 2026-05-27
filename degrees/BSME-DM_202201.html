@@ -1,0 +1,874 @@
+<html>
+<head>
+<meta charset="utf-8"/>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-87158618-4"></script>
+        <script>
+         window.dataLayer = window.dataLayer || [];
+         function gtag(){dataLayer.push(arguments);}
+         gtag("js", new Date());
+        
+         gtag("config", "UA-87158618-4");
+        </script>
+    
+    
+    
+
+        <style type="text/css">
+        <!--
+          BODY {    MARGIN: 0px; COLOR: #4b5065; FONT-FAMILY: Arial, Helvetica, Tahoma; BACKGROUND-COLOR: #ffffff}
+          A    {    FONT-SIZE: 10px; COLOR: #4b5065; LINE-HEIGHT: normal; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif}
+          H1   {    PADDING-RIGHT: 5px; MARGIN-TOP: 6px; PADDING-LEFT: 5px; FONT-SIZE: 10px; MARGIN-BOTTOM: 6px; PADDING-BOTTOM: 0px; VERTICAL-ALIGN: top; COLOR: #bb6458; LINE-HEIGHT: normal; PADDING-TOP: 0px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif}
+          H2   {    PADDING-RIGHT: 5px; PADDING-LEFT: 5px; FONT-SIZE: 10px; PADDING-BOTTOM: 5px; VERTICAL-ALIGN: top; COLOR: #bb6458; LINE-HEIGHT: normal; PADDING-TOP: 5px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif}
+          H3   {    PADDING-RIGHT: 5px; PADDING-LEFT: 5px; FONT-SIZE: 10px; PADDING-BOTTOM: 5px; VERTICAL-ALIGN: top; COLOR: #4b5065; LINE-HEIGHT: normal; PADDING-TOP: 5px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif}
+          H4   {    PADDING-RIGHT: 5px; PADDING-LEFT: 5px; FONT-SIZE: 10px; PADDING-BOTTOM: 5px; VERTICAL-ALIGN: top; COLOR: #4b5065; LINE-HEIGHT: normal; PADDING-TOP: 5px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif}
+          H5   {    PADDING-RIGHT: 5px; MARGIN-TOP: 6px; PADDING-LEFT: 5px; FONT-SIZE: 10px; MARGIN-BOTTOM: 6px; PADDING-BOTTOM: 0px; VERTICAL-ALIGN: top; COLOR: #bb6458; LINE-HEIGHT: normal; PADDING-TOP: 0px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif}
+          P    {    PADDING-RIGHT: 5px; MARGIN-TOP: 6px; PADDING-LEFT: 5px; FONT-SIZE: 10px; MARGIN-BOTTOM: 6px; PADDING-BOTTOM: 0px; VERTICAL-ALIGN: top; COLOR: #4d4d4d; LINE-HEIGHT: normal; PADDING-TOP: 0px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif}
+          BLOCKQUOTE {    PADDING-RIGHT: 0px; PADDING-LEFT: 0px; FONT-SIZE: 10px; PADDING-BOTTOM: 0px; VERTICAL-ALIGN: top; COLOR: #4d4d4d; LINE-HEIGHT: normal; MARGIN-RIGHT: 0px; PADDING-TOP: 0px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; TEXT-ALIGN: left}
+          PRE  {    PADDING-RIGHT: 5px; PADDING-LEFT: 5px; FONT-SIZE: 10px; PADDING-BOTTOM: 5px; VERTICAL-ALIGN: top; COLOR: #4d4d4d; LINE-HEIGHT: normal; PADDING-TOP: 5px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; TEXT-ALIGN: left}
+          UL   {    PADDING-RIGHT: 5px; PADDING-LEFT: 5px; FONT-SIZE: 10px; PADDING-BOTTOM: 5px; MARGIN-LEFT: 10px; VERTICAL-ALIGN: top; COLOR: #4d4d4d; LINE-HEIGHT: normal; PADDING-TOP: 5px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; TEXT-ALIGN: left}
+          OL   {    PADDING-RIGHT: 5px; PADDING-LEFT: 5px; FONT-SIZE: 10px; PADDING-BOTTOM: 5px; MARGIN-LEFT: 15px; VERTICAL-ALIGN: top; COLOR: #4d4d4d; LINE-HEIGHT: normal; PADDING-TOP: 5px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; TEXT-ALIGN: left}
+          LI   {    PADDING-RIGHT: 5px; PADDING-LEFT: 5px; FONT-SIZE: 10px; PADDING-BOTTOM: 5px; MARGIN-LEFT: 20px; COLOR: #4d4d4d; LINE-HEIGHT: normal; PADDING-TOP: 5px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; TEXT-ALIGN: left}
+          DL   {    PADDING-RIGHT: 5px; PADDING-LEFT: 5px; FONT-SIZE: 10px; PADDING-BOTTOM: 5px; VERTICAL-ALIGN: top; COLOR: #4b5065; LINE-HEIGHT: normal; PADDING-TOP: 5px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; TEXT-ALIGN: left}
+          DT   {    PADDING-RIGHT: 5px; PADDING-LEFT: 5px; FONT-SIZE: 10px; PADDING-BOTTOM: 5px; VERTICAL-ALIGN: top; COLOR: #4b5065; LINE-HEIGHT: normal; PADDING-TOP: 5px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; TEXT-ALIGN: left}
+          DD   {    PADDING-RIGHT: 5px; PADDING-LEFT: 5px; FONT-SIZE: 10px; PADDING-BOTTOM: 5px; VERTICAL-ALIGN: top; COLOR: #4b5065; LINE-HEIGHT: normal; PADDING-TOP: 5px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; TEXT-ALIGN: left}
+          TH   {    FONT-SIZE: 10px; LINE-HEIGHT: normal; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif}
+          TD   {    FONT-SIZE: 10px; LINE-HEIGHT: normal; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif}
+          TABLE    {    }
+          P.none   {    PADDING-RIGHT: 4px; PADDING-LEFT: 4px; FONT-SIZE: 10px; PADDING-BOTTOM: 4px; MARGIN: 0px; COLOR: #4b5065; PADDING-TOP: 4px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif}
+          .nobold  {    FONT-WEIGHT: normal}
+          P.haber  {    MARGIN-TOP: 3pt; FONT-WEIGHT: bold; FONT-SIZE: 10px; MARGIN-BOTTOM: 3pt; COLOR: #4b5065; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif}
+          A.haber  {    MARGIN-TOP: 3pt; FONT-WEIGHT: bold; FONT-SIZE: 10px; MARGIN-BOTTOM: 3pt; COLOR: #4b5065; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; TEXT-DECORATION: none}
+          A.haber1 {    MARGIN-TOP: 0pt; FONT-WEIGHT: bold; FONT-SIZE: 10px; MARGIN-BOTTOM: 0pt; COLOR: #4b5065; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; TEXT-DECORATION: none}
+          P.haber1 {    MARGIN-TOP: 9px; MARGIN-BOTTOM: 9px}
+          A.SolMenu {    PADDING-RIGHT: 0px; MARGIN-TOP: 0px; PADDING-LEFT: 0px; FONT-SIZE: 9px; MARGIN-BOTTOM: 0px; PADDING-BOTTOM: 0px; COLOR: white; PADDING-TOP: 0px; FONT-FAMILY: Arial; TEXT-DECORATION: none}
+          A.SagMenu {    PADDING-RIGHT: 0px; MARGIN-TOP: 0px; PADDING-LEFT: 0px; FONT-SIZE: 9px; MARGIN-BOTTOM: 0px; PADDING-BOTTOM: 0px; COLOR: black; PADDING-TOP: 0px; FONT-FAMILY: Arial; TEXT-DECORATION: none}
+          SPAN.SagMenu  {    PADDING-RIGHT: 0px; MARGIN-TOP: 0px; PADDING-LEFT: 0px; FONT-SIZE: 9px; MARGIN-BOTTOM: 0px; PADDING-BOTTOM: 0px; COLOR: black; PADDING-TOP: 0px; FONT-FAMILY: Arial; TEXT-DECORATION: none}
+          P.SagMenu     {    PADDING-RIGHT: 5px; MARGIN-TOP: 0px; PADDING-LEFT: 5px; FONT-SIZE: 9px; MARGIN-BOTTOM: 0px; PADDING-BOTTOM: 5px; COLOR: black; PADDING-TOP: 5px; FONT-FAMILY: Arial}
+          P.sayfabaslik {    PADDING-RIGHT: 5px; PADDING-LEFT: 5px; FONT-WEIGHT: bold; FONT-SIZE: 10px; MARGIN-BOTTOM: 0px; PADDING-BOTTOM: 5px; VERTICAL-ALIGN: top; COLOR: #bb6458; LINE-HEIGHT: normal; PADDING-TOP: 5px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif}
+          .darli        {    PADDING-RIGHT: 0px; MARGIN-TOP: 0px; PADDING-LEFT: 0px; MARGIN-BOTTOM: 0px; PADDING-BOTTOM: 0px; PADDING-TOP: 0px }        
+        -->
+        </style> 
+     
+</head>
+<body>
+<!-- tablo 2 ac -->
+<table >
+<tr>
+<td><h3>Admit Term: Fall 2022-2023</h3></td>
+</tr>
+<tr>
+<td><h1>MECHATRONICS ENGINEERING UNDERGRADUATE PROGRAM (BSME-DM)</h1></td>
+</tr>
+<tr>
+<td><b>&nbsp;&nbsp;Diploma Area Advisor: </b>
+Kemalettin Erbatur, Kürşat Şendur 
+</td>
+</tr>
+<tr>
+<td>
+<p>Mechatronics is a new approach
+in engineering design and production
+based on the integration of two of the
+classical engineering disciplines, namely
+mechanical and electrical engineering, along
+with computer science and especially
+software engineering.</p>
+<p>The goal of the degree in Mechatronics
+(ME) is to integrate mechanical and electrical
+-- including optical -- engineering and
+computer science into a meaningful program
+so as to produce engineers that are
+conversant with all of the relevant technologies
+needed to create a modern, smart
+electro-mechanical product.
+The use of a variety of Computer Aided
+Design (CAD) tools in engineering design
+and analysis is emphasized, and realistic
+Engineering problem settings are
+provided in laboratories so as to enable
+students to successfully address complex
+design and implementation problems.</p>
+<p>A graduate of this program is equipped
+with an amalgam of complex knowledge
+and concepts across various disciplines
+and will have a considerable advantage
+in seeking employment in hi-tech
+companies with computer-integrated
+manufacturing systems, as well as with
+research centers that develop and use advanced
+automation equipment.</p>
+<BR><p>For the Double Major Graduation;</p>
+<p>- Fulfill the major diploma program requirements,
+<p>- Fulfill the double major diploma program requirements,
+<p>- In addition to the major diploma program requirements,
+need to complete 30 SU credits ( 60 ECTS credits)
+valid for double major diploma program.
+<p>-To have minimum 3.20 Grade Point Avarage
+and Program Grade Point Average
+( Major /Double Major Diploma Program).<p>
+In addition to major diploma, double major diploma is given.
+<p>
+<BR><p>*** Language courses offered by SL (School
+of Languages) are not included in any course pool.
+</p>
+</td>
+</tr>
+<tr>
+<td>
+<!-- tablo 3 ac -->
+<table  class="t_mezuniyet">
+<tr>
+<td colspan="3"><a name=main></a><h1>SUMMARY OF DEGREE REQUIREMENTS</h1></td>
+</tr>
+<thead>
+<tr>
+<th>Course Category</th>
+<th>Min. ECTS Credits</th>
+<th>Min. SU Credits</th>
+<th>Min. Courses</th>
+</tr>
+</thead>
+<tr>
+<td><a href="#UC_FENS" style = "text-decoration:none">University Courses</a></td>
+<td style="text-align:center">- </td>
+<td style="text-align:center">41 </td>
+<td style="text-align:center">- </td>
+</tr>
+<tr>
+<td><a href="#BSME-DM_R" style = "text-decoration:none">Required Courses</a></td>
+<td style="text-align:center">- </td>
+<td style="text-align:center">39 </td>
+<td style="text-align:center">15 </td>
+</tr>
+<tr>
+<td><a href="#BSME-DM_C" style = "text-decoration:none">Core Electives</a></td>
+<td style="text-align:center">- </td>
+<td style="text-align:center">21 </td>
+<td style="text-align:center">- </td>
+</tr>
+<tr>
+<td><a href="#BSME-DM_A" style = "text-decoration:none">Area Electives</a></td>
+<td style="text-align:center">- </td>
+<td style="text-align:center">9 </td>
+<td style="text-align:center">- </td>
+</tr>
+<tr>
+<td><a href="#BSME-DM_F" style = "text-decoration:none">Free Electives</a></td>
+<td style="text-align:center">- </td>
+<td style="text-align:center">15 </td>
+<td style="text-align:center">- </td>
+</tr>
+<tr>
+<td><a href="#ENG_SCIE" style = "text-decoration:none">Engineering</a></td>
+<td style="text-align:center">90 </td>
+<td style="text-align:center">- </td>
+<td style="text-align:center">- </td>
+</tr>
+<tr>
+<td><a href="#FC_FENS" style = "text-decoration:none">Faculty Courses</a></td>
+<td style="text-align:center">- </td>
+<td style="text-align:center">- </td>
+<td style="text-align:center">5 </td>
+</tr>
+<tr>
+<td><a href="#BASIC_SCIE" style = "text-decoration:none">Basic Science</a></td>
+<td style="text-align:center">60 </td>
+<td style="text-align:center">- </td>
+<td style="text-align:center">- </td>
+</tr>
+<tr>
+<td><b>Total</b></td>
+<td style="text-align:center"><b>300</b></td>
+<td style="text-align:center;"><b>155</b></td>
+<td style="text-align:center;"><b>-</b></td>
+</tr>
+</table>
+<br />
+</td>
+</tr>
+<tr class="t_kategori_row">
+<td>
+<!-- tablo 4 ac -->
+<table  class="t_kategori">
+<tr>
+<div style="height:20;clear:both">&nbsp;</div>
+<td>
+<p><a name="UC_FENS"></a><b>University Courses</b></p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr class="t_kategori_row_desc">
+<td>
+<!-- tablo 5 ac -->
+<table >
+<tr>
+<td>
+<p>From the University Courses listed below, 16 courses
+and 41 SU credits must be completed.</p>
+<p>- All freshman courses (1XX coded courses,
+including PROJ 201) and SPS 303 are required.</p>
+<p> - One of the HUM coded course listed below
+is required.
+<br></br>
+<p>(Please visit Foundations Development Directorate
+web site (fdd.sabanciuniv.edu)
+for general information about University Courses.)
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<!-- tablo 6 ac -->
+<table >
+<br />
+<thead>
+<tr>
+<th>&nbsp;</th>
+<th>Course</th>
+<th>Name</th>
+<th>ECTS Credits</th>
+<th>SU Credits</th>
+<th>Faculty</th>
+</tr>
+</thead>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=IF&crse_numb=100&lang=eng" >IF 100</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=IF&crse_numb=100&lang=eng" >Computational Approaches to Problem Solving</a></td>
+<td style="width:75px;text-align:center;">5</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>FENS</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=MATH&crse_numb=101&lang=eng" >MATH 101</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=MATH&crse_numb=101&lang=eng" >Calculus I</a></td>
+<td style="width:75px;text-align:center;">6</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>FENS</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=CIP&crse_numb=101N&lang=eng" >CIP 101N</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=CIP&crse_numb=101N&lang=eng" >Civic Involvement Projects I-N</a></td>
+<td style="width:75px;text-align:center;">1</td>
+<td style="width:60px;text-align:center;">0</td>
+<td>FASS</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=NS&crse_numb=101&lang=eng" >NS 101</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=NS&crse_numb=101&lang=eng" >Science of Nature I</a></td>
+<td style="width:75px;text-align:center;">6</td>
+<td style="width:60px;text-align:center;">4</td>
+<td>FENS</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=SPS&crse_numb=101&lang=eng" >SPS 101</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=SPS&crse_numb=101&lang=eng" >Humanity and Society I</a></td>
+<td style="width:75px;text-align:center;">6</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>FASS</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=TLL&crse_numb=101&lang=eng" >TLL 101</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=TLL&crse_numb=101&lang=eng" >Turkish Language and Literature I</a></td>
+<td style="width:75px;text-align:center;">3</td>
+<td style="width:60px;text-align:center;">2</td>
+<td>SL</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=AL&crse_numb=102&lang=eng" >AL 102</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=AL&crse_numb=102&lang=eng" >Academic Literacies</a></td>
+<td style="width:75px;text-align:center;">5</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>SL</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=MATH&crse_numb=102&lang=eng" >MATH 102</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=MATH&crse_numb=102&lang=eng" >Calculus II</a></td>
+<td style="width:75px;text-align:center;">6</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>FENS</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=NS&crse_numb=102&lang=eng" >NS 102</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=NS&crse_numb=102&lang=eng" >Science of Nature II</a></td>
+<td style="width:75px;text-align:center;">6</td>
+<td style="width:60px;text-align:center;">4</td>
+<td>FENS</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=SPS&crse_numb=102&lang=eng" >SPS 102</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=SPS&crse_numb=102&lang=eng" >Humanity and Society II</a></td>
+<td style="width:75px;text-align:center;">6</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>FASS</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=TLL&crse_numb=102&lang=eng" >TLL 102</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=TLL&crse_numb=102&lang=eng" >Turkish Language and Literature II</a></td>
+<td style="width:75px;text-align:center;">3</td>
+<td style="width:60px;text-align:center;">2</td>
+<td>SL</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=HIST&crse_numb=191&lang=eng" >HIST 191</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=HIST&crse_numb=191&lang=eng" >Principles of Atatürk and the History of the Turkish Revolution I</a></td>
+<td style="width:75px;text-align:center;">3</td>
+<td style="width:60px;text-align:center;">2</td>
+<td>FASS</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=HIST&crse_numb=192&lang=eng" >HIST 192</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=HIST&crse_numb=192&lang=eng" >Principles of Atatürk and the History of the Turkish Revolution II</a></td>
+<td style="width:75px;text-align:center;">3</td>
+<td style="width:60px;text-align:center;">2</td>
+<td>FASS</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=HUM&crse_numb=201&lang=eng" >HUM 201</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=HUM&crse_numb=201&lang=eng" >Major Works of Literature</a></td>
+<td style="width:75px;text-align:center;">5</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>FASS</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=PROJ&crse_numb=201&lang=eng" >PROJ 201</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=PROJ&crse_numb=201&lang=eng" >Undergraduate Project Course</a></td>
+<td style="width:75px;text-align:center;">1</td>
+<td style="width:60px;text-align:center;">1</td>
+<td>FENS</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=HUM&crse_numb=202&lang=eng" >HUM 202</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=HUM&crse_numb=202&lang=eng" >Major Works of Western Art</a></td>
+<td style="width:75px;text-align:center;">5</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>FASS</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=HUM&crse_numb=207&lang=eng" >HUM 207</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=HUM&crse_numb=207&lang=eng" >Major Works of Western Philosophy</a></td>
+<td style="width:75px;text-align:center;">5</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>FASS</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=SPS&crse_numb=303&lang=eng" >SPS 303</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=SPS&crse_numb=303&lang=eng" >Law and Ethics</a></td>
+<td style="width:75px;text-align:center;">5</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>FASS</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=HUM&crse_numb=304&lang=eng" >HUM 304</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=HUM&crse_numb=304&lang=eng" >Major Works of Classical Music</a></td>
+<td style="width:75px;text-align:center;">5</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>FASS</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=HUM&crse_numb=311&lang=eng" >HUM 311</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=HUM&crse_numb=311&lang=eng" >Major Works of Literature: The World Before Modernity</a></td>
+<td style="width:75px;text-align:center;">5</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>FASS</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=HUM&crse_numb=312&lang=eng" >HUM 312</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=HUM&crse_numb=312&lang=eng" >Major Works of Modern Art</a></td>
+<td style="width:75px;text-align:center;">5</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>FASS</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=HUM&crse_numb=317&lang=eng" >HUM 317</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=HUM&crse_numb=317&lang=eng" >Major Works of Moral Philosophy</a></td>
+<td style="width:75px;text-align:center;">5</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>FASS</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=HUM&crse_numb=321&lang=eng" >HUM 321</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=HUM&crse_numb=321&lang=eng" >Major Works of Literature: The Modern World</a></td>
+<td style="width:75px;text-align:center;">5</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>FASS</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=HUM&crse_numb=322&lang=eng" >HUM 322</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=HUM&crse_numb=322&lang=eng" >Major Works of Art: The World Before Modernity</a></td>
+<td style="width:75px;text-align:center;">5</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>FASS</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=HUM&crse_numb=324&lang=eng" >HUM 324</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=HUM&crse_numb=324&lang=eng" >Major Works of 20th Century Music</a></td>
+<td style="width:75px;text-align:center;">5</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>FASS</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=HUM&crse_numb=371&lang=eng" >HUM 371</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=HUM&crse_numb=371&lang=eng" >Major Works of Literature: The Islamic World</a></td>
+<td style="width:75px;text-align:center;">5</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>FASS</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr class="t_kategori_row">
+<td>
+<!-- tablo 4 ac -->
+<table  class="t_kategori">
+<tr>
+<div style="height:20;clear:both">&nbsp;</div>
+<td>
+<p><a name="BSME-DM_R"></a><b>Required Courses</b></p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr class="t_kategori_row_desc">
+<td>
+<!-- tablo 5 ac -->
+<table >
+<tr>
+<td>
+Courses below are required.
+<BR><p>* Students are required to complete either MATH
+212 or both (MATH 201 and MATH 202). If more
+courses are completed than needed, the additional courses
+will not be included in core, area and free elective
+course pools.</p>
+<BR><p>* In addition to fulfilling the
+MATH 212 or (MATH 201 and MATH 202)
+as stated below, students must successfully complete
+all courses listed under the required course list.
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<!-- tablo 6 ac -->
+<table >
+<br />
+<thead>
+<tr>
+<th>&nbsp;</th>
+<th>Course</th>
+<th>Name</th>
+<th>ECTS Credits</th>
+<th>SU Credits</th>
+<th>Faculty</th>
+</tr>
+</thead>
+<tr>
+<td><center>&nbsp;*&nbsp;</center></td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=CS&crse_numb=201&lang=eng" >CS 201</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=CS&crse_numb=201&lang=eng" >Programming Fundamentals</a></td>
+<td style="width:75px;text-align:center;">6</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>FENS</td>
+</tr>
+<tr>
+<td><center>&nbsp;*&nbsp;</center></td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=EE&crse_numb=200&lang=eng" >EE 200</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=EE&crse_numb=200&lang=eng" >Electronic Circuit Implementations</a></td>
+<td style="width:75px;text-align:center;">2</td>
+<td style="width:60px;text-align:center;">2</td>
+<td>FENS</td>
+</tr>
+<tr>
+<td><center>&nbsp;*&nbsp;</center></td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=EE&crse_numb=202&lang=eng" >EE 202</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=EE&crse_numb=202&lang=eng" >Electronic Circuits II</a></td>
+<td style="width:75px;text-align:center;">6</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>FENS</td>
+</tr>
+<tr>
+<td><center>&nbsp;*&nbsp;</center></td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=ENS&crse_numb=203&lang=eng" >ENS 203</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=ENS&crse_numb=203&lang=eng" >Electronic Circuits I</a></td>
+<td style="width:75px;text-align:center;">6</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>FENS</td>
+</tr>
+<tr>
+<td><center>&nbsp;*&nbsp;</center></td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=ENS&crse_numb=204&lang=eng" >ENS 204</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=ENS&crse_numb=204&lang=eng" >Mechanics</a></td>
+<td style="width:75px;text-align:center;">6</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>FENS</td>
+</tr>
+<tr>
+<td><center>&nbsp;*&nbsp;</center></td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=ENS&crse_numb=206&lang=eng" >ENS 206</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=ENS&crse_numb=206&lang=eng" >Systems Modeling and Control</a></td>
+<td style="width:75px;text-align:center;">6</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>FENS</td>
+</tr>
+<tr>
+<td><center>&nbsp;*&nbsp;</center></td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=ENS&crse_numb=214&lang=eng" >ENS 214</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=ENS&crse_numb=214&lang=eng" >Dynamics</a></td>
+<td style="width:75px;text-align:center;">6</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>FENS</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=ENS&crse_numb=491&lang=eng" >ENS 491</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=ENS&crse_numb=491&lang=eng" >Graduation Project (Design)</a></td>
+<td style="width:75px;text-align:center;">2</td>
+<td style="width:60px;text-align:center;">1</td>
+<td>FENS</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=ENS&crse_numb=492&lang=eng" >ENS 492</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=ENS&crse_numb=492&lang=eng" >Graduation Project  (Implementation)</a></td>
+<td style="width:75px;text-align:center;">5</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>FENS</td>
+</tr>
+<tr>
+<td><center>&nbsp;*&nbsp;</center></td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=MATH&crse_numb=201&lang=eng" >MATH 201</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=MATH&crse_numb=201&lang=eng" >Linear Algebra</a></td>
+<td style="width:75px;text-align:center;">6</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>FENS</td>
+</tr>
+<tr>
+<td><center>&nbsp;*&nbsp;</center></td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=MATH&crse_numb=202&lang=eng" >MATH 202</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=MATH&crse_numb=202&lang=eng" >Differential Equations</a></td>
+<td style="width:75px;text-align:center;">6</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>FENS</td>
+</tr>
+<tr>
+<td><center>&nbsp;*&nbsp;</center></td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=MATH&crse_numb=212&lang=eng" >MATH 212</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=MATH&crse_numb=212&lang=eng" >Linear Algebra and Differential Equations</a></td>
+<td style="width:75px;text-align:center;">7</td>
+<td style="width:60px;text-align:center;">4</td>
+<td>FENS</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=ME&crse_numb=301&lang=eng" >ME 301</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=ME&crse_numb=301&lang=eng" >Mechanical Systems I</a></td>
+<td style="width:75px;text-align:center;">6</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>FENS</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=ME&crse_numb=303&lang=eng" >ME 303</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=ME&crse_numb=303&lang=eng" >Control System Design</a></td>
+<td style="width:75px;text-align:center;">6</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>FENS</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=ME&crse_numb=395&lang=eng" >ME 395</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=ME&crse_numb=395&lang=eng" >Internship Project</a></td>
+<td style="width:75px;text-align:center;">5</td>
+<td style="width:60px;text-align:center;">0</td>
+<td>FENS</td>
+</tr>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td nowrap="nowrap"><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=ME&crse_numb=408&lang=eng" >ME 408</a></td>
+<td><a href="sabanci_www.p_get_courses?levl_code=UG&subj_code=ME&crse_numb=408&lang=eng" >Mechatronics System Design</a></td>
+<td style="width:75px;text-align:center;">6</td>
+<td style="width:60px;text-align:center;">3</td>
+<td>FENS</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr class="t_kategori_row">
+<td>
+<!-- tablo 4 ac -->
+<table  class="t_kategori">
+<tr>
+<div style="height:20;clear:both">&nbsp;</div>
+<td>
+<p><a name="BSME-DM_C"></a><b>Core Electives</b></p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr class="t_kategori_row_desc">
+<td>
+<!-- tablo 5 ac -->
+<table >
+<tr>
+<td>
+Minimum 26 credits from the
+ pool below. -
+The extra courses taken from this pool,
+are directly counted towards "Area Elective"
+course requirements.
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<tr>
+<td><a href="SU_DEGREE.p_list_courses?P_TERM=202201&P_AREA=BSME-DM_C&P_PROGRAM=BSME-DM&P_LANG=EN&P_LEVEL=UG">Click</a> For Core Electives</td>
+</tr>
+</td>
+</tr>
+<tr class="t_kategori_row">
+<td>
+<!-- tablo 4 ac -->
+<table  class="t_kategori">
+<tr>
+<div style="height:20;clear:both">&nbsp;</div>
+<td>
+<p><a name="BSME-DM_A"></a><b>Area Electives</b></p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr class="t_kategori_row_desc">
+<td>
+<!-- tablo 5 ac -->
+<table >
+<tr>
+<td>
+<P>Minimum 9 SU credits
+from the Area Elective pool below. -
+The extra courses taken from this pool,
+are directly counted towards "Free Elective"
+course requirements. </P>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<tr>
+<td><a href="SU_DEGREE.p_list_courses?P_TERM=202201&P_AREA=BSME-DM_A&P_PROGRAM=BSME-DM&P_LANG=EN&P_LEVEL=UG">Click</a> For Area Electives</td>
+</tr>
+</td>
+</tr>
+<tr class="t_kategori_row">
+<td>
+<!-- tablo 4 ac -->
+<table  class="t_kategori">
+<tr>
+<div style="height:20;clear:both">&nbsp;</div>
+<td>
+<p><a name="BSME-DM_F"></a><b>Free Electives</b></p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr class="t_kategori_row_desc">
+<td>
+<!-- tablo 5 ac -->
+<table >
+<tr>
+<td>
+<P>It is required to take a total of 15 SU credits from
+courses offered by FASS, SBS and FENS (excluding
+'University Courses'). Language courses offered by SL
+(School of Languages) are not included in the group of
+free elective courses.</P>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<tr>
+<td><a href="SU_DEGREE.p_list_courses?P_TERM=202201&P_AREA=BSME-DM_F&P_PROGRAM=BSME-DM&P_LANG=EN&P_LEVEL=UG">Click</a> For Free Electives</td>
+</tr>
+</td>
+</tr>
+<tr class="t_kategori_row">
+<td>
+<!-- tablo 4 ac -->
+<table  class="t_kategori">
+<tr>
+<div style="height:20;clear:both">&nbsp;</div>
+<td>
+<p><a name="FC_FENS"></a><b>Faculty Courses</b></p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr class="t_kategori_row_desc">
+<td>
+<!-- tablo 5 ac -->
+<table >
+<tr>
+<td>
+<p>In line with the conditions stated by the Faculties,
+a total of at least 5 courses should be completed
+from FENS Faculty Courses and/or FASS, SBS Faculty Courses.
+At least 2 of these courses must be MATH coded.
+In addition, at least 3 of these courses must be from the
+pool of FENS Faculty Courses.
+These courses may be taken while fulfilling
+the degree requirements for the program.</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<tr>
+<td><p><a href="SU_DEGREE.p_list_courses?P_TERM=202201&P_AREA=FC_FENS&P_PROGRAM=BSME-DM&P_FAC=E&P_LANG=EN&P_LEVEL=UG">Click</a>  For FENS Faculty Courses</p></td>
+</tr>
+<tr>
+<td><p><a href="SU_DEGREE.p_list_courses?P_TERM=202201&P_AREA=FC_FASS&P_PROGRAM=BSME-DM&P_FAC=S&P_LANG=EN&P_LEVEL=UG">Click</a>  For FASS Faculty Courses</p></td>
+</tr>
+<tr>
+<td><p><a href="SU_DEGREE.p_list_courses?P_TERM=202201&P_AREA=FC_SOM&P_PROGRAM=BSME-DM&P_FAC=M&P_LANG=EN&P_LEVEL=UG">Click</a>  For SBS Faculty Courses</p></td>
+</tr>
+</td>
+</tr>
+<tr class="t_kategori_row">
+<td>
+<!-- tablo 4 ac -->
+<table  class="t_kategori">
+<tr>
+<div style="height:20;clear:both">&nbsp;</div>
+<td>
+<p><a name="ENG_SCIE"></a><b>Engineering</b></p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr class="t_kategori_row_desc">
+<td>
+<!-- tablo 5 ac -->
+<table >
+<tr>
+<td>
+<p>The students
+should complete at least
+90 ECTS Engineering credits.
+The Engineering credit requirements
+may be taken while fulfilling the degree
+requirements for the program. </p>
+<p> Click <a href="https://suis.sabanciuniv.edu/prod/
+bwckctlg.p_disp_dyn_ctlg
+" >Course Catalog</a>
+to view the credit distributions of the courses.
+</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<!-- tablo 6 ac -->
+<table >
+</table>
+</td>
+</tr>
+<tr class="t_kategori_row">
+<td>
+<!-- tablo 4 ac -->
+<table  class="t_kategori">
+<tr>
+<div style="height:20;clear:both">&nbsp;</div>
+<td>
+<p><a name="BASIC_SCIE"></a><b>Basic Science</b></p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr class="t_kategori_row_desc">
+<td>
+<!-- tablo 5 ac -->
+<table >
+<tr>
+<td>
+<p>The students
+should complete at least
+60 ECTS Basic Science credits.
+The Basic Science credit requirements
+may be taken while fulfilling the degree
+requirements for the program. </p>
+<p> Click <a href="https://suis.sabanciuniv.edu/prod/
+bwckctlg.p_disp_dyn_ctlg
+" >Course Catalog</a>
+to view the credit distributions of the courses.
+</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<!-- tablo 6 ac -->
+<table >
+</table>
+</td>
+</tr>
+</table>
+<p>* Faculty Courses</p>
+<p>**Courses in more than one areas are listed in the area according to order of appearence in Summary of Degree Requirements list. That is, if a course is both area elective and core elective,then it is listed in core elective courses list.</p>
+<p>***Graduate courses are not listed in undergraduate area requirements even if they are among them.</p>
+<p>****You can check which courses taken counted towards area requirements via Information System - Degree Evaluation.</p>
+</body>
+</html>

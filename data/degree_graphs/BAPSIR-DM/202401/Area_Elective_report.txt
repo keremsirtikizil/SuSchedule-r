@@ -1,0 +1,18 @@
+Program: BAPSIR-DM
+Term:    202401
+Section: Area Elective
+Source:  SU_full_slice
+
+Nodes (total):              31
+  in this section:          23
+  upstream prereqs only:    8
+Edges (total):              26
+  required:                 20
+  alternative:              6
+
+Isolates (no edges):              9
+Source nodes (no prereqs in):     17
+Sink nodes (no successors):       23
+
+Is DAG?                     True
+Courses with unparsed text: 0

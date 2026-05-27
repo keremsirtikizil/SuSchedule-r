@@ -1,0 +1,18 @@
+Program: BAECON-DM
+Term:    202401
+Section: Area Elective
+Source:  SU_full_slice
+
+Nodes (total):              28
+  in this section:          23
+  upstream prereqs only:    5
+Edges (total):              23
+  required:                 23
+  alternative:              0
+
+Isolates (no edges):              9
+Source nodes (no prereqs in):     14
+Sink nodes (no successors):       23
+
+Is DAG?                     True
+Courses with unparsed text: 0

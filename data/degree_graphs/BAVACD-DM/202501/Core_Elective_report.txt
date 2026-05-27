@@ -1,0 +1,18 @@
+Program: BAVACD-DM
+Term:    202501
+Section: Core Elective
+Source:  SU_full_slice
+
+Nodes (total):              23
+  in this section:          14
+  upstream prereqs only:    9
+Edges (total):              15
+  required:                 7
+  alternative:              8
+
+Isolates (no edges):              5
+Source nodes (no prereqs in):     14
+Sink nodes (no successors):       14
+
+Is DAG?                     True
+Courses with unparsed text: 0

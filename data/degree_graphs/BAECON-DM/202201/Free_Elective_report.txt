@@ -1,0 +1,18 @@
+Program: BAECON-DM
+Term:    202201
+Section: Free Elective
+Source:  SU_full_slice
+
+Nodes (total):              776
+  in this section:          728
+  upstream prereqs only:    48
+Edges (total):              617
+  required:                 378
+  alternative:              239
+
+Isolates (no edges):              324
+Source nodes (no prereqs in):     404
+Sink nodes (no successors):       611
+
+Is DAG?                     True
+Courses with unparsed text: 0

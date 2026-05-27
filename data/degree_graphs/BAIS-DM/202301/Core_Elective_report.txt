@@ -1,0 +1,18 @@
+Program: BAIS-DM
+Term:    202301
+Section: Core Elective
+Source:  SU_full_slice
+
+Nodes (total):              22
+  in this section:          15
+  upstream prereqs only:    7
+Edges (total):              18
+  required:                 12
+  alternative:              6
+
+Isolates (no edges):              5
+Source nodes (no prereqs in):     12
+Sink nodes (no successors):       15
+
+Is DAG?                     True
+Courses with unparsed text: 0

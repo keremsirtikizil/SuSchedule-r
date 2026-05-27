@@ -1,0 +1,18 @@
+Program: BSDSA-DM
+Term:    202601
+Section: Free Elective
+Source:  SU_full_slice
+
+Nodes (total):              584
+  in this section:          537
+  upstream prereqs only:    47
+Edges (total):              524
+  required:                 357
+  alternative:              167
+
+Isolates (no edges):              191
+Source nodes (no prereqs in):     265
+Sink nodes (no successors):       449
+
+Is DAG?                     True
+Courses with unparsed text: 0

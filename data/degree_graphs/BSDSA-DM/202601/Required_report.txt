@@ -1,0 +1,18 @@
+Program: BSDSA-DM
+Term:    202601
+Section: Required
+Source:  SU_full_slice
+
+Nodes (total):              17
+  in this section:          11
+  upstream prereqs only:    6
+Edges (total):              18
+  required:                 10
+  alternative:              8
+
+Isolates (no edges):              0
+Source nodes (no prereqs in):     6
+Sink nodes (no successors):       6
+
+Is DAG?                     True
+Courses with unparsed text: 0
