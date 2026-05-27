@@ -1,0 +1,18 @@
+Program: BAPSY-DM
+Term:    202201
+Section: Free Elective
+Source:  SU_full_slice
+
+Nodes (total):              757
+  in this section:          717
+  upstream prereqs only:    40
+Edges (total):              563
+  required:                 340
+  alternative:              223
+
+Isolates (no edges):              334
+Source nodes (no prereqs in):     410
+Sink nodes (no successors):       600
+
+Is DAG?                     True
+Courses with unparsed text: 0

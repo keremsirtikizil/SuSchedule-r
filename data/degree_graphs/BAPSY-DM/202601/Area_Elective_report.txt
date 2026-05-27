@@ -1,0 +1,18 @@
+Program: BAPSY-DM
+Term:    202601
+Section: Area Elective
+Source:  SU_full_slice
+
+Nodes (total):              48
+  in this section:          33
+  upstream prereqs only:    15
+Edges (total):              59
+  required:                 48
+  alternative:              11
+
+Isolates (no edges):              1
+Source nodes (no prereqs in):     16
+Sink nodes (no successors):       32
+
+Is DAG?                     True
+Courses with unparsed text: 0

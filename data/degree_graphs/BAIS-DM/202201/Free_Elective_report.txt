@@ -1,0 +1,18 @@
+Program: BAIS-DM
+Term:    202201
+Section: Free Elective
+Source:  SU_full_slice
+
+Nodes (total):              741
+  in this section:          704
+  upstream prereqs only:    37
+Edges (total):              577
+  required:                 382
+  alternative:              195
+
+Isolates (no edges):              315
+Source nodes (no prereqs in):     387
+Sink nodes (no successors):       594
+
+Is DAG?                     True
+Courses with unparsed text: 0

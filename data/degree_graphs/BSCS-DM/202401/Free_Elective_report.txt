@@ -1,0 +1,18 @@
+Program: BSCS-DM
+Term:    202401
+Section: Free Elective
+Source:  SU_full_slice
+
+Nodes (total):              553
+  in this section:          508
+  upstream prereqs only:    45
+Edges (total):              508
+  required:                 345
+  alternative:              163
+
+Isolates (no edges):              184
+Source nodes (no prereqs in):     254
+Sink nodes (no successors):       431
+
+Is DAG?                     True
+Courses with unparsed text: 0

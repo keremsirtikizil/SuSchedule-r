@@ -1,0 +1,18 @@
+Program: BAVACD-DM
+Term:    202601
+Section: Free Elective
+Source:  SU_full_slice
+
+Nodes (total):              641
+  in this section:          598
+  upstream prereqs only:    43
+Edges (total):              628
+  required:                 397
+  alternative:              231
+
+Isolates (no edges):              188
+Source nodes (no prereqs in):     265
+Sink nodes (no successors):       481
+
+Is DAG?                     True
+Courses with unparsed text: 0

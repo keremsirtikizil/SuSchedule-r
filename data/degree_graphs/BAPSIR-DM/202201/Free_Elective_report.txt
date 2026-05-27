@@ -1,0 +1,18 @@
+Program: BAPSIR-DM
+Term:    202201
+Section: Free Elective
+Source:  SU_full_slice
+
+Nodes (total):              765
+  in this section:          721
+  upstream prereqs only:    44
+Edges (total):              590
+  required:                 375
+  alternative:              215
+
+Isolates (no edges):              321
+Source nodes (no prereqs in):     403
+Sink nodes (no successors):       600
+
+Is DAG?                     True
+Courses with unparsed text: 0

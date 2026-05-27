@@ -1,25 +1,29 @@
 """
-Build per-degree, per-section prereq DAGs from the unified SU_full_catalog.
+Build per-degree, per-term, per-section prereq DAGs from the unified SU_full_catalog.
 
-For each (degree, section) where section is one of
-{Required, Core Elective, Area Elective, Free Elective} we emit a slice of
-the catalog containing only the courses tagged with that (degree, section)
-in ANY of the scraped terms, plus the dangling prereq nodes those courses
-reference (so eligibility/path-to-graduation logic can still trace upstream).
+For each (degree, term, section) triple we emit a slice of the catalog
+containing only courses tagged with that combination in program_sections, plus
+the dangling prereq nodes those courses reference.
 
 Layout:
   data/degree_graphs/
     BSCS-DM/
-      Required.json        - node-link graph
-      Required.gpickle     - NetworkX pickle
-      Required_report.txt  - DAG stats
-      Core_Elective.json
-      ...
+      202201/              <- 2022 Fall cohort requirements
+        Required.json
+        Required.gpickle
+        Required_report.txt
+        Core_Elective.json
+        ...
+      202301/              <- 2023 Fall cohort
+        ...
+      202601/              <- 2025 Fall cohort (latest)
+        ...
     BSEE-DM/
       ...
 
 Run:
-  python -m scraper.build_degree_graphs              # all 4 sections, all degrees
+  python -m scraper.build_degree_graphs                                # all terms
+  python -m scraper.build_degree_graphs --terms 202201 202601          # specific terms
   python -m scraper.build_degree_graphs --sections Required "Core Elective"
 """
 from __future__ import annotations
@@ -102,8 +106,8 @@ def _build_one(
     return G
 
 
-def _write_outputs(G: nx.DiGraph, program: str, section: str) -> None:
-    out_dir = GRAPHS_DIR / program
+def _write_outputs(G: nx.DiGraph, program: str, term: str, section: str) -> None:
+    out_dir = GRAPHS_DIR / program / term
     out_dir.mkdir(parents=True, exist_ok=True)
     slug = _slug(section)
     out_json = out_dir / f"{slug}.json"
@@ -114,6 +118,7 @@ def _write_outputs(G: nx.DiGraph, program: str, section: str) -> None:
         json.dumps(
             {
                 "program": program,
+                "term": term,
                 "section": section,
                 "source": "SU_full_slice",
                 "nodes": [
@@ -150,6 +155,7 @@ def _write_outputs(G: nx.DiGraph, program: str, section: str) -> None:
 
     lines = [
         f"Program: {program}",
+        f"Term:    {term}",
         f"Section: {section}",
         f"Source:  SU_full_slice",
         "",
@@ -177,38 +183,43 @@ def _write_outputs(G: nx.DiGraph, program: str, section: str) -> None:
 def build_all(
     catalog_path: Path,
     sections: tuple[str, ...] = DEFAULT_SECTIONS,
+    terms: tuple[str, ...] | None = None,
     lenient: bool = True,
     verbose: bool = True,
-) -> dict[tuple[str, str], int]:
-    """Build every (degree, section) graph. Returns counts."""
+) -> dict[tuple[str, str, str], int]:
+    """Build every (degree, term, section) graph. Returns counts."""
     catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
     all_courses = catalog["courses"]
 
-    # Group courses by (program, section); a course can fall into multiple.
-    bucket: dict[tuple[str, str], list[dict]] = {}
+    # Group courses by (program, term, section); a course can fall into multiple.
+    bucket: dict[tuple[str, str, str], list[dict]] = {}
     for cr in all_courses:
-        seen_keys: set[tuple[str, str]] = set()
+        seen_keys: set[tuple[str, str, str]] = set()
         for tag in cr.get("program_sections", []):
-            key = (tag["program"], tag["section"])
-            if key in seen_keys or tag["section"] not in sections:
+            if tag["section"] not in sections:
+                continue
+            if terms is not None and tag["term"] not in terms:
+                continue
+            key = (tag["program"], tag["term"], tag["section"])
+            if key in seen_keys:
                 continue
             seen_keys.add(key)
             bucket.setdefault(key, []).append(cr)
 
     GRAPHS_DIR.mkdir(parents=True, exist_ok=True)
-    counts: dict[tuple[str, str], int] = {}
-    for (program, section), courses in sorted(bucket.items()):
+    counts: dict[tuple[str, str, str], int] = {}
+    for (program, term, section), courses in sorted(bucket.items()):
         G = _build_one(courses, program, section, lenient=lenient)
-        _write_outputs(G, program, section)
-        counts[(program, section)] = len(courses)
+        _write_outputs(G, program, term, section)
+        counts[(program, term, section)] = len(courses)
         if verbose:
-            print(f"  {program:<10} {section:<18} -> {len(courses):>4} courses, "
+            print(f"  {program:<10} {term}  {section:<18} -> {len(courses):>4} courses, "
                   f"{G.number_of_nodes()} nodes, {G.number_of_edges()} edges")
 
     # Summary
     if verbose:
-        per_program = Counter()
-        for (program, _), n in counts.items():
+        per_program: Counter = Counter()
+        for (program, _term, _sec), n in counts.items():
             per_program[program] += n
         print()
         print("=== summary (course tags per program) ===")
@@ -231,8 +242,18 @@ def main() -> None:
         default=list(DEFAULT_SECTIONS),
         help="which sections to slice (default: the four canonical ones)",
     )
+    ap.add_argument(
+        "--terms",
+        nargs="+",
+        default=None,
+        help="which admit terms to build (default: all terms found in catalog)",
+    )
     args = ap.parse_args()
-    build_all(Path(args.catalog), sections=tuple(args.sections))
+    build_all(
+        Path(args.catalog),
+        sections=tuple(args.sections),
+        terms=tuple(args.terms) if args.terms else None,
+    )
 
 
 if __name__ == "__main__":

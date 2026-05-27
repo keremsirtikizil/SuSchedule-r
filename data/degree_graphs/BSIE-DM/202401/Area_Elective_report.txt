@@ -1,0 +1,18 @@
+Program: BSIE-DM
+Term:    202401
+Section: Area Elective
+Source:  SU_full_slice
+
+Nodes (total):              133
+  in this section:          100
+  upstream prereqs only:    33
+Edges (total):              104
+  required:                 63
+  alternative:              41
+
+Isolates (no edges):              28
+Source nodes (no prereqs in):     66
+Sink nodes (no successors):       86
+
+Is DAG?                     True
+Courses with unparsed text: 0

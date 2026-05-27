@@ -1,0 +1,18 @@
+Program: BSBIO-DM
+Term:    202201
+Section: Core Elective
+Source:  SU_full_slice
+
+Nodes (total):              57
+  in this section:          47
+  upstream prereqs only:    10
+Edges (total):              31
+  required:                 25
+  alternative:              6
+
+Isolates (no edges):              26
+Source nodes (no prereqs in):     37
+Sink nodes (no successors):       40
+
+Is DAG?                     True
+Courses with unparsed text: 0

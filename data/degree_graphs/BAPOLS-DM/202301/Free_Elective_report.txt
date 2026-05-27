@@ -1,0 +1,18 @@
+Program: BAPOLS-DM
+Term:    202301
+Section: Free Elective
+Source:  SU_full_slice
+
+Nodes (total):              647
+  in this section:          602
+  upstream prereqs only:    45
+Edges (total):              547
+  required:                 360
+  alternative:              187
+
+Isolates (no edges):              226
+Source nodes (no prereqs in):     306
+Sink nodes (no successors):       484
+
+Is DAG?                     True
+Courses with unparsed text: 0

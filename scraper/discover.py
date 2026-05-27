@@ -75,9 +75,12 @@ DEGREE_CODES: tuple[str, ...] = (
 )
 
 TERMS: tuple[str, ...] = (
+    "202201",  # Fall 22-23  (2022 cohort)
+    "202301",  # Fall 23-24  (2023 cohort)
+    "202401",  # Fall 24-25  (2024 cohort)
     "202501",  # Fall 25-26
     "202502",  # Spring 25-26
-    "202601",  # Fall 26-27
+    "202601",  # Fall 26-27  (2025 cohort)
 )
 
 BRUTE_NUM_RANGE = range(100, 500)

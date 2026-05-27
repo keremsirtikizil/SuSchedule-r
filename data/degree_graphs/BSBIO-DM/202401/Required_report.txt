@@ -1,0 +1,18 @@
+Program: BSBIO-DM
+Term:    202401
+Section: Required
+Source:  SU_full_slice
+
+Nodes (total):              15
+  in this section:          11
+  upstream prereqs only:    4
+Edges (total):              11
+  required:                 8
+  alternative:              3
+
+Isolates (no edges):              0
+Source nodes (no prereqs in):     7
+Sink nodes (no successors):       8
+
+Is DAG?                     True
+Courses with unparsed text: 0
