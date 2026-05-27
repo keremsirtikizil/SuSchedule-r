@@ -4,6 +4,7 @@
 let sessionId   = null;
 let isLoading   = false;
 let courseNames = {};   // code → title (filled from plan reasoning)
+let currentMode = 'pipeline';   // 'pipeline' | 'react'
 
 // ── DOM refs ───────────────────────────────────────────────────
 const dropZone    = document.getElementById('drop-zone');
@@ -17,6 +18,38 @@ const sendBtn     = document.getElementById('send-btn');
 const chatMsgs    = document.getElementById('chat-messages');
 const statsBody   = document.getElementById('stats-body');
 
+// ── Mode toggle ────────────────────────────────────────────────
+async function setMode(mode) {
+  if (mode === currentMode) return;
+  currentMode = mode;
+
+  // Update button styles
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mode === mode);
+  });
+
+  // If a session already exists, tear it down so the new mode takes effect
+  // on the next transcript upload.
+  if (sessionId) {
+    await fetch(`/session/${sessionId}`, { method: 'DELETE' }).catch(() => {});
+    sessionId = null;
+    resetUI();
+    addSystemMsg(`🔄 Switched to **${mode === 'react' ? 'ReAct' : 'Pipeline'}** mode. Please re-upload your transcript to start a new session.`);
+  }
+}
+
+function resetUI() {
+  document.getElementById('chat-messages').innerHTML = '';
+  document.getElementById('plan-list').innerHTML = '<div class="plan-empty">No plan yet — chat to get started.</div>';
+  document.getElementById('plan-credits').classList.add('hidden');
+  document.getElementById('student-info').classList.add('hidden');
+  document.getElementById('drop-zone').classList.remove('hidden');
+  document.getElementById('drop-label').innerHTML = 'Drop transcript here<br/><small>JSON or PDF</small>';
+  document.getElementById('drop-zone').style.pointerEvents = '';
+  document.getElementById('stats-body').textContent = '—';
+  courseNames = {};
+}
+
 // ── Session init ───────────────────────────────────────────────
 async function initSession() {
   const res = await fetch('/session', {
@@ -27,11 +60,12 @@ async function initSession() {
       min_credits: 12,
       max_credits: 21,
       target_credits: 17,
+      mode: currentMode,
     }),
   });
   const data = await res.json();
   sessionId = data.session_id;
-  updateStats({ target_term: data.term, term_label: data.term_label });
+  updateStats({ target_term: data.term, term_label: data.term_label, mode: currentMode });
 }
 
 // ── File upload ────────────────────────────────────────────────
@@ -163,9 +197,11 @@ function addUserMsg(text) {
 function addAgentMsg(text, intent) {
   const div = document.createElement('div');
   div.className = 'msg agent';
-  const badge = intent && intent !== 'error'
-    ? `<span class="intent-badge">${intent}</span>`
-    : '';
+  let badge = '';
+  if (intent && intent !== 'error') {
+    const cls = intent === 'react' ? 'intent-badge react' : 'intent-badge';
+    badge = `<span class="${cls}">${intent}</span>`;
+  }
   div.innerHTML = `
     <div class="avatar">🤖</div>
     <div class="bubble">${badge}${marked.parse(text)}</div>
@@ -242,6 +278,8 @@ function extractCourseNames(responseText) {
 function updateStats(data) {
   const rows = [];
   if (data.term_label) rows.push(['Term', data.term_label]);
+  const modeLabel = (data.mode || currentMode) === 'react' ? '🔮 ReAct' : '⚙️ Pipeline';
+  rows.push(['Mode', modeLabel]);
   if (data.eligible_pool_size != null) rows.push(['Eligible pool', data.eligible_pool_size]);
   if (data.history_turns != null) rows.push(['Turns', data.history_turns]);
   if (data.total_tokens != null) rows.push(['Tokens used', data.total_tokens.toLocaleString()]);
@@ -264,6 +302,7 @@ async function refreshStats(tokenUsage) {
       history_turns: data.history_turns,
       total_tokens: tokenUsage?.total_tokens,
       this_turn: tokenUsage?.this_turn,
+      mode: currentMode,
     });
     // Enrich plan sidebar with title info from reasoning
     if (data.reasoning) {

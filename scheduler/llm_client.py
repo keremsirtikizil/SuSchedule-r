@@ -177,3 +177,32 @@ def call_chat(
     response = _with_retry(_call)
     _log_usage(response.usage, label)
     return response.choices[0].message.content or ""
+
+
+def call_with_tools(
+    model: str,
+    messages: list[dict],
+    tools: list[dict],
+    label: str = "tools",
+    tool_choice: str = "auto",
+):
+    """Chat completion with function/tool calling.
+
+    Returns the raw assistant ``message`` object so the caller can inspect
+    ``message.tool_calls`` (list of ChatCompletionMessageToolCall) and
+    ``message.content`` (final text, present when the model is done calling
+    tools).
+    """
+    client = get_client()
+
+    def _call():
+        return client.chat.completions.create(
+            model=model,
+            messages=messages,
+            tools=tools,
+            tool_choice=tool_choice,
+        )
+
+    response = _with_retry(_call)
+    _log_usage(response.usage, label)
+    return response.choices[0].message

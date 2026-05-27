@@ -66,6 +66,47 @@ body {
   margin-top: 2px;
 }
 
+/* ── Mode toggle ──────────────────────────────────────────────── */
+.mode-toggle {
+  display: flex;
+  margin-top: 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px;
+  gap: 3px;
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 4px 0;
+  font-size: 11px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  letter-spacing: 0.3px;
+}
+
+.mode-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.mode-btn:not(.active):hover {
+  color: var(--text);
+  background: rgba(255,255,255,0.05);
+}
+
+/* Intent badge variant for react mode */
+.intent-badge.react {
+  background: rgba(167,139,250,0.15);
+  color: var(--accent2);
+}
+
 /* ── Panels ───────────────────────────────────────────────────── */
 .panel {
   padding: 14px 16px;

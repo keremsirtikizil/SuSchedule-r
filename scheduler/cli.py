@@ -194,6 +194,9 @@ def main() -> None:
     ap.add_argument("--intent-model",   default="gpt-4o-mini")
     ap.add_argument("--no-required",    action="store_true",
                     help="Don't auto-inject required courses.")
+    ap.add_argument("--mode",           choices=["pipeline", "react"], default="pipeline",
+                    help="Agent style: 'pipeline' (8-stage, default) or 'react' "
+                         "(tool-using loop).")
     ap.add_argument("--first-message",  default="",
                     help="Optional: send an initial message automatically on startup.")
     args = ap.parse_args()
@@ -216,6 +219,7 @@ def main() -> None:
         planner_model=args.planner_model,
         intent_model=args.intent_model,
         include_required=not args.no_required,
+        mode=args.mode,
     )
 
     print("Loading session…")

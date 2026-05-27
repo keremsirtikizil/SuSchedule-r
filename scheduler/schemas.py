@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -129,6 +129,12 @@ class PlannerRequest:
     # -- Models --
     planner_model:    str = "gpt-4o"
     intent_model:     str = "gpt-4o-mini"
+
+    # -- Agent style --
+    # "pipeline" → fixed 8-stage scheduler.agent.plan (Phase A/B path).
+    # "react"    → tool-using loop in scheduler.react_agent (no intent dispatch,
+    #              the LLM decides what to do via tool calls).
+    mode:             Literal["pipeline", "react"] = "pipeline"
 
 
 @dataclass

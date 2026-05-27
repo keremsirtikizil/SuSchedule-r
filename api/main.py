@@ -55,6 +55,8 @@ class CreateSessionRequest(BaseModel):
     planner_model: str = "gpt-4o"
     intent_model: str = "gpt-4o-mini"
     include_required: bool = True
+    # "pipeline" = legacy 8-stage agent; "react" = tool-using loop
+    mode: str = "pipeline"
 
 
 class CreateSessionResponse(BaseModel):
@@ -172,6 +174,7 @@ async def upload_transcript(session_id: str, file: UploadFile = File(...)):
             planner_model=config.planner_model,
             intent_model=config.intent_model,
             include_required=config.include_required,
+            mode=config.mode,
         )
 
         session = PlannerSession.from_request(req)
@@ -215,19 +218,23 @@ async def handle_turn(session_id: str, req: TurnRequest):
         raise HTTPException(400, "Upload a transcript first.")
 
     from scheduler import llm_client
-    from scheduler.intents import classify_intent
 
     usage_before = llm_client.get_session_usage()["total_tokens"]
 
-    # Classify intent separately so we can return it in the response
-    intent_obj = classify_intent(
-        req.message,
-        session.history,
-        model=session.base_request.intent_model,
-    )
+    # In pipeline mode, classify intent up-front so we can return it in the
+    # response badge. In react mode the model handles its own reasoning —
+    # skip the extra gpt-4o-mini call.
+    if session.base_request.mode == "react":
+        intent_label = "react"
+    else:
+        from scheduler.intents import classify_intent
+        intent_obj = classify_intent(
+            req.message,
+            session.history,
+            model=session.base_request.intent_model,
+        )
+        intent_label = intent_obj.intent
 
-    # Dispatch via session (which re-classifies internally — small extra cost,
-    # but keeps the session's history management intact)
     try:
         response_text = session.handle_turn(req.message)
     except Exception as exc:
@@ -242,7 +249,7 @@ async def handle_turn(session_id: str, req: TurnRequest):
         total_credits=plan.total_credits if plan else None,
         validation_ok=plan.validation_ok if plan else None,
         warnings=plan.warnings if plan else [],
-        intent=intent_obj.intent,
+        intent=intent_label,
         token_usage={
             **llm_client.get_session_usage(),
             "this_turn": usage_after - usage_before,

@@ -165,37 +165,38 @@ class PlannerSession:
     def handle_turn(self, user_message: str) -> str:
         """Process one user turn and return the assistant's response.
 
-        Appends (user, assistant) messages to ``self.history``.
+        Routes to either the legacy intent-classifier pipeline or the ReAct
+        tool-using loop depending on ``base_request.mode``. In both cases the
+        (user, assistant) pair is appended to ``self.history``.
         """
-        from scheduler.intents import (
-            classify_intent,
-            handle_plan, handle_swap, handle_drop,
-            handle_add, handle_explain, handle_unknown,
-        )
-
-        # Ensure heavy state loaded for all intents except first-time plan
-        # (plan handler loads it too, but we load here so intent handlers can
-        #  access _eligible_pool / _graph without checking)
         self._ensure_heavy_state()
 
-        # Classify intent (cheap gpt-4o-mini call)
-        intent = classify_intent(
-            user_message,
-            self.history,
-            model=self.base_request.intent_model,
-        )
+        if self.base_request.mode == "react":
+            from scheduler.react_agent import handle_turn as react_handle_turn
+            response = react_handle_turn(self, user_message)
+        else:
+            from scheduler.intents import (
+                classify_intent,
+                handle_plan, handle_swap, handle_drop,
+                handle_add, handle_explain, handle_unknown,
+            )
 
-        # Dispatch
-        dispatch = {
-            "plan":    handle_plan,
-            "swap":    handle_swap,
-            "drop":    handle_drop,
-            "add":     handle_add,
-            "explain": handle_explain,
-            "unknown": handle_unknown,
-        }
-        handler = dispatch.get(intent.intent, handle_unknown)
-        response = handler(self, intent)
+            intent = classify_intent(
+                user_message,
+                self.history,
+                model=self.base_request.intent_model,
+            )
+
+            dispatch = {
+                "plan":    handle_plan,
+                "swap":    handle_swap,
+                "drop":    handle_drop,
+                "add":     handle_add,
+                "explain": handle_explain,
+                "unknown": handle_unknown,
+            }
+            handler = dispatch.get(intent.intent, handle_unknown)
+            response = handler(self, intent)
 
         # Update conversation history
         self.history.append({"role": "user", "content": user_message})

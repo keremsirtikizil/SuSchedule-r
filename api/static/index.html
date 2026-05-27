@@ -14,6 +14,10 @@
   <div class="sidebar-header">
     <div class="logo">SuSchedule<span class="logo-r">-r</span></div>
     <div class="logo-sub">AI Course Planner · Sabancı University</div>
+    <div class="mode-toggle" id="mode-toggle" title="Switch agent mode">
+      <button class="mode-btn active" data-mode="pipeline" onclick="setMode('pipeline')">Pipeline</button>
+      <button class="mode-btn"        data-mode="react"    onclick="setMode('react')">ReAct</button>
+    </div>
   </div>
 
   <!-- Upload panel -->
