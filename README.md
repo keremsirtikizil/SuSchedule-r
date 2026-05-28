@@ -57,7 +57,7 @@ Sabancı Banner
 scraper/discover.py        →  data/discovery_manifest.json   (688 courses, 14 programs)
 scraper/scrape_full.py     →  data/SU_full_catalog.json
 scraper/build_graph.py     →  data/SU_full_graph.gpickle     (721 nodes, 729 prereq edges)
-scraper/build_degree_graphs.py → data/degree_graphs/<PROGRAM>/{Required,Core_Elective,...}.gpickle
+scraper/build_degree_graphs.py → data/degree_graphs/<PROGRAM>/<COHORT>/{Required,Core_Elective,...}.gpickle
 scraper/scrape_offerings.py→  data/offerings_<TERM>.json     (per-term CRN / meeting data)
 ```
 
@@ -124,13 +124,87 @@ PlannerSession.handle_turn()
 | Tool | What it does |
 |---|---|
 | `get_student_profile()` | Transcript snapshot (program, completed, in-progress, CGPA) |
-| `get_remaining_requirements()` | What's still needed for graduation |
+| `select_degree_graphs()` | Loads only the relevant degree/cohort/section graphs |
+| `get_requirement_state()` | What's still needed for graduation |
+| `get_degree_section_courses()` | RAG-ranks courses inside a scoped graph section |
 | `get_current_plan()` | Currently committed plan + per-course reasoning |
-| `retrieve_courses(query, k, subj)` | Two-stage semantic search (FAISS → cross-encoder) |
+| `rewrite_retrieval_queries()` | Internal query expansion for better retrieval |
+| `retrieve_catalog_courses(queries, filters)` | Two-stage semantic search (FAISS → cross-encoder) |
 | `check_prereqs(code)` | Full prereq/coreq text + whether student is eligible |
-| `get_offerings(code)` | Historical offering terms + likely-offered flag |
+| `get_offering_pattern(code)` | Historical offering terms + likely-offered flag |
 | `validate_plan(plan)` | Eligibility check — ok/violations/total_credits |
 | `set_plan(plan, reasoning, summary)` | Commit a validated plan to the session |
+
+---
+
+### 2d. Full agentic topology
+
+The production chat path is the ReAct agent. The fixed pipeline remains useful
+as a demo/fallback, but normal UI turns run through `mode="react"`.
+
+```mermaid
+flowchart TD
+    U["User message or transcript upload"] --> API["FastAPI API<br/>api/main.py"]
+    API --> S["PlannerSession<br/>scheduler/session.py"]
+
+    UPL["/transcript upload"] --> TP["parse_transcript()<br/>scheduler/transcript.py"]
+    TP --> ST["Authoritative student state<br/>program, admit term, completed, in-progress"]
+    ST --> S
+
+    S --> CTX["Session context manager<br/>max 50 recent turns<br/>structured state kept outside history"]
+    CTX --> GUARD{"Deterministic guard?"}
+
+    GUARD -->|"graduation / requirements question<br/>and student context exists"| REQ["Requirement engine<br/>scheduler/requirements.py"]
+    REQ --> GS["Graph selector<br/>data/degree_graphs/{program}/{cohort}/"]
+    GS --> RQANS["Transcript-backed requirement answer<br/>no LLM hallucination path"]
+
+    GUARD -->|"ordinary advising turn"| REACT["ReAct loop<br/>scheduler/react_agent.py"]
+    REACT --> LLM["LLM tool decision<br/>OpenAI function calling"]
+    LLM --> TOOLS["Toolbox methods"]
+
+    TOOLS --> PROF["get_student_profile"]
+    TOOLS --> SEL["select_degree_graphs"]
+    TOOLS --> REQS["get_requirement_state"]
+    TOOLS --> SEC["get_degree_section_courses"]
+    TOOLS --> RW["rewrite_retrieval_queries"]
+    TOOLS --> RAG["retrieve_catalog_courses"]
+    TOOLS --> ELIG["get_eligible_courses / validate_plan"]
+    TOOLS --> OFF["get_offering_pattern"]
+
+    RW --> RAG
+    RAG --> FAISS["FAISS bi-encoder<br/>BAAI/bge-base-en-v1.5"]
+    FAISS --> RERANK["Cross-encoder reranker<br/>BAAI/bge-reranker-base"]
+    RAG --> CAT["Catalog metadata<br/>data/SU_full_catalog.json"]
+
+    SEL --> DG["Scoped degree graphs only<br/>Required / Core / Area / Free"]
+    SEC --> DG
+    REQS --> DG
+    ELIG --> DG
+    OFF --> OF["Historical offerings<br/>data/offerings_*.json"]
+
+    TOOLS --> TRACE["Agent trace<br/>tool decisions, graph selection,<br/>requirement state, retrieval hits"]
+    RQANS --> TRACE
+    TRACE --> UI["UI trace panel<br/>api/static/app.js"]
+    REACT --> RESP["Final assistant answer"]
+    RQANS --> RESP
+    RESP --> API
+```
+
+Important runtime rules:
+
+- Transcript data is authoritative after upload. The LLM cannot overwrite the
+  parsed program, admit term, completed courses, or in-progress courses through
+  `set_student_context`.
+- Degree-aware reasoning uses scoped graphs under
+  `data/degree_graphs/{PROGRAM}/{COHORT}/`; the global graph is diagnostic only.
+- Requirement questions use the symbolic requirement engine first. This prevents
+  the model from asking for transcript data that is already loaded or inventing
+  another major.
+- RAG is still used for course-content, topic, focus-area, and section-filtered
+  exploration. Query rewrites are internal and discarded before final answering.
+- The trace panel shows both tool decisions and successful data results:
+  selected graphs, requirement state, retrieval queries, retrieved courses, and
+  final response.
 
 ---
 
@@ -182,20 +256,25 @@ SuSchedule-r/
 │   ├── scrape_full.py             ← Stage 2: fetch each course-detail page
 │   ├── prereq_parser.py           ← prereq text → boolean expression tree
 │   ├── build_graph.py             ← Stage 3: unified prereq DAG
-│   ├── build_degree_graphs.py     ← Stage 3b: per-(program, section) sub-DAGs
+│   ├── build_degree_graphs.py     ← Stage 3b: per-(program, cohort, section) sub-DAGs
 │   ├── audit_prereqs.py           ← parser coverage diagnostic
 │   └── scrape_offerings.py        ← per-term CRN / meeting scraper
 │
 ├── data/
 │   ├── SU_full_catalog.json       ← 688 courses, structured
 │   ├── SU_full_graph.gpickle      ← 721-node prereq DAG (NetworkX)
-│   ├── degree_graphs/             ← per-(program, section) sub-DAGs
+│   ├── degree_graphs/             ← per-(program, cohort, section) sub-DAGs
 │   │   ├── BSCS-DM/
-│   │   │   ├── Required.gpickle
-│   │   │   ├── Core_Elective.gpickle
-│   │   │   ├── Area_Elective.gpickle
-│   │   │   └── Free_Elective.gpickle
-│   │   └── … (14 programs × 4 sections)
+│   │   │   ├── 202201/
+│   │   │   │   ├── Required.gpickle
+│   │   │   │   ├── Core_Elective.gpickle
+│   │   │   │   ├── Area_Elective.gpickle
+│   │   │   │   └── Free_Elective.gpickle
+│   │   │   ├── 202301/
+│   │   │   ├── 202401/
+│   │   │   ├── 202501/
+│   │   │   └── 202601/
+│   │   └── … (14 programs × cohorts × 4 sections)
 │   ├── offerings_*.json           ← per-term section listings (202401 → 202503)
 │   └── transcript_cagan.json      ← sample parsed transcript
 │
@@ -267,7 +346,7 @@ python -m scraper.scrape_full
 # Stage 3a: unified prereq DAG (721 nodes, 729 edges, 100% parse coverage)
 python -m scraper.build_graph --full
 
-# Stage 3b: per-(degree, section) sub-DAGs
+# Stage 3b: per-(degree, cohort, section) sub-DAGs
 python -m scraper.build_degree_graphs
 
 # Audit parser coverage (should report: strict=426, all others=0 failures)

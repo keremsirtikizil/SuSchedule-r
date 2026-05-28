@@ -192,6 +192,24 @@ def _planning_requested(text: str) -> bool:
     return bool(re.search(r"\b(plan|schedule|semester plan|term plan|two terms|next term|next semester)\b", text.lower()))
 
 
+def _requirements_status_requested(text: str) -> bool:
+    low = text.lower()
+    return bool(
+        re.search(r"\b(requirements?|graduation|graduate|remaining|left|need to complete)\b", low)
+        and not re.search(r"\b(prereq|prerequisite|coreq|corequisite)\b", low)
+    )
+
+
+def _requirements_followup_requested(session: "PlannerSession", text: str) -> bool:
+    low = text.lower()
+    if _requirements_status_requested(text):
+        return True
+    if not re.search(r"\b(transcript|take it from|use it|uploaded|already uploaded)\b", low):
+        return False
+    recent = " ".join(str(m.get("content", "")) for m in session.history[-6:]).lower()
+    return bool(re.search(r"\b(requirements?|graduation|graduate|remaining|left|need to complete)\b", recent))
+
+
 _PROGRAM_PATTERNS: list[tuple[re.Pattern, str]] = [
     (re.compile(r"\b(ie|industrial engineering)\b", re.I), "BSIE-DM"),
     (re.compile(r"\b(cs|computer science)\b", re.I), "BSCS-DM"),
@@ -331,6 +349,66 @@ def _trace(session: "PlannerSession", event: dict) -> None:
     session.last_trace.append(_compact_for_trace(event))
     if len(session.last_trace) > 120:
         session.last_trace = session.last_trace[-120:]
+
+
+def _fmt_code_list(codes: list[str], limit: int = 16) -> str:
+    if not codes:
+        return "none"
+    shown = codes[:limit]
+    suffix = "" if len(codes) <= limit else f" (+{len(codes) - limit} more)"
+    return ", ".join(shown) + suffix
+
+
+def _deterministic_requirement_answer(session: "PlannerSession", toolbox: "Toolbox") -> str | None:
+    student = session.student
+    if student is None:
+        return None
+
+    profile = toolbox.get_student_profile()
+    _trace(session, {
+        "type": "tool_result",
+        "step": 0,
+        "name": "get_student_profile",
+        "arguments": {},
+        "result": profile,
+    })
+    graphs = toolbox.select_degree_graphs()
+    req = toolbox.get_requirement_state()
+    if graphs.get("error") or req.get("error"):
+        return None
+
+    admit_label = session._raw.get("admit_term_label") or student.admit_term
+    required_left = req.get("required_left", [])
+    required_in_progress = req.get("required_in_progress", [])
+    core_left = req.get("core_elective_left", [])
+    area_left = req.get("area_elective_left", [])
+    free_left = req.get("free_elective_left", [])
+    section_counts = graphs.get("section_counts", {})
+
+    lines = [
+        f"Using your uploaded transcript, I read your program as `{req['program']}` and your entrance cohort as `{req['cohort_term']}` ({admit_label}).",
+        "",
+        "**Remaining required courses:**",
+        f"- `{_fmt_code_list(required_left)}`",
+        f"- Required credits left: `{req.get('required_credits_left', 0.0)}` SU credits",
+    ]
+    if required_in_progress:
+        lines.append(f"- Required courses already in progress: `{_fmt_code_list(required_in_progress)}`")
+
+    lines.extend([
+        "",
+        "**Elective requirement pools still open after your transcript:**",
+        f"- Core Elective pool: `{len(core_left)}` remaining candidate courses from `{section_counts.get('Core Elective', len(core_left))}` graph courses",
+        f"- Area Elective pool: `{len(area_left)}` remaining candidate courses from `{section_counts.get('Area Elective', len(area_left))}` graph courses",
+        f"- Free Elective pool: `{len(free_left)}` remaining candidate courses from `{section_counts.get('Free Elective', len(free_left))}` graph courses",
+        "",
+        "Important: the elective lists are pools, not courses you must all take. For exact next-semester choices, I should filter these pools by prerequisites, likely Fall offerings, and your interests.",
+    ])
+
+    if session.transcript_loaded:
+        lines.append("Your transcript context is locked as authoritative, so chat wording cannot overwrite this program/cohort.")
+    lines.append("Next useful step: ask me to find eligible Fall courses inside Core/Area electives for a focus like security, AI, theory, systems, or networking.")
+    return "\n".join(lines)
 
 
 class Toolbox:
@@ -809,6 +887,12 @@ def handle_turn(session: "PlannerSession", user_message: str) -> str:
         "planning_allowed": session.planning_allowed,
         "state": session.state_summary(),
     })
+
+    if _requirements_followup_requested(session, user_message) and session.student is not None:
+        final_text = _deterministic_requirement_answer(session, toolbox)
+        if final_text:
+            _trace(session, {"type": "final_response", "content": final_text})
+            return final_text
 
     messages: list[dict] = [{"role": "system", "content": REACT_SYSTEM}]
     messages.extend(session.history[-100:])
