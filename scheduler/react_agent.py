@@ -4,6 +4,7 @@ from __future__ import annotations
 import html as html_lib
 import json
 import re
+from difflib import SequenceMatcher
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -251,6 +252,59 @@ def _reasks_for_known_profile(text: str) -> bool:
     return bool(asks and profile_fields)
 
 
+_ANSWER_COURSE_LINE_RE = re.compile(
+    r"(?m)(?P<code>[A-Z]{2,5}\s*\d{3,5}[A-Z]?)\s*(?:[-:–—])\s*(?P<title>[^\n\r*`#]+)"
+)
+
+
+def _norm_title(text: str) -> str:
+    text = re.sub(r"<[^>]+>", " ", text or "")
+    text = re.sub(r"[*_`~]", "", text)
+    text = re.sub(r"\s+", " ", text).strip().lower()
+    text = re.split(r"\s+(?:is|covers|examines|explores|focuses|will|would|can)\b", text, maxsplit=1)[0]
+    return re.sub(r"[^a-z0-9 ]+", "", text).strip()
+
+
+def _catalog_title_mismatches(session: "PlannerSession", text: str) -> list[dict[str, str]]:
+    mismatches: list[dict[str, str]] = []
+    if not text.strip():
+        return mismatches
+    catalog = session.catalog
+    seen: set[tuple[str, str]] = set()
+    for match in _ANSWER_COURSE_LINE_RE.finditer(text):
+        code = re.sub(r"\s+", " ", match.group("code").upper().strip())
+        stated = match.group("title").strip(" .:-")
+        key = (code, stated)
+        if key in seen:
+            continue
+        seen.add(key)
+        course = catalog.get(code)
+        if course is None:
+            mismatches.append({"code": code, "stated": stated, "expected": "UNKNOWN_COURSE_CODE"})
+            continue
+        stated_norm = _norm_title(stated)
+        expected_norm = _norm_title(course.title)
+        if not stated_norm:
+            continue
+        if expected_norm and expected_norm in stated_norm:
+            continue
+        ratio = SequenceMatcher(None, stated_norm, expected_norm).ratio() if expected_norm else 0.0
+        if ratio < 0.72:
+            mismatches.append({"code": code, "stated": stated, "expected": course.title})
+    return mismatches
+
+
+def _catalog_mismatch_message(mismatches: list[dict[str, str]]) -> str:
+    lines = [
+        "Revise the previous answer. It contained course-code/title mismatches.",
+        "Use these exact catalog facts and remove any unsupported course names:",
+    ]
+    for item in mismatches[:12]:
+        lines.append(f"- {item['code']}: stated `{item['stated']}`, exact catalog title `{item['expected']}`")
+    lines.append("Do not invent course titles. If a relevant course is blocked, completed, or only adjacent to the topic, say so explicitly.")
+    return "\n".join(lines)
+
+
 def _compact_codes(codes: set[str] | list[str] | tuple[str, ...], limit: int = 24) -> str:
     ordered = sorted(str(c).upper().strip() for c in codes if str(c).strip())
     if not ordered:
@@ -280,18 +334,20 @@ def _session_context_message(session: "PlannerSession", user_message: str) -> st
     if student is None:
         lines.extend([
             "- student_profile: not known",
-            "- exact eligibility/planning requires transcript or manually provided completed courses.",
+            "- exact eligibility/planning requires degree evaluation, transcript, or manually provided completed courses.",
         ])
     else:
         raw = session._raw or {}
+        source = state.get("profile_source") or raw.get("source") or "transcript"
         lines.extend([
             f"- student_name: {raw.get('name', 'Student')}",
+            f"- academic_profile_source: {source}",
             f"- program: {student.program}",
             f"- admit_term: {student.admit_term}",
             f"- selected_cohort: {state.get('cohort_term') or 'not yet selected'}",
             f"- completed_count: {len(student.completed)}",
             f"- in_progress: {_compact_codes(student.in_progress, limit=16)}",
-            "- transcript authority: if transcript_loaded is true, use this parsed profile and do not ask the user again for program, admit term, completed courses, or in-progress courses.",
+            "- academic profile authority: if transcript_loaded is true, use this parsed profile and do not ask the user again for program, admit term, completed courses, or in-progress courses.",
         ])
 
     if _course_recommendation_requested(user_message):
@@ -630,6 +686,17 @@ def _course_info(session: "PlannerSession", code: str) -> tuple[str, float]:
     return "", 0.0
 
 
+def _basic_eng_split(code: str) -> dict | None:
+    try:
+        from scheduler.basic_eng import get_basic_eng_split
+        row = get_basic_eng_split(code)
+    except Exception:
+        return None
+    if not row:
+        return None
+    return row.get("after_2013_2014")
+
+
 def _fmt_course_lines(session: "PlannerSession", codes: list[str], limit: int = 18) -> list[str]:
     if not codes:
         return ["- none"]
@@ -709,6 +776,40 @@ def _section_credit_progress(session: "PlannerSession", section: str, minimum: f
     }
 
 
+def _degree_eval_section_progress(session: "PlannerSession", section: str) -> dict | None:
+    sections = (session._raw or {}).get("sections") or {}
+    name_map = {
+        "Core Elective": "Core Electives",
+        "Area Elective": "Area Electives",
+        "Free Elective": "Free Electives",
+    }
+    data = sections.get(name_map.get(section, section))
+    if not data:
+        return None
+    minimum = data.get("minimum_required") or {}
+    completed = data.get("completed") or {}
+    courses = data.get("courses") or []
+    completed_codes = [r.get("code") for r in courses if r.get("status") == "completed"]
+    in_progress_codes = [r.get("code") for r in courses if r.get("status") == "in_progress"]
+    min_su = minimum.get("su")
+    done_su = completed.get("su") or 0.0
+    in_progress_su = sum(float(r.get("su") or 0.0) for r in courses if r.get("status") == "in_progress")
+    remaining = max(0.0, float(min_su) - float(done_su)) if min_su is not None else None
+    return {
+        "section": section,
+        "minimum_credits": min_su,
+        "completed": completed_codes,
+        "in_progress": in_progress_codes,
+        "completed_credits": done_su,
+        "in_progress_credits": in_progress_su,
+        "counted_credits": done_su,
+        "remaining_credits": remaining,
+        "pool_size": len(courses),
+        "source": "degree_evaluation_html",
+        "passed": data.get("passed"),
+    }
+
+
 def _deterministic_requirement_answer(session: "PlannerSession", toolbox: "Toolbox") -> str | None:
     student = session.student
     if student is None:
@@ -735,13 +836,16 @@ def _deterministic_requirement_answer(session: "PlannerSession", toolbox: "Toolb
     free_left = req.get("free_elective_left", [])
     section_counts = graphs.get("section_counts", {})
     credit_rules = _degree_credit_rules(req["program"], req["cohort_term"])
-    progress = {
-        section: _section_credit_progress(session, section, credit_rules.get(section))
-        for section in ("Core Elective", "Area Elective", "Free Elective")
-    }
+    progress = {}
+    for section in ("Core Elective", "Area Elective", "Free Elective"):
+        progress[section] = (
+            _degree_eval_section_progress(session, section)
+            or _section_credit_progress(session, section, credit_rules.get(section))
+        )
 
+    source_label = "degree evaluation" if session.profile_source == "degree_evaluation_html" else "transcript"
     lines = [
-        f"Using your uploaded transcript, I read your program as `{req['program']}` and your entrance cohort as `{req['cohort_term']}` ({admit_label}).",
+        f"Using your uploaded {source_label}, I read your program as `{req['program']}` and your entrance cohort as `{req['cohort_term']}` ({admit_label}).",
         "",
         "**Required courses still not completed:**",
         *_fmt_course_lines(session, required_left),
@@ -761,9 +865,14 @@ def _deterministic_requirement_answer(session: "PlannerSession", toolbox: "Toolb
         minimum_text = f"{minimum:g}" if minimum is not None else "unknown"
         remaining = p.get("remaining_credits")
         remaining_text = f"{remaining:g}" if remaining is not None else "unknown"
+        ip_credits = p.get("in_progress_credits", 0)
+        if p.get("source") == "degree_evaluation_html":
+            ip_text = f" (`{ip_credits:g}` currently in progress)"
+        else:
+            ip_text = f" + `{ip_credits:g}` in progress"
         lines.append(
-            f"- {section}: `{p.get('completed_credits', 0):g}` completed + "
-            f"`{p.get('in_progress_credits', 0):g}` in progress / minimum `{minimum_text}` SU "
+            f"- {section}: `{p.get('completed_credits', 0):g}` counted by SUIS"
+            f"{ip_text} / minimum `{minimum_text}` SU "
             f"=> at least `{remaining_text}` SU still needed"
         )
         if p.get("in_progress"):
@@ -780,7 +889,7 @@ def _deterministic_requirement_answer(session: "PlannerSession", toolbox: "Toolb
     ])
 
     if session.transcript_loaded:
-        lines.append("Your transcript context is locked as authoritative, so chat wording cannot overwrite this program/cohort.")
+        lines.append("Your uploaded academic profile is locked as authoritative, so chat wording cannot overwrite this program/cohort.")
     lines.append("Next useful step: ask me to find eligible Fall courses inside Core/Area electives for a focus like security, AI, theory, systems, or networking.")
     _trace(session, {
         "type": "requirement_credit_progress",
@@ -812,6 +921,7 @@ class Toolbox:
         return {
             "has_profile": True,
             "transcript_loaded": self.session.transcript_loaded,
+            "profile_source": self.session.profile_source,
             "name": raw.get("name", "Student"),
             "program": s.program,
             "admit_term": s.admit_term,
@@ -1067,13 +1177,14 @@ class Toolbox:
                             "code": h.code,
                             "title": h.title,
                             "credits": h.su_credit,
-                            "description": (h.description or "")[:500],
-                            "prereq_text": h.prereq_text,
-                            "rerank_score": round(h.reranker_score, 3) if h.reranker_score is not None else None,
-                            "source": source_name,
-                        }
-                        for h in hits
-                    ]
+                    "description": (h.description or "")[:500],
+                    "prereq_text": h.prereq_text,
+                    "rerank_score": round(h.reranker_score, 3) if h.reranker_score is not None else None,
+                    "source": source_name,
+                    "basic_engineering_ects": _basic_eng_split(h.code),
+                }
+                for h in hits
+            ]
                     rows = _apply_topic_boosts(rows, query)
                 except Exception as exc:
                     rows = self.session.catalog.search(query, k=k, candidate_pool=pool, subj=subj)
@@ -1140,6 +1251,7 @@ class Toolbox:
                 row["already_completed"] = code in self.session._student.completed
                 row["currently_taking"] = code in self.session._student.in_progress
             row["likely_offered_target_term"] = code in likely_set if self.session._offerings is not None else None
+            row["basic_engineering_ects"] = row.get("basic_engineering_ects") or _basic_eng_split(str(code or ""))
         self.session.last_retrieved = results
         _trace(self.session, {
             "type": "retrieval",
@@ -1177,7 +1289,9 @@ class Toolbox:
             if not course:
                 out.append({"code": code.upper().strip(), "error": "not found"})
             else:
-                out.append(course.to_result(rank=len(out) + 1, score=1.0))
+                result = course.to_result(rank=len(out) + 1, score=1.0)
+                result["basic_engineering_ects"] = _basic_eng_split(course.code)
+                out.append(result)
         return out
 
     def get_eligible_courses(self, section: str | None = None, k: int = 30) -> dict:
@@ -1335,6 +1449,7 @@ def handle_turn(session: "PlannerSession", user_message: str) -> str:
 
     final_text = ""
     profile_reask_repaired = False
+    catalog_mismatch_repaired = False
     for step in range(MAX_ITERATIONS):
         assistant_msg = llm_client.call_with_tools(
             model=model,
@@ -1380,6 +1495,18 @@ def handle_turn(session: "PlannerSession", user_message: str) -> str:
                         "Use the current session context and prefetched RAG context; do not ask for program, "
                         "admit term, completed courses, in-progress courses, or transcript again."
                     ),
+                })
+                continue
+            mismatches = _catalog_title_mismatches(session, final_text)
+            if mismatches and not catalog_mismatch_repaired:
+                catalog_mismatch_repaired = True
+                _trace(session, {
+                    "type": "catalog_title_repair",
+                    "mismatches": mismatches,
+                })
+                messages.append({
+                    "role": "system",
+                    "content": _catalog_mismatch_message(mismatches),
                 })
                 continue
             break

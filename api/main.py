@@ -69,6 +69,8 @@ class TranscriptResponse(BaseModel):
     ok: bool
     name: str
     program: str
+    admit_term: Optional[str] = None
+    profile_source: str = "transcript"
     semester: int
     cgpa: float
     completed_count: int
@@ -155,7 +157,7 @@ async def create_session(req: CreateSessionRequest):
 
 @app.post("/session/{session_id}/transcript", response_model=TranscriptResponse)
 async def upload_transcript(session_id: str, file: UploadFile = File(...)):
-    """Upload a transcript JSON or PDF and initialize the planning session."""
+    """Upload a degree evaluation HTML, transcript JSON, or transcript PDF."""
     if session_id not in _sessions:
         raise HTTPException(404, f"Session {session_id} not found.")
 
@@ -203,21 +205,25 @@ async def upload_transcript(session_id: str, file: UploadFile = File(...)):
         slot["session"] = session
         slot["transcript_raw"] = raw
         slot["transcript_path"] = persistent_path   # kept for DELETE cleanup
+        source = raw.get("source", "transcript")
+        source_label = "Degree evaluation" if source == "degree_evaluation_html" else "Transcript"
 
         return TranscriptResponse(
             ok=True,
             name=raw.get("name", "Student"),
             program=session.student.program,
+            admit_term=session.student.admit_term,
+            profile_source=source,
             semester=raw.get("current_semester", 0),
             cgpa=raw.get("cgpa", 0.0),
             completed_count=len(session.student.completed),
             in_progress=sorted(session.student.in_progress),
             required_left=remaining.required_left,
-            message=f"Transcript loaded for {raw.get('name', 'Student')}.",
+            message=f"{source_label} loaded for {raw.get('name', 'Student')}.",
         )
     except Exception as exc:
         persistent_path.unlink(missing_ok=True)
-        raise HTTPException(400, f"Failed to parse transcript: {exc}")
+        raise HTTPException(400, f"Failed to parse academic profile: {exc}")
 
 
 @app.post("/session/{session_id}/turn", response_model=TurnResponse)

@@ -28,6 +28,7 @@ class PlannerSession:
     _student: Student | None = field(default=None, repr=False)
     _raw: dict = field(default_factory=dict, repr=False)
     transcript_loaded: bool = False
+    profile_source: str = "none"
     known_interests: list[str] = field(default_factory=list)
     last_retrieved: list[dict] = field(default_factory=list)
 
@@ -59,20 +60,27 @@ class PlannerSession:
         if req.transcript_json:
             raw = json.loads(Path(req.transcript_json).read_text(encoding="utf-8"))
         elif req.transcript_pdf:
-            from scheduler.transcript import parse_transcript
-            raw = parse_transcript(str(req.transcript_pdf))
+            path = Path(req.transcript_pdf)
+            if path.suffix.lower() in {".html", ".htm"}:
+                from scheduler.degree_eval import parse_degree_evaluation
+                raw = parse_degree_evaluation(path)
+            else:
+                from scheduler.transcript import parse_transcript
+                raw = parse_transcript(str(path))
         else:
             return
 
         self._raw = raw
+        source = str(raw.get("source") or "transcript")
         self._student = Student(
             program=normalize_program_code(raw.get("program")) or "BSCS-DM",
-            admit_term=str(raw.get("admit_term", "202101")),
+            admit_term=str(raw.get("admit_term") or "202101"),
             completed=set(raw.get("completed_for_eligibility", raw.get("completed", []))),
             in_progress=set(raw.get("in_progress", [])),
             cumulative_credits=float(raw.get("cumulative_credits", 0.0)),
         )
         self.transcript_loaded = True
+        self.profile_source = source
         self._reset_academic_state()
 
     def load_student_from_path(self, path: Path) -> None:
@@ -235,6 +243,7 @@ class PlannerSession:
             "admit_term": self._student.admit_term if self._student else None,
             "cohort_term": self._selected_graphs.cohort_term if self._selected_graphs else None,
             "transcript_loaded": self.transcript_loaded,
+            "profile_source": self.profile_source,
             "target_term": self.base_request.target_term,
             "eligible_pool_size": len(self._eligible_pool),
             "current_plan": self.current_plan.plan if self.current_plan else None,

@@ -23,7 +23,7 @@ function resetUI() {
   planCredits.classList.add('hidden');
   studentInfo.classList.add('hidden');
   dropZone.classList.remove('hidden');
-  dropLabel.innerHTML = 'Optional: drop transcript<br/><small>JSON or PDF for exact eligibility</small>';
+  dropLabel.innerHTML = 'Optional: drop degree evaluation<br/><small>HTML preferred; JSON/PDF fallback</small>';
   dropZone.style.pointerEvents = '';
   statsBody.textContent = '-';
   traceBody.textContent = 'No trace yet.';
@@ -87,7 +87,8 @@ async function uploadTranscript(file) {
     showStudentInfo(data);
 
     const requiredLeft = Array.isArray(data.required_left) ? data.required_left : [];
-    addSystemMsg(`Transcript loaded for **${escapeHtml(data.name)}** (${escapeHtml(data.program)}).
+    const sourceLabel = data.profile_source === 'degree_evaluation_html' ? 'Degree evaluation' : 'Transcript';
+    addSystemMsg(`${sourceLabel} loaded for **${escapeHtml(data.name)}** (${escapeHtml(data.program)}).
 Required courses still needed: ${requiredLeft.length > 0 ? requiredLeft.map(escapeHtml).join(', ') : 'none - almost done'}.
 What would you like to take this semester?`);
   } catch (err) {
@@ -104,7 +105,8 @@ function showStudentInfo(data) {
   studentInfo.classList.remove('hidden');
   studentInfo.innerHTML = `
     <div class="name">${escapeHtml(data.name)} <span class="tag">${escapeHtml(data.program)}</span></div>
-    Semester ${escapeHtml(data.semester ?? 0)} &nbsp;-&nbsp; CGPA ${Number(data.cgpa || 0).toFixed(2)}<br/>
+    ${data.semester ? `Semester ${escapeHtml(data.semester)}` : 'Degree evaluation'} &nbsp;-&nbsp; CGPA ${Number(data.cgpa || 0).toFixed(2)}<br/>
+    Cohort ${escapeHtml(data.admit_term || '-')}<br/>
     ${escapeHtml(data.completed_count ?? 0)} completed &nbsp;-&nbsp;
     ${inProgress.length} in progress<br/>
     <span style="color:var(--accent2)">Required left: ${requiredLeft.length} courses</span>
@@ -295,6 +297,16 @@ function renderTrace(trace) {
         <div class="trace-item trace-error">
           <div class="trace-title">Profile re-ask repaired</div>
           <div class="trace-meta">${escapeHtml(ev.message || '')}</div>
+        </div>
+      `);
+    } else if (ev.type === 'catalog_title_repair') {
+      const fixes = (ev.mismatches || []).map(m =>
+        `<li><span>${escapeHtml(m.code || '')}</span> ${escapeHtml(m.stated || '')} -> ${escapeHtml(m.expected || '')}</li>`
+      ).join('');
+      rows.push(`
+        <div class="trace-item trace-error">
+          <div class="trace-title">Catalog title repair</div>
+          <ol>${fixes}</ol>
         </div>
       `);
     } else if (ev.type === 'assistant_step') {
