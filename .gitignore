@@ -7,6 +7,15 @@ venv/
 env/
 *.egg-info/
 
+# Local secrets
+.env
+.env.*
+!.env.example
+
+# Generated local RAG artifacts
+embeddings/*.npy
+embeddings/*.index
+
 # OS
 .DS_Store
 
