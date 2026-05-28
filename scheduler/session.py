@@ -90,6 +90,11 @@ class PlannerSession:
     ) -> None:
         if self._student is None:
             self._student = Student()
+        if self.transcript_loaded:
+            # Transcript data is authoritative. LLM tool calls may infer a
+            # degree from casual wording ("ME", "CS", etc.); do not let that
+            # overwrite parsed academic state after upload.
+            return
         if program:
             self._student.program = normalize_program_code(program) or program.upper().strip()
         if admit_term:

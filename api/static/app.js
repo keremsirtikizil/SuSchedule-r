@@ -286,6 +286,26 @@ function renderTrace(trace) {
     } else if (ev.type === 'tool_result' && ev.name === 'rewrite_retrieval_queries') {
       const queries = ev.result?.queries || [];
       rows.push(`<div class="trace-item"><div class="trace-title">Rewritten retrieval queries</div><div class="trace-meta">${queries.map(escapeHtml).join(' | ')}</div></div>`);
+    } else if (ev.type === 'selected_graphs') {
+      const counts = ev.section_counts || {};
+      const countText = Object.entries(counts).map(([section, count]) => `${escapeHtml(section)}: ${escapeHtml(count)}`).join(' | ');
+      rows.push(`
+        <div class="trace-item">
+          <div class="trace-title">Selected degree graphs</div>
+          <div class="trace-meta">program: ${escapeHtml(ev.program)} | cohort: ${escapeHtml(ev.cohort_term)}</div>
+          <div class="trace-meta">${countText}</div>
+        </div>
+      `);
+    } else if (ev.type === 'requirements') {
+      const required = (ev.required_left || []).slice(0, 12).map(escapeHtml).join(', ');
+      rows.push(`
+        <div class="trace-item">
+          <div class="trace-title">Requirement state</div>
+          <div class="trace-meta">program: ${escapeHtml(ev.program)} | cohort: ${escapeHtml(ev.cohort_term)} | required credits left: ${escapeHtml(ev.required_credits_left ?? '-')}</div>
+          <div class="trace-meta">required left (${escapeHtml(ev.required_left_count ?? 0)}): ${required || 'none'}</div>
+          <div class="trace-meta">core left: ${escapeHtml(ev.core_left_count ?? 0)} | area left: ${escapeHtml(ev.area_left_count ?? 0)} | free left: ${escapeHtml(ev.free_left_count ?? 0)}</div>
+        </div>
+      `);
     } else if (ev.type === 'retrieval') {
       const filters = ev.filters || {};
       const hits = (ev.merged_results || []).slice(0, 10).map(h =>
@@ -310,6 +330,18 @@ function renderTrace(trace) {
           <ol>${hits}</ol>
         </div>
       `);
+    } else if (ev.type === 'tool_result' && ['get_student_profile', 'select_degree_graphs', 'get_requirement_state'].includes(ev.name)) {
+      const result = ev.result || {};
+      let summary = '';
+      if (ev.name === 'get_student_profile') {
+        summary = `program: ${escapeHtml(result.program || '-')} | admit: ${escapeHtml(result.admit_term || '-')} | transcript: ${escapeHtml(result.transcript_loaded)}`;
+      } else if (ev.name === 'select_degree_graphs') {
+        const counts = result.section_counts || {};
+        summary = `program: ${escapeHtml(result.program || '-')} | cohort: ${escapeHtml(result.cohort_term || '-')} | ${Object.entries(counts).map(([section, count]) => `${escapeHtml(section)}: ${escapeHtml(count)}`).join(' | ')}`;
+      } else {
+        summary = `program: ${escapeHtml(result.program || '-')} | cohort: ${escapeHtml(result.cohort_term || '-')} | required left: ${escapeHtml((result.required_left || []).length)}`;
+      }
+      rows.push(`<div class="trace-item"><div class="trace-title">${escapeHtml(ev.name)} result</div><div class="trace-meta">${summary}</div></div>`);
     } else if (ev.type === 'tool_result' && ev.result?.error) {
       rows.push(`<div class="trace-item trace-error"><div class="trace-title">${escapeHtml(ev.name || 'tool')} error</div><div class="trace-meta">${escapeHtml(ev.result.error)}</div></div>`);
     } else if (ev.type === 'final_response') {

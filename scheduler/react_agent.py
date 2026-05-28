@@ -373,6 +373,9 @@ class Toolbox:
         completed: list[str] | None = None,
         in_progress: list[str] | None = None,
     ) -> dict:
+        ignored = False
+        if self.session.transcript_loaded:
+            ignored = any(value is not None for value in (program, admit_term, completed, in_progress))
         if admit_term and re.fullmatch(r"\d{4}", admit_term.strip()):
             admit_term = admit_term.strip() + "01"
         self.session.update_manual_context(
@@ -381,7 +384,10 @@ class Toolbox:
             completed={c.upper().strip() for c in completed} if completed is not None else None,
             in_progress={c.upper().strip() for c in in_progress} if in_progress is not None else None,
         )
-        return self.get_student_profile()
+        profile = self.get_student_profile()
+        if ignored:
+            profile["context_update_ignored"] = "Transcript is loaded, so parsed degree/admit/completed context was kept authoritative."
+        return profile
 
     def select_degree_graphs(self, sections: list[str] | None = None) -> dict:
         if sections and self.session._student is not None:
@@ -422,6 +428,20 @@ class Toolbox:
         if section:
             key = section.lower().replace(" ", "_")
             return {"program": r.program, "cohort_term": r.cohort_term, "section": section, "left": data.get(f"{key}_left", [])}
+        _trace(self.session, {
+            "type": "requirements",
+            "program": r.program,
+            "cohort_term": r.cohort_term,
+            "required_left_count": len(r.required_left),
+            "core_left_count": len(r.core_left),
+            "area_left_count": len(r.area_left),
+            "free_left_count": len(r.free_left),
+            "required_left": r.required_left,
+            "core_left": r.core_left,
+            "area_left": r.area_left,
+            "free_left": r.free_left,
+            "required_credits_left": r.required_credits_left,
+        })
         return data
 
     def get_remaining_requirements(self) -> dict:
