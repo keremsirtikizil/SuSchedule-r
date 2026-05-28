@@ -1,0 +1,580 @@
+{
+  "scraped_at": "2026-05-28T19:28:16.534445+00:00",
+  "term": "202601",
+  "minor_count": 17,
+  "minors": {
+    "ANALY-MINOR": {
+      "code": "ANALY-MINOR",
+      "name": "Business Analytics Minor",
+      "term": "202601",
+      "sections": {
+        "Required": [
+          "MATH 306",
+          "MGMT 203",
+          "OPIM 390"
+        ],
+        "Core Elective": [
+          "IE 405",
+          "OPIM 302",
+          "OPIM 402",
+          "OPIM 405",
+          "OPIM 407",
+          "OPIM 410"
+        ],
+        "Area Elective": [
+          "CS 404",
+          "CS 412",
+          "ECON 301",
+          "ECON 401",
+          "MKTG 401",
+          "MKTG 404",
+          "MKTG 405",
+          "MKTG 410",
+          "MKTG 413",
+          "MKTG 414",
+          "OPIM 404",
+          "OPIM 408",
+          "OPIM 413"
+        ]
+      },
+      "course_count": 22
+    },
+    "ARTTC-MINOR": {
+      "code": "ARTTC-MINOR",
+      "name": "Art Theory and Criticism Minor",
+      "term": "202601",
+      "sections": {
+        "Required": [
+          "HART 292",
+          "HART 293",
+          "VA 430"
+        ],
+        "Core Elective": [
+          "CULT 432",
+          "HART 234",
+          "HART 320",
+          "HART 413",
+          "MGMT 425",
+          "PHIL 322",
+          "VA 311",
+          "VA 315",
+          "VA 420",
+          "VA 423"
+        ]
+      },
+      "course_count": 13
+    },
+    "BSE-MINOR": {
+      "code": "BSE-MINOR",
+      "name": "Battery Science and Engineering Minor",
+      "term": "202601",
+      "sections": {
+        "Required": [
+          "CHEM 405",
+          "ENRG 322",
+          "ENS 202"
+        ],
+        "Core Elective": [
+          "ENRG 424",
+          "ENRG 426",
+          "MAT 405",
+          "ME 305"
+        ],
+        "Area Elective": [
+          "CHEM 212",
+          "CHEM 301",
+          "DSA 210",
+          "MAT 204",
+          "MAT 309",
+          "ME 303",
+          "ME 309"
+        ]
+      },
+      "course_count": 14
+    },
+    "CHEM-MINOR": {
+      "code": "CHEM-MINOR",
+      "name": "Chemistry Minor",
+      "term": "202601",
+      "sections": {
+        "Required": [
+          "CHEM 202",
+          "CHEM 301",
+          "CHEM 302",
+          "ENS 202",
+          "NS 207"
+        ],
+        "Core Elective": [
+          "BIO 321",
+          "BIO 322",
+          "CHEM 212",
+          "CHEM 405",
+          "ENS 205",
+          "MAT 204",
+          "MAT 302",
+          "MAT 401",
+          "MAT 404",
+          "MAT 423",
+          "PHYS 302",
+          "PHYS 304"
+        ]
+      },
+      "course_count": 17
+    },
+    "CONF-MINOR": {
+      "code": "CONF-MINOR",
+      "name": "Conflict Analysis & Resolution Minor",
+      "term": "202601",
+      "sections": {
+        "Required": [
+          "CONF 300",
+          "CONF 431"
+        ],
+        "Area Elective": [
+          "CONF 400",
+          "ECON 201",
+          "IR 410",
+          "IR 489",
+          "MGMT 414",
+          "ORG 302",
+          "POLS 434",
+          "POLS 448",
+          "POLS 483",
+          "PSIR 311",
+          "PSIR 401",
+          "PSY 344",
+          "PSY 444"
+        ]
+      },
+      "course_count": 15
+    },
+    "DECB-MINOR": {
+      "code": "DECB-MINOR",
+      "name": "Decision and Behavior Minor",
+      "term": "202601",
+      "sections": {
+        "Required": [
+          "ECON 201",
+          "PSY 201"
+        ],
+        "Core Elective": [
+          "CONF 300",
+          "CS 404",
+          "CS 412",
+          "ECON 312",
+          "ECON 495",
+          "IE 405",
+          "MGMT 414",
+          "MKTG 301",
+          "MKTG 402",
+          "ORG 302",
+          "PHIL 310",
+          "POLS 404",
+          "PSY 310",
+          "PSY 340",
+          "PSY 341",
+          "PSY 344",
+          "PSY 350"
+        ]
+      },
+      "course_count": 19
+    },
+    "ENERG-MINOR": {
+      "code": "ENERG-MINOR",
+      "name": "Energy Minor",
+      "term": "202601",
+      "sections": {
+        "Core Elective": [
+          "CHEM 405",
+          "ECON 204",
+          "ECON 323",
+          "ENRG 315",
+          "ENRG 322",
+          "ENRG 401",
+          "ENRG 420",
+          "ENRG 423",
+          "ENS 202",
+          "ENS 207",
+          "MAT 204",
+          "MAT 309",
+          "ME 305",
+          "ME 307",
+          "ME 309",
+          "ME 420",
+          "ME 441",
+          "SPS 374",
+          "SPS 384"
+        ],
+        "Area Elective": [
+          "ECON 320",
+          "ECON 330",
+          "ECON 340",
+          "ENRG 424",
+          "ENRG 426",
+          "IE 303",
+          "IE 309",
+          "IE 402",
+          "IE 405",
+          "IE 409",
+          "IF 201",
+          "IR 391",
+          "MAT 307",
+          "MAT 312",
+          "ME 301",
+          "MGMT 401",
+          "MGMT 402",
+          "MGMT 403",
+          "MGMT 415",
+          "MKTG 401",
+          "OPIM 409",
+          "POLS 307"
+        ]
+      },
+      "course_count": 41
+    },
+    "ENTREP-MINOR": {
+      "code": "ENTREP-MINOR",
+      "name": "Entrepreneurship Minor",
+      "term": "202601",
+      "sections": {
+        "Required": [
+          "MGMT 401",
+          "MGMT 402"
+        ],
+        "Core Elective": [
+          "FIN 407",
+          "MGMT 404",
+          "MGMT 412",
+          "MGMT 413",
+          "MGMT 415",
+          "MGMT 417",
+          "MGMT 420",
+          "MKTG 301"
+        ],
+        "Area Elective": []
+      },
+      "course_count": 10
+    },
+    "FIN-MINOR": {
+      "code": "FIN-MINOR",
+      "name": "Finance Minor",
+      "term": "202601",
+      "sections": {
+        "Required": [
+          "FIN 301"
+        ],
+        "Core Elective": [
+          "FIN 401",
+          "FIN 402",
+          "FIN 403",
+          "FIN 404",
+          "FIN 405",
+          "FIN 406",
+          "FIN 407",
+          "FIN 408",
+          "FIN 409",
+          "FIN 499",
+          "IE 303",
+          "IE 432"
+        ],
+        "Area Elective": [
+          "ACC 301",
+          "ACC 401",
+          "ACC 402",
+          "ACC 403",
+          "ACC 404",
+          "ACC 405",
+          "ACC 450",
+          "ACC 451",
+          "ECON 345",
+          "ECON 350",
+          "FIN 450",
+          "FIN 451"
+        ]
+      },
+      "course_count": 25
+    },
+    "GENDER-MINOR": {
+      "code": "GENDER-MINOR",
+      "name": "Gender and Women's Studies (Previous Name: Gender Studies) Minor",
+      "term": "202601",
+      "sections": {
+        "Required": [
+          "GEN 341",
+          "GEN 444"
+        ],
+        "Area Elective": [
+          "ANTH 326",
+          "ANTH 340",
+          "GEN 343",
+          "GEN 385",
+          "GEN 399",
+          "GEN 410",
+          "GEN 442",
+          "GEN 480",
+          "HART 320",
+          "IF 301",
+          "LIT 445",
+          "SOC 432"
+        ]
+      },
+      "course_count": 14
+    },
+    "IS-MINOR": {
+      "code": "IS-MINOR",
+      "name": "International Studies Minor",
+      "term": "202601",
+      "sections": {
+        "Required": [
+          "IR 201",
+          "IR 391"
+        ],
+        "Core Elective": [
+          "ECON 340",
+          "IR 342",
+          "IR 392",
+          "IR 394",
+          "IR 405",
+          "LAW 311",
+          "MGMT 413",
+          "SPS 384"
+        ],
+        "Area Elective": [
+          "ANTH 255",
+          "CONF 400",
+          "CULT 453",
+          "ECON 345",
+          "ECON 350",
+          "IR 301",
+          "IR 489",
+          "MGMT 406",
+          "ORG 403",
+          "SPS 374"
+        ]
+      },
+      "course_count": 20
+    },
+    "MATH-MINOR": {
+      "code": "MATH-MINOR",
+      "name": "Mathematics Minor",
+      "term": "202601",
+      "sections": {
+        "Required": [
+          "MATH 201",
+          "MATH 301",
+          "MATH 311"
+        ],
+        "Core Elective": [
+          "MATH 202",
+          "MATH 203",
+          "MATH 204",
+          "MATH 206",
+          "MATH 305",
+          "MATH 307",
+          "MATH 317",
+          "MATH 318",
+          "MATH 322",
+          "MATH 409",
+          "MATH 410",
+          "MATH 414",
+          "MATH 484"
+        ]
+      },
+      "course_count": 16
+    },
+    "MKTG-MINOR": {
+      "code": "MKTG-MINOR",
+      "name": "Marketing Minor",
+      "term": "202601",
+      "sections": {
+        "Required": [
+          "MKTG 301"
+        ],
+        "Core Elective": [
+          "MKTG 401",
+          "MKTG 402",
+          "MKTG 403",
+          "MKTG 404",
+          "MKTG 405",
+          "MKTG 406",
+          "MKTG 407",
+          "MKTG 409",
+          "MKTG 410",
+          "MKTG 411",
+          "MKTG 412",
+          "MKTG 413",
+          "MKTG 414"
+        ],
+        "Area Elective": []
+      },
+      "course_count": 14
+    },
+    "PHIL-MINOR": {
+      "code": "PHIL-MINOR",
+      "name": "Philosophy Minor",
+      "term": "202601",
+      "sections": {
+        "Required": [
+          "HUM 207",
+          "PHIL 202"
+        ],
+        "Core Elective": [
+          "HUM 317",
+          "PHIL 300",
+          "PHIL 301",
+          "PHIL 310",
+          "PHIL 321",
+          "PHIL 370",
+          "PHIL 401",
+          "PHIL 450",
+          "PHIL 460",
+          "POLS 301",
+          "POLS 473"
+        ],
+        "Area Elective": [
+          "PHIL 322",
+          "PHIL 399"
+        ]
+      },
+      "course_count": 15
+    },
+    "PHYS-MINOR": {
+      "code": "PHYS-MINOR",
+      "name": "Physics Minor",
+      "term": "202601",
+      "sections": {
+        "Required": [
+          "ENS 201",
+          "PHYS 303",
+          "PHYS 304",
+          "PHYS 411",
+          "PHYS 412"
+        ],
+        "Core Elective": [
+          "CS 435",
+          "CS 440",
+          "EE 307",
+          "EE 403",
+          "ENS 202",
+          "ENS 205",
+          "ENS 303",
+          "IF 201",
+          "MATH 305",
+          "MAT 204",
+          "MAT 404",
+          "MAT 405",
+          "ME 307",
+          "ME 309",
+          "NS 200",
+          "NS 206",
+          "NS 209",
+          "NS 214",
+          "NS 222",
+          "PHYS 211",
+          "PHYS 302",
+          "PHYS 401",
+          "PHYS 484"
+        ]
+      },
+      "course_count": 28
+    },
+    "SCP-MINOR": {
+      "code": "SCP-MINOR",
+      "name": "Society, Culture and Politics Minor",
+      "term": "202601",
+      "sections": {
+        "Required": [
+          "HUM 207",
+          "SOC 201"
+        ],
+        "Core Elective": [
+          "ANTH 214",
+          "ANTH 255",
+          "CULT 355",
+          "CULT 453",
+          "POLS 483",
+          "SOC 301",
+          "SOC 425"
+        ],
+        "Area Elective": [
+          "ANTH 326",
+          "CULT 322",
+          "CULT 368",
+          "CULT 370",
+          "ECON 322",
+          "ECON 400",
+          "GEN 341",
+          "GEN 410",
+          "IR 301",
+          "IR 391",
+          "LIT 359",
+          "MGMT 412",
+          "ORG 301",
+          "ORG 403",
+          "PHIL 301",
+          "PHIL 450",
+          "POLS 251",
+          "POLS 455",
+          "POLS 457",
+          "PSY 340",
+          "SOC 408",
+          "SOC 420",
+          "SPS 384",
+          "VA 311",
+          "VA 315"
+        ]
+      },
+      "course_count": 34
+    },
+    "SUST-MINOR": {
+      "code": "SUST-MINOR",
+      "name": "Sustainability Minor",
+      "term": "202601",
+      "sections": {
+        "Required": [
+          "MGMT 301"
+        ],
+        "Core Elective": [
+          "BIO 330",
+          "BIO 363",
+          "IF 201",
+          "IF 402",
+          "IR 489",
+          "MGMT 302",
+          "MGMT 310",
+          "MGMT 333",
+          "MGMT 410",
+          "MGMT 412",
+          "MGMT 424",
+          "ORG 405",
+          "PHIL 460",
+          "SOC 425",
+          "SPS 374",
+          "SPS 404"
+        ],
+        "Area Elective": [
+          "CULT 355",
+          "ECON 321",
+          "ECON 322",
+          "ECON 420",
+          "ENRG 315",
+          "ENRG 322",
+          "ENRG 401",
+          "IR 394",
+          "LAW 311",
+          "MAT 424",
+          "ME 420",
+          "ME 441",
+          "MGMT 213",
+          "OPIM 301",
+          "ORG 301",
+          "ORG 302",
+          "ORG 403",
+          "SOC 420",
+          "SPS 384"
+        ]
+      },
+      "course_count": 36
+    }
+  }
+}

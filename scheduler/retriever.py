@@ -226,6 +226,7 @@ class Retriever:
         load_model: bool = True,
         load_reranker: bool = True,
         device: str = "cpu",
+        local_files_only: bool = True,
     ) -> "Retriever":
         """Load all artifacts from disk and return a ready Retriever.
 
@@ -240,6 +241,10 @@ class Retriever:
             ``retrieve()`` will then return bi-encoder order only.
         device:
             ``"cuda"`` or ``"cpu"``.  Applied to both models.
+        local_files_only:
+            Load Hugging Face models from the local cache without network
+            checks. Run ``python -m scheduler.build_faiss_index`` once to
+            download/cache the models.
         """
         # DataFrame ----------------------------------------------------------
         df = pd.read_parquet(Path(parquet_path))
@@ -262,11 +267,20 @@ class Retriever:
             try:
                 from sentence_transformers import SentenceTransformer  # type: ignore
                 print(f"[Retriever] Loading bi-encoder: {MODEL_NAME}")
-                model = SentenceTransformer(MODEL_NAME, device=device)
+                model = SentenceTransformer(
+                    MODEL_NAME,
+                    device=device,
+                    local_files_only=local_files_only,
+                )
             except ImportError:
                 print(
                     "[Retriever] sentence-transformers not installed. "
                     "Install with: pip install sentence-transformers"
+                )
+            except Exception as exc:
+                print(
+                    f"[Retriever] Could not load bi-encoder ({exc}). "
+                    "Run: python -m scheduler.build_faiss_index"
                 )
 
         # Cross-encoder re-ranker --------------------------------------------
@@ -275,7 +289,11 @@ class Retriever:
             try:
                 from sentence_transformers import CrossEncoder  # type: ignore
                 print(f"[Retriever] Loading cross-encoder re-ranker: {RERANKER_NAME}")
-                reranker = CrossEncoder(RERANKER_NAME, device=device)
+                reranker = CrossEncoder(
+                    RERANKER_NAME,
+                    device=device,
+                    local_files_only=local_files_only,
+                )
             except ImportError:
                 print("[Retriever] sentence-transformers not installed — no re-ranker.")
             except Exception as exc:

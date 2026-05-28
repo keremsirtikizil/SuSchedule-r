@@ -181,7 +181,8 @@ def main() -> None:
     )
     ap.add_argument(
         "--transcript", "-t", required=True,
-        help="Path to transcript JSON (e.g. data/transcript_cagan.json) or PDF."
+        help="Path to a Degree Evaluation HTML, transcript JSON "
+             "(e.g. data/transcript_cagan.json), or Academic Records PDF."
     )
     ap.add_argument(
         "--term", default="202601",
@@ -206,13 +207,16 @@ def main() -> None:
         print(f"[Error] Transcript not found: {transcript_path}", file=sys.stderr)
         sys.exit(1)
 
-    is_json = transcript_path.suffix.lower() == ".json"
+    suffix = transcript_path.suffix.lower()
+    is_html = suffix in (".html", ".htm")
+    is_json = suffix == ".json"
 
     req = PlannerRequest(
         target_term=args.term,
         user_request="",
+        transcript_html=transcript_path if is_html else None,
         transcript_json=transcript_path if is_json else None,
-        transcript_pdf=transcript_path if not is_json else None,
+        transcript_pdf=transcript_path if not (is_html or is_json) else None,
         min_credits=args.min_credits,
         max_credits=args.max_credits,
         target_credits=args.target_credits,

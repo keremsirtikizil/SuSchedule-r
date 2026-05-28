@@ -56,7 +56,7 @@ class CreateSessionRequest(BaseModel):
     intent_model: str = "gpt-4o-mini"
     include_required: bool = True
     # "pipeline" = legacy 8-stage agent; "react" = tool-using loop
-    mode: str = "pipeline"
+    mode: str = "react"
 
 
 class CreateSessionResponse(BaseModel):
@@ -89,6 +89,7 @@ class TurnResponse(BaseModel):
     warnings: list[str]
     intent: str
     token_usage: dict
+    trace: list[dict] = []
 
 
 class StateResponse(BaseModel):
@@ -104,6 +105,7 @@ class StateResponse(BaseModel):
     validation_ok: Optional[bool]
     warnings: list[str]
     has_transcript: bool
+    last_trace: list[dict] = []
 
 
 # --------------------------------------------------------------------------- #
@@ -119,15 +121,28 @@ async def serve_frontend():
 @app.post("/session", response_model=CreateSessionResponse)
 async def create_session(req: CreateSessionRequest):
     """Create a new planning session and return its ID."""
-    from scheduler.schemas import PlannerRequest
     from scheduler.prompts import term_label
 
     session_id = str(uuid.uuid4())[:8]
 
-    # Store config only — session created properly after transcript upload
+    from scheduler.schemas import PlannerRequest
+    from scheduler.session import PlannerSession
+
+    planner_req = PlannerRequest(
+        target_term=req.term,
+        user_request="",
+        min_credits=req.min_credits,
+        max_credits=req.max_credits,
+        target_credits=req.target_credits,
+        planner_model=req.planner_model,
+        intent_model=req.intent_model,
+        include_required=req.include_required,
+        mode=req.mode,
+    )
+
     _sessions[session_id] = {
         "config": req,
-        "session": None,
+        "session": PlannerSession.from_request(planner_req),
         "transcript_raw": None,
     }
 
@@ -140,7 +155,14 @@ async def create_session(req: CreateSessionRequest):
 
 @app.post("/session/{session_id}/transcript", response_model=TranscriptResponse)
 async def upload_transcript(session_id: str, file: UploadFile = File(...)):
-    """Upload a transcript JSON or PDF and initialize the planning session."""
+    """Upload a Degree Evaluation HTML, transcript JSON, or PDF and initialize
+    the planning session.
+
+    The file type is detected by extension (.html/.htm -> Degree Evaluation,
+    .json -> parsed transcript, otherwise -> Academic Records PDF). The Degree
+    Evaluation is preferred: it also carries the per-degree Engineering /
+    Basic-Science ECTS requirements used by science/engineering credit tracking.
+    """
     if session_id not in _sessions:
         raise HTTPException(404, f"Session {session_id} not found.")
 
@@ -158,32 +180,31 @@ async def upload_transcript(session_id: str, file: UploadFile = File(...)):
     persistent_path.write_bytes(content)
 
     try:
-        from scheduler.schemas import PlannerRequest
-        from scheduler.session import PlannerSession
         from scheduler.requirements import compute_remaining
 
-        is_json = suffix == ".json"
-        req = PlannerRequest(
-            target_term=config.term,
-            user_request="",
-            transcript_json=persistent_path if is_json else None,
-            transcript_pdf=persistent_path if not is_json else None,
-            min_credits=config.min_credits,
-            max_credits=config.max_credits,
-            target_credits=config.target_credits,
-            planner_model=config.planner_model,
-            intent_model=config.intent_model,
-            include_required=config.include_required,
-            mode=config.mode,
-        )
-
-        session = PlannerSession.from_request(req)
+        session = slot.get("session")
+        if session is None:
+            from scheduler.schemas import PlannerRequest
+            from scheduler.session import PlannerSession
+            session = PlannerSession.from_request(PlannerRequest(
+                target_term=config.term,
+                user_request="",
+                min_credits=config.min_credits,
+                max_credits=config.max_credits,
+                target_credits=config.target_credits,
+                planner_model=config.planner_model,
+                intent_model=config.intent_model,
+                include_required=config.include_required,
+                mode=config.mode,
+            ))
+        session.load_student_from_path(persistent_path)
         raw = session._raw
 
         remaining = compute_remaining(
             program=session.student.program,
             completed_for_eligibility=session.student.completed,
             in_progress=session.student.in_progress,
+            admit_term=session.student.admit_term,
         )
 
         slot["session"] = session
@@ -215,7 +236,7 @@ async def handle_turn(session_id: str, req: TurnRequest):
     slot = _sessions[session_id]
     session = slot.get("session")
     if session is None:
-        raise HTTPException(400, "Upload a transcript first.")
+        raise HTTPException(400, "Session is not initialized.")
 
     from scheduler import llm_client
 
@@ -240,8 +261,7 @@ async def handle_turn(session_id: str, req: TurnRequest):
     except Exception as exc:
         raise HTTPException(500, f"Planner error: {exc}")
 
-    usage_after = llm_client.get_session_usage()["total_tokens"]
-
+    usage = llm_client.get_session_usage()
     plan = session.current_plan
     return TurnResponse(
         response=response_text,
@@ -251,9 +271,10 @@ async def handle_turn(session_id: str, req: TurnRequest):
         warnings=plan.warnings if plan else [],
         intent=intent_label,
         token_usage={
-            **llm_client.get_session_usage(),
-            "this_turn": usage_after - usage_before,
+            **usage,
+            "this_turn": usage["total_tokens"] - usage_before,
         },
+        trace=session.last_trace,
     )
 
 
@@ -283,6 +304,7 @@ async def get_state(session_id: str):
             validation_ok=None,
             warnings=[],
             has_transcript=False,
+            last_trace=[],
         )
 
     summary = session.state_summary()
@@ -300,7 +322,8 @@ async def get_state(session_id: str):
         total_credits=plan.total_credits if plan else None,
         validation_ok=plan.validation_ok if plan else None,
         warnings=plan.warnings if plan else [],
-        has_transcript=True,
+        has_transcript=summary["transcript_loaded"],
+        last_trace=summary.get("last_trace", []),
     )
 
 

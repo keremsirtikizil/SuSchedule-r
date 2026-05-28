@@ -1,0 +1,1762 @@
+{
+  "source": "katalog_basic_eng_degerler_202401_yuklenen_07.05.2025.pdf",
+  "term": "202401",
+  "course_count": 351,
+  "courses": {
+    "BIO 301": {
+      "ects_total": 7.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 7.0
+    },
+    "BIO 302": {
+      "ects_total": 0.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 0.0
+    },
+    "BIO 303": {
+      "ects_total": 7.0,
+      "eng_ects": 2.0,
+      "basic_sci_ects": 5.0
+    },
+    "BIO 304": {
+      "ects_total": 6.0,
+      "eng_ects": 1.0,
+      "basic_sci_ects": 5.0
+    },
+    "BIO 306": {
+      "ects_total": 7.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 7.0
+    },
+    "BIO 308": {
+      "ects_total": 7.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 7.0
+    },
+    "BIO 310": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "BIO 321": {
+      "ects_total": 7.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 7.0
+    },
+    "BIO 322": {
+      "ects_total": 5.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 5.0
+    },
+    "BIO 330": {
+      "ects_total": 5.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 5.0
+    },
+    "BIO 332": {
+      "ects_total": 7.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 7.0
+    },
+    "BIO 335": {
+      "ects_total": 6.0,
+      "eng_ects": 1.0,
+      "basic_sci_ects": 5.0
+    },
+    "BIO 363": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "BIO 366": {
+      "ects_total": 0.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 0.0
+    },
+    "BIO 370": {
+      "ects_total": 7.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 7.0
+    },
+    "BIO 395": {
+      "ects_total": 5.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 0.0
+    },
+    "BIO 401": {
+      "ects_total": 0.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 0.0
+    },
+    "BIO 403": {
+      "ects_total": 5.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 5.0
+    },
+    "BIO 404": {
+      "ects_total": 5.0,
+      "eng_ects": 2.0,
+      "basic_sci_ects": 3.0
+    },
+    "BIO 406": {
+      "ects_total": 6.0,
+      "eng_ects": 3.0,
+      "basic_sci_ects": 3.0
+    },
+    "BIO 407": {
+      "ects_total": 5.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 5.0
+    },
+    "BIO 409": {
+      "ects_total": 5.0,
+      "eng_ects": 2.5,
+      "basic_sci_ects": 2.5
+    },
+    "BIO 410": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "BIO 415": {
+      "ects_total": 5.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 5.0
+    },
+    "BIO 421": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "BIO 423": {
+      "ects_total": 6.0,
+      "eng_ects": 2.0,
+      "basic_sci_ects": 4.0
+    },
+    "BIO 432": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 0.0
+    },
+    "BIO 436": {
+      "ects_total": 6.0,
+      "eng_ects": 2.0,
+      "basic_sci_ects": 4.0
+    },
+    "BIO 444": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "BIO 445": {
+      "ects_total": 7.0,
+      "eng_ects": 3.0,
+      "basic_sci_ects": 4.0
+    },
+    "BIO 446": {
+      "ects_total": 6.0,
+      "eng_ects": 1.0,
+      "basic_sci_ects": 5.0
+    },
+    "BIO 447": {
+      "ects_total": 5.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 5.0
+    },
+    "BIO 452": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "BIO 466": {
+      "ects_total": 6.0,
+      "eng_ects": 1.0,
+      "basic_sci_ects": 5.0
+    },
+    "BIO 467": {
+      "ects_total": 6.0,
+      "eng_ects": 1.0,
+      "basic_sci_ects": 5.0
+    },
+    "BIO 468": {
+      "ects_total": 6.0,
+      "eng_ects": 2.0,
+      "basic_sci_ects": 4.0
+    },
+    "BIO 480": {
+      "ects_total": 5.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 5.0
+    },
+    "BIO 481": {
+      "ects_total": 5.0,
+      "eng_ects": 2.5,
+      "basic_sci_ects": 2.5
+    },
+    "BIO 48006": {
+      "ects_total": 6.0,
+      "eng_ects": 2.0,
+      "basic_sci_ects": 4.0
+    },
+    "CHEM 202": {
+      "ects_total": 7.0,
+      "eng_ects": 2.0,
+      "basic_sci_ects": 5.0
+    },
+    "CHEM 301": {
+      "ects_total": 6.0,
+      "eng_ects": 1.0,
+      "basic_sci_ects": 5.0
+    },
+    "CHEM 302": {
+      "ects_total": 7.0,
+      "eng_ects": 2.0,
+      "basic_sci_ects": 5.0
+    },
+    "CHEM 369": {
+      "ects_total": 6.0,
+      "eng_ects": 3.0,
+      "basic_sci_ects": 3.0
+    },
+    "CHEM 405": {
+      "ects_total": 6.0,
+      "eng_ects": 2.0,
+      "basic_sci_ects": 4.0
+    },
+    "CS 201": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 202": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 204": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "DSA 210": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "CS 300": {
+      "ects_total": 6.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 1.0
+    },
+    "CS 301": {
+      "ects_total": 6.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 1.0
+    },
+    "CS 302": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "CS 303": {
+      "ects_total": 7.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 1.0
+    },
+    "CS 305": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 306": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 307": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 308": {
+      "ects_total": 7.0,
+      "eng_ects": 7.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 395": {
+      "ects_total": 5.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 310": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 400": {
+      "ects_total": 6.0,
+      "eng_ects": 3.0,
+      "basic_sci_ects": 3.0
+    },
+    "CS 401": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 402": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 403": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 404": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "CS 405": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "CS 406": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 407": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "CS 408": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 411": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 412": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "CS 414": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 415": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 419": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 432": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 436": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 437": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 438": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 439": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 442": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 445": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 447": {
+      "ects_total": 6.0,
+      "eng_ects": 3.0,
+      "basic_sci_ects": 3.0
+    },
+    "CS 449": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 450": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 455": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 460": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 48000": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 48001": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 48002": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 48003": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 48004": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 48006": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 48007": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 48008": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 48010": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "CS 512": {
+      "ects_total": 10.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "DSA 201": {
+      "ects_total": 6.0,
+      "eng_ects": 3.0,
+      "basic_sci_ects": 3.0
+    },
+    "DSA 301": {
+      "ects_total": 6.0,
+      "eng_ects": 3.0,
+      "basic_sci_ects": 0.0
+    },
+    "DSA 428": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "DSA 395": {
+      "ects_total": 5.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 0.0
+    },
+    "DSA 440": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "DSA 473": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "DSA 492": {
+      "ects_total": 5.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 0.0
+    },
+    "EE 200": {
+      "ects_total": 2.0,
+      "eng_ects": 2.0,
+      "basic_sci_ects": 0.0
+    },
+    "EE 202": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "EE 301": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "EE 302": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "EE 303": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "EE 306": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "EE 307": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "EE 308": {
+      "ects_total": 7.0,
+      "eng_ects": 7.0,
+      "basic_sci_ects": 0.0
+    },
+    "EE 310": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "EE 311": {
+      "ects_total": 6.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 1.0
+    },
+    "EE 312": {
+      "ects_total": 6.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 1.0
+    },
+    "EE 313": {
+      "ects_total": 6.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 1.0
+    },
+    "EE 314": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "EE 395": {
+      "ects_total": 5.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 0.0
+    },
+    "EE 401": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "EE 402": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "EE 403": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "EE 404": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "EE 405": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "EE 406": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "EE 407": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "EE 408": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "EE 409": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "EE 410": {
+      "ects_total": 6.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 1.0
+    },
+    "EE 411": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "EE 413": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "EE 414": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "EE 415": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "EE 417": {
+      "ects_total": 6.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 1.0
+    },
+    "EE 419": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "EE 440": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "EE 444": {
+      "ects_total": 6.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 1.0
+    },
+    "EE 473": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "EE 48001": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "EE 48002": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "EE 48004": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "EE 48008": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "EE 48009": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "ENRG 322": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "ENRG 420": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "ENRG 423": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "ENRG 424": {
+      "ects_total": 6.0,
+      "eng_ects": 3.0,
+      "basic_sci_ects": 3.0
+    },
+    "ENRG 426": {
+      "ects_total": 6.0,
+      "eng_ects": 3.0,
+      "basic_sci_ects": 3.0
+    },
+    "ENS 201": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "ENS 202": {
+      "ects_total": 6.0,
+      "eng_ects": 3.0,
+      "basic_sci_ects": 3.0
+    },
+    "ENS 203": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "ENS 204": {
+      "ects_total": 6.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 1.0
+    },
+    "ENS 205": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "ENS 206": {
+      "ects_total": 6.0,
+      "eng_ects": 3.0,
+      "basic_sci_ects": 3.0
+    },
+    "ENS 207": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "ENS 208": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "ENS 209": {
+      "ects_total": 6.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 1.0
+    },
+    "ENS 210": {
+      "ects_total": 6.0,
+      "eng_ects": 3.0,
+      "basic_sci_ects": 3.0
+    },
+    "ENS 211": {
+      "ects_total": 6.0,
+      "eng_ects": 3.0,
+      "basic_sci_ects": 3.0
+    },
+    "ENS 214": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "ENS 216": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "ENS 222": {
+      "ects_total": 6.0,
+      "eng_ects": 2.0,
+      "basic_sci_ects": 4.0
+    },
+    "ENRG 301": {
+      "ects_total": 6.0,
+      "eng_ects": 3.0,
+      "basic_sci_ects": 3.0
+    },
+    "ENS 302": {
+      "ects_total": 5.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 0.0
+    },
+    "ENS 303": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "ENS 309": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "ENRG 315": {
+      "ects_total": 5.0,
+      "eng_ects": 2.0,
+      "basic_sci_ects": 3.0
+    },
+    "ENS 409": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "ENS 410": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "ENS 413": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "ENS 414": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "ENS 416": {
+      "ects_total": 6.0,
+      "eng_ects": 3.0,
+      "basic_sci_ects": 3.0
+    },
+    "ENS 48000": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "ENS 48001": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "ENS 48002": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "ENS 4803": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "ENS 491": {
+      "ects_total": 2.0,
+      "eng_ects": 2.0,
+      "basic_sci_ects": 0.0
+    },
+    "ENS 492": {
+      "ects_total": 5.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 303": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 304": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 305": {
+      "ects_total": 6.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 1.0
+    },
+    "IE 306": {
+      "ects_total": 5.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 307": {
+      "ects_total": 5.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 309": {
+      "ects_total": 6.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 1.0
+    },
+    "IE 311": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "IE 398": {
+      "ects_total": 1.0,
+      "eng_ects": 1.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 395": {
+      "ects_total": 5.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 0.0
+    },
+    "ENS 511": {
+      "ects_total": 10.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "IE 312": {
+      "ects_total": 6.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 1.0
+    },
+    "IE 313": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "IE 401": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 402": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 403": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 404": {
+      "ects_total": 6.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 1.0
+    },
+    "IE 405": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 407": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 408": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 409": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 411": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 412": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 413": {
+      "ects_total": 5.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 414": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 415": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 416": {
+      "ects_total": 7.0,
+      "eng_ects": 7.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 417": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 418": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 419": {
+      "ects_total": 5.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 420": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 430": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 432": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "IE 436": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "IE 451": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 454": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 471": {
+      "ects_total": 5.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 472": {
+      "ects_total": 5.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 480": {
+      "ects_total": 5.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 481": {
+      "ects_total": 5.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 482": {
+      "ects_total": 5.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 48001": {
+      "ects_total": 5.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 48002": {
+      "ects_total": 6.0,
+      "eng_ects": 2.0,
+      "basic_sci_ects": 4.0
+    },
+    "IE 48003": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 48004": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "IE 48005": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "IF 100": {
+      "ects_total": 5.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 0.0
+    },
+    "IF 200": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 0.0
+    },
+    "ENRG 401": {
+      "ects_total": 6.0,
+      "eng_ects": 3.0,
+      "basic_sci_ects": 0.0
+    },
+    "IF 301": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 0.0
+    },
+    "IF 333": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 0.0
+    },
+    "IF 467": {
+      "ects_total": 6.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 1.0
+    },
+    "IF 402": {
+      "ects_total": 6.0,
+      "eng_ects": 2.0,
+      "basic_sci_ects": 0.0
+    },
+    "MAT 204": {
+      "ects_total": 6.0,
+      "eng_ects": 2.0,
+      "basic_sci_ects": 4.0
+    },
+    "MAT 206": {
+      "ects_total": 6.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 1.0
+    },
+    "MAT 302": {
+      "ects_total": 7.0,
+      "eng_ects": 2.0,
+      "basic_sci_ects": 5.0
+    },
+    "MAT 304": {
+      "ects_total": 5.0,
+      "eng_ects": 2.5,
+      "basic_sci_ects": 2.5
+    },
+    "MAT 305": {
+      "ects_total": 5.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 1.0
+    },
+    "MAT 306": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "MAT 307": {
+      "ects_total": 7.0,
+      "eng_ects": 7.0,
+      "basic_sci_ects": 0.0
+    },
+    "MAT 308": {
+      "ects_total": 5.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 1.0
+    },
+    "MAT 309": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "MAT 310": {
+      "ects_total": 5.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 1.0
+    },
+    "MAT 312": {
+      "ects_total": 7.0,
+      "eng_ects": 7.0,
+      "basic_sci_ects": 0.0
+    },
+    "MAT 314": {
+      "ects_total": 5.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 1.0
+    },
+    "MAT 395": {
+      "ects_total": 5.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 0.0
+    },
+    "MAT 401": {
+      "ects_total": 6.0,
+      "eng_ects": 2.0,
+      "basic_sci_ects": 4.0
+    },
+    "MAT 402": {
+      "ects_total": 6.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 1.0
+    },
+    "MAT 403": {
+      "ects_total": 5.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 1.0
+    },
+    "MAT 404": {
+      "ects_total": 5.0,
+      "eng_ects": 1.0,
+      "basic_sci_ects": 4.0
+    },
+    "MAT 405": {
+      "ects_total": 7.0,
+      "eng_ects": 2.0,
+      "basic_sci_ects": 5.0
+    },
+    "MAT 406": {
+      "ects_total": 5.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 0.0
+    },
+    "MAT 408": {
+      "ects_total": 5.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 1.0
+    },
+    "MAT 416": {
+      "ects_total": 5.0,
+      "eng_ects": 2.0,
+      "basic_sci_ects": 3.0
+    },
+    "MAT 422": {
+      "ects_total": 6.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 1.0
+    },
+    "MAT 423": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "MAT 424": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "MAT 480": {
+      "ects_total": 5.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 0.0
+    },
+    "MAT 481": {
+      "ects_total": 5.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 0.0
+    },
+    "MAT 48000": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "MAT 48003": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "MAT 48004": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "MAT 48005": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "MATH 101": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "MATH 102": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "MATH 201": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "MATH 202": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "MATH 203": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "MATH 204": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "MATH 206": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "MATH 221": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "MATH 301": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "MATH 302": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "MATH 305": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "MATH 306": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "MATH 307": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "MATH 311": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "MATH 317": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "MATH 318": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "MATH 322": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "MATH 401": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "MATH 402": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "MATH 405": {
+      "ects_total": 6.0,
+      "eng_ects": 3.0,
+      "basic_sci_ects": 3.0
+    },
+    "MATH 409": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "MATH 410": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "MATH 414": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "MATH 479": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "MATH 480": {
+      "ects_total": 6.0,
+      "eng_ects": 3.0,
+      "basic_sci_ects": 3.0
+    },
+    "MATH 481": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "MATH 484": {
+      "ects_total": 6.0,
+      "eng_ects": 3.0,
+      "basic_sci_ects": 3.0
+    },
+    "ME 301": {
+      "ects_total": 6.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 1.0
+    },
+    "ME 302": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "ME 303": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "ME 304": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "ME 305": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "ME 307": {
+      "ects_total": 6.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 1.0
+    },
+    "ME 308": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "ME 309": {
+      "ects_total": 6.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 1.0
+    },
+    "ME 310": {
+      "ects_total": 0.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 0.0
+    },
+    "ME 312": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "ME 395": {
+      "ects_total": 5.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 0.0
+    },
+    "ME 402": {
+      "ects_total": 6.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 1.0
+    },
+    "ME 403": {
+      "ects_total": 7.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 1.0
+    },
+    "ME 405": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "ME 406": {
+      "ects_total": 0.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 0.0
+    },
+    "ME 407": {
+      "ects_total": 6.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 1.0
+    },
+    "ME 408": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "ME 409": {
+      "ects_total": 7.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 2.0
+    },
+    "ME 410": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "ME 411": {
+      "ects_total": 6.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 1.0
+    },
+    "ME 412": {
+      "ects_total": 6.0,
+      "eng_ects": 3.0,
+      "basic_sci_ects": 3.0
+    },
+    "ME 415": {
+      "ects_total": 6.0,
+      "eng_ects": 3.0,
+      "basic_sci_ects": 3.0
+    },
+    "ME 420": {
+      "ects_total": 6.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 1.0
+    },
+    "ME 425": {
+      "ects_total": 6.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 1.0
+    },
+    "ME 435": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "ME 437": {
+      "ects_total": 6.0,
+      "eng_ects": 4.0,
+      "basic_sci_ects": 2.0
+    },
+    "ME 441": {
+      "ects_total": 6.0,
+      "eng_ects": 6.0,
+      "basic_sci_ects": 0.0
+    },
+    "ME 480": {
+      "ects_total": 5.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 0.0
+    },
+    "ME 481": {
+      "ects_total": 5.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 0.0
+    },
+    "ME 482": {
+      "ects_total": 5.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 0.0
+    },
+    "NS 101": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "NS 102": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "NS 200": {
+      "ects_total": 5.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 5.0
+    },
+    "NS 201": {
+      "ects_total": 6.0,
+      "eng_ects": 1.0,
+      "basic_sci_ects": 5.0
+    },
+    "NS 202": {
+      "ects_total": 0.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 0.0
+    },
+    "NS 204": {
+      "ects_total": 0.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 0.0
+    },
+    "NS 205": {
+      "ects_total": 0.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 0.0
+    },
+    "NS 206": {
+      "ects_total": 5.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 5.0
+    },
+    "NS 207": {
+      "ects_total": 7.0,
+      "eng_ects": 2.0,
+      "basic_sci_ects": 5.0
+    },
+    "NS 208": {
+      "ects_total": 5.0,
+      "eng_ects": 2.0,
+      "basic_sci_ects": 3.0
+    },
+    "NS 209": {
+      "ects_total": 5.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 5.0
+    },
+    "NS 210": {
+      "ects_total": 5.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 5.0
+    },
+    "NS 212": {
+      "ects_total": 5.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 5.0
+    },
+    "NS 213": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "NS 214": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "NS 216": {
+      "ects_total": 6.0,
+      "eng_ects": 1.0,
+      "basic_sci_ects": 5.0
+    },
+    "NS 218": {
+      "ects_total": 6.0,
+      "eng_ects": 2.0,
+      "basic_sci_ects": 4.0
+    },
+    "ENRG 220": {
+      "ects_total": 6.0,
+      "eng_ects": 3.0,
+      "basic_sci_ects": 0.0
+    },
+    "NS 222": {
+      "ects_total": 5.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 5.0
+    },
+    "NS 223": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "NS 224": {
+      "ects_total": 6.0,
+      "eng_ects": 2.0,
+      "basic_sci_ects": 4.0
+    },
+    "NS 48000": {
+      "ects_total": 6.0,
+      "eng_ects": 2.0,
+      "basic_sci_ects": 4.0
+    },
+    "PHYS 211": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "PHYS 302": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "PHYS 303": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "PHYS 304": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "PHYS 312": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "PHYS 313": {
+      "ects_total": 6.0,
+      "eng_ects": 3.0,
+      "basic_sci_ects": 3.0
+    },
+    "PHYS 322": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "PHYS 401": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "PHYS 411": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "PHYS 412": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "PHYS 438": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "PHYS 484": {
+      "ects_total": 6.0,
+      "eng_ects": 1.0,
+      "basic_sci_ects": 5.0
+    },
+    "PHYS 492": {
+      "ects_total": 6.0,
+      "eng_ects": 0.0,
+      "basic_sci_ects": 6.0
+    },
+    "PROJ 102": {
+      "ects_total": 2.0,
+      "eng_ects": 1.0,
+      "basic_sci_ects": 1.0
+    },
+    "PROJ 201": {
+      "ects_total": 1.0,
+      "eng_ects": 1.0,
+      "basic_sci_ects": 0.0
+    },
+    "PROJ 302": {
+      "ects_total": 5.0,
+      "eng_ects": 5.0,
+      "basic_sci_ects": 0.0
+    }
+  }
+}

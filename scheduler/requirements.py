@@ -23,8 +23,10 @@ import json
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from scheduler.graph_selector import DEGREE_GRAPHS_DIR, cohort_for_admit
+
 ROOT = Path(__file__).resolve().parent.parent
-DATA_DIR = ROOT / "data" / "degree_graphs"
+DATA_DIR = DEGREE_GRAPHS_DIR
 
 SECTION_FILES = {
     "required":       "Required.json",
@@ -41,6 +43,7 @@ SECTION_FILES = {
 @dataclass
 class RequirementsReport:
     program: str
+    cohort_term: str = ""
 
     # Codes still needed (not completed, not in-progress)
     required_left:      list[str] = field(default_factory=list)
@@ -88,6 +91,7 @@ class RequirementsReport:
     def to_dict(self) -> dict:
         return {
             "program": self.program,
+            "cohort_term": self.cohort_term,
             "required_left": self.required_left,
             "core_left": self.core_left,
             "area_left": self.area_left,
@@ -121,6 +125,7 @@ def compute_remaining(
     program: str,
     completed_for_eligibility: set[str],
     in_progress: set[str],
+    admit_term: str | None = None,
     data_dir: Path = DATA_DIR,
 ) -> RequirementsReport:
     """Compute what the student still needs for each degree section.
@@ -134,20 +139,28 @@ def compute_remaining(
         courses, and courses that count for graduation.
     in_progress:
         ``Student.in_progress`` — currently enrolled.
+    admit_term:
+        Student admit term, mapped to the closest available cohort directory.
     data_dir:
-        Directory containing ``<PROGRAM>/Required.json`` etc.
+        Directory containing ``<PROGRAM>/<COHORT>/Required.json`` etc.
         Defaults to ``data/degree_graphs/``.
     """
-    prog_dir = data_dir / program
-    report = RequirementsReport(program=program)
+    cohort = cohort_for_admit(program, admit_term, data_dir)
+    prog_dir = data_dir / program / cohort
+    report = RequirementsReport(program=program, cohort_term=cohort)
 
     done = set(completed_for_eligibility)
     wip = set(in_progress)
     all_done_or_wip = done | wip
+    # Track codes already placed in a higher-precedence section so a course
+    # that appears in multiple section JSON files is only counted once.
+    # Precedence: Required > Core Elective > Area Elective > Free Elective.
+    seen: set[str] = set()
 
     # Required ----------------------------------------------------------------
     req_codes = _load_in_slice_codes(prog_dir / SECTION_FILES["required"])
     for code, credits in req_codes.items():
+        seen.add(code)
         if code in done:
             continue
         if code in wip:
@@ -159,6 +172,9 @@ def compute_remaining(
     # Core elective -----------------------------------------------------------
     core_codes = _load_in_slice_codes(prog_dir / SECTION_FILES["core_elective"])
     for code in core_codes:
+        if code in seen:
+            continue
+        seen.add(code)
         if code in done:
             continue
         if code in wip:
@@ -169,14 +185,18 @@ def compute_remaining(
     # Area elective -----------------------------------------------------------
     area_codes = _load_in_slice_codes(prog_dir / SECTION_FILES["area_elective"])
     for code in area_codes:
-        if code not in all_done_or_wip:
-            report.area_left.append(code)
+        if code in seen or code in all_done_or_wip:
+            continue
+        seen.add(code)
+        report.area_left.append(code)
 
     # Free elective -----------------------------------------------------------
     free_codes = _load_in_slice_codes(prog_dir / SECTION_FILES["free_elective"])
     for code in free_codes:
-        if code not in all_done_or_wip:
-            report.free_left.append(code)
+        if code in seen or code in all_done_or_wip:
+            continue
+        seen.add(code)
+        report.free_left.append(code)
 
     # Sort for deterministic output
     report.required_left.sort()
@@ -203,7 +223,12 @@ def _smoke_test() -> None:
     in_progress = set(transcript.get("in_progress", []))
     program = transcript.get("program", "BSCS-DM")
 
-    report = compute_remaining(program, completed, in_progress)
+    report = compute_remaining(
+        program,
+        completed,
+        in_progress,
+        admit_term=transcript.get("admit_term"),
+    )
     print(f"Requirements report for {program}\n" + "=" * 50)
     for line in report.summary_lines():
         print(line)

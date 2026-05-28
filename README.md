@@ -219,7 +219,7 @@ SuSchedule-r/
 ```bash
 git clone git@github.com:keremsirtikizil/SuSchedule-r.git
 cd SuSchedule-r
-git checkout cgnlast
+git checkout kero
 
 python3 -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
@@ -231,7 +231,7 @@ pip install -r requirements.txt
 ```bash
 cp .env.example .env
 # then edit .env and set:
-# OPENAI_API_KEY=sk-...
+# OPENAI_API_KEY=your_openai_api_key_here
 ```
 
 ### (Re)build the FAISS index — one time only
