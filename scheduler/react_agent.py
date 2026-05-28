@@ -59,17 +59,20 @@ Workflow heuristics
    "Free Elective"), do not retrieve from the whole catalog. Select the
    degree/cohort graph, restrict to that section's in-slice courses, then rank
    those courses by catalog-description relevance.
-4. For degree requirement questions, call select_degree_graphs and
-   get_degree_section_courses/get_requirement_state. If the user asks about a
-   focus such as supply chain, distinguish official degree requirements from
-   focus-relevant electives.
+4. For pure degree requirement/status questions, call select_degree_graphs and
+   get_requirement_state. If the user asks for course recommendations in a
+   focus area that also count toward requirements, do not return only a
+   requirement summary; retrieve/rank courses inside the relevant scoped graph
+   sections and explain why they fit.
 5. For IE operations/supply-chain/logistics/production questions, use the BSIE
    scoped graph and prefer Required + Core Elective IE courses first.
 6. Answer the immediate question first. Offer 2-4 concrete next actions when useful.
 7. Do not create, validate, or commit a semester plan unless the user explicitly
    asks for planning/checking or provides courses to validate.
 8. Never call set_plan unless validate_plan returned ok=true.
-9. If degree/admit/transcript is missing, say exactly what is missing. You may
+9. If get_student_profile says transcript_loaded=true, use that parsed profile
+   as authoritative and do not ask again for degree/admit/completed courses.
+10. If degree/admit/transcript is missing, say exactly what is missing. You may
    still answer general RAG questions, but do not claim exact takeability.
 
 Answer style
@@ -196,8 +199,30 @@ def _planning_requested(text: str) -> bool:
     return bool(re.search(r"\b(plan|schedule|semester plan|term plan|two terms|next term|next semester)\b", text.lower()))
 
 
+def _course_recommendation_requested(text: str) -> bool:
+    low = text.lower()
+    asks_for_courses = re.search(
+        r"\b(suggest|recommend|recommendation|which courses|what courses|"
+        r"what should i take|should i take|courses? should i take|"
+        r"learn|knowledge|focus|interested|interests?|about)\b",
+        low,
+    )
+    scoped_by_topic_or_term = re.search(
+        r"\b(networks?|networking|security|cybersecurity|systems?|"
+        r"ai|artificial intelligence|machine learning|ml|deep learning|"
+        r"llm|nlp|theory|theoretical|algorithms?|database|data science|"
+        r"optimization|operations?|supply chain|logistics|core|area|"
+        r"electives?|next semester|next term|fall\s*20\d{2}|"
+        r"spring\s*20\d{2}|summer\s*20\d{2})\b",
+        low,
+    )
+    return bool(asks_for_courses and scoped_by_topic_or_term)
+
+
 def _requirements_status_requested(text: str) -> bool:
     low = text.lower()
+    if _course_recommendation_requested(text):
+        return False
     return bool(
         re.search(r"\b(requirements?|graduation|graduate|remaining|left|need to complete)\b", low)
         and not re.search(r"\b(prereq|prerequisite|coreq|corequisite)\b", low)
@@ -211,6 +236,8 @@ def _requirements_followup_requested(session: "PlannerSession", text: str) -> bo
     if not re.search(r"\b(transcript|take it from|use it|uploaded|already uploaded)\b", low):
         return False
     recent = " ".join(str(m.get("content", "")) for m in session.history[-6:]).lower()
+    if _course_recommendation_requested(recent):
+        return False
     return bool(re.search(r"\b(requirements?|graduation|graduate|remaining|left|need to complete)\b", recent))
 
 
