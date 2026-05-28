@@ -10,7 +10,7 @@ import networkx as nx
 
 from scheduler.catalog import Catalog
 from scheduler.eligibility import EligibilityOptions, Student, eligible_courses
-from scheduler.graph_selector import SelectedGraphs, select_graphs
+from scheduler.graph_selector import SelectedGraphs, normalize_program_code, select_graphs
 from scheduler.offerings import likely_offered_in, load_offerings
 from scheduler.requirements import RequirementsReport, compute_remaining
 from scheduler.schemas import PlannerRequest, TermPlan
@@ -66,7 +66,7 @@ class PlannerSession:
 
         self._raw = raw
         self._student = Student(
-            program=raw.get("program", "BSCS-DM"),
+            program=normalize_program_code(raw.get("program")) or "BSCS-DM",
             admit_term=str(raw.get("admit_term", "202101")),
             completed=set(raw.get("completed_for_eligibility", raw.get("completed", []))),
             in_progress=set(raw.get("in_progress", [])),
@@ -91,7 +91,7 @@ class PlannerSession:
         if self._student is None:
             self._student = Student()
         if program:
-            self._student.program = program.upper().strip()
+            self._student.program = normalize_program_code(program) or program.upper().strip()
         if admit_term:
             self._student.admit_term = str(admit_term).strip()
         if completed is not None:

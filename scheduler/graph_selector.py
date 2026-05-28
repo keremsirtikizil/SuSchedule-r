@@ -23,12 +23,71 @@ DEFAULT_SECTIONS: tuple[str, ...] = (
     "Free Elective",
 )
 
+PROGRAM_ALIASES: dict[str, str] = {
+    "CS": "BSCS-DM",
+    "CSE": "BSCS-DM",
+    "COMPUTER SCIENCE": "BSCS-DM",
+    "COMPUTER SCIENCE AND ENGINEERING": "BSCS-DM",
+    "IE": "BSIE-DM",
+    "INDUSTRIAL ENGINEERING": "BSIE-DM",
+    "EE": "BSEE-DM",
+    "EEE": "BSEE-DM",
+    "ELECTRONICS ENGINEERING": "BSEE-DM",
+    "ELECTRICAL ENGINEERING": "BSEE-DM",
+    "DSA": "BSDSA-DM",
+    "DATA SCIENCE": "BSDSA-DM",
+    "DATA SCIENCE AND ANALYTICS": "BSDSA-DM",
+    "ME": "BSME-DM",
+    "MECHATRONICS": "BSME-DM",
+    "MECHATRONICS ENGINEERING": "BSME-DM",
+    "MAT": "BSMAT-DM",
+    "MATERIALS": "BSMAT-DM",
+    "MATERIALS SCIENCE": "BSMAT-DM",
+    "BIO": "BSBIO-DM",
+    "MOLECULAR BIOLOGY": "BSBIO-DM",
+    "MANAGEMENT": "BAMAN-DM",
+    "BUSINESS": "BAMAN-DM",
+    "ECON": "BAECON-DM",
+    "ECONOMICS": "BAECON-DM",
+    "POLS": "BAPOLS-DM",
+    "POLITICAL SCIENCE": "BAPOLS-DM",
+    "PSIR": "BAPSIR-DM",
+    "POLITICAL SCIENCE AND INTERNATIONAL RELATIONS": "BAPSIR-DM",
+    "PSY": "BAPSY-DM",
+    "PSYCH": "BAPSY-DM",
+    "PSYCHOLOGY": "BAPSY-DM",
+    "VACD": "BAVACD-DM",
+    "VISUAL ARTS": "BAVACD-DM",
+    "VISUAL ARTS AND VISUAL COMMUNICATIONS DESIGN": "BAVACD-DM",
+    "IS": "BAIS-DM",
+    "INTERNATIONAL STUDIES": "BAIS-DM",
+}
+
+
+def normalize_program_code(program: str | None) -> str | None:
+    if not program:
+        return None
+    raw = str(program).strip()
+    if not raw:
+        return None
+    key = raw.upper().replace("_", "-")
+    if key in PROGRAM_ALIASES:
+        return PROGRAM_ALIASES[key]
+    if key.endswith("-DM"):
+        return key
+    if f"{key}-DM" in PROGRAM_ALIASES.values():
+        return f"{key}-DM"
+    if key.startswith(("BS", "BA")):
+        return key
+    return PROGRAM_ALIASES.get(key, key)
+
 
 def section_slug(section: str) -> str:
     return section.replace(" ", "_")
 
 
 def available_cohort_terms(program: str, data_dir: Path = DEGREE_GRAPHS_DIR) -> list[str]:
+    program = normalize_program_code(program) or program
     prog_dir = data_dir / program
     if not prog_dir.exists():
         return []
@@ -41,6 +100,7 @@ def cohort_for_admit(
     data_dir: Path = DEGREE_GRAPHS_DIR,
 ) -> str:
     """Map an admit term to the closest available fall-like cohort graph."""
+    program = normalize_program_code(program) or program
     cohorts = available_cohort_terms(program, data_dir)
     if not cohorts:
         raise FileNotFoundError(f"No degree graphs found for program {program}.")
@@ -143,6 +203,7 @@ def select_graphs(
     sections: tuple[str, ...] = DEFAULT_SECTIONS,
     data_dir: Path = DEGREE_GRAPHS_DIR,
 ) -> SelectedGraphs:
+    program = normalize_program_code(program) or program
     cohort = cohort_for_admit(program, admit_term, data_dir)
     base = data_dir / program / cohort
 

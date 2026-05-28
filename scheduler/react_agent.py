@@ -211,7 +211,7 @@ def _infer_context_from_message(session: "PlannerSession", text: str) -> None:
             program = code
             break
     admit_term = None
-    m = re.search(r"\b(20\d{2})(?:\s*(fall|spring|summer))?\b", text, re.I)
+    m = re.search(r"\b(?:admit(?:ted)?|entry|entrance|started|start|freshman|cohort)\D{0,20}(20\d{2})(?:\s*(fall|spring|summer))?\b", text, re.I)
     if m:
         year = m.group(1)
         season = (m.group(2) or "fall").lower()
@@ -239,6 +239,25 @@ def _infer_section_from_text(text: str) -> str | None:
     if re.search(r"\bfree\s+elective?s?\b|\bfree courses?\b", low):
         return "Free Elective"
     return None
+
+
+def _normalize_section_name(name: str) -> str:
+    aliases = {
+        "required": "Required",
+        "requirement": "Required",
+        "requirements": "Required",
+        "core": "Core Elective",
+        "core elective": "Core Elective",
+        "core electives": "Core Elective",
+        "area": "Area Elective",
+        "area elective": "Area Elective",
+        "area electives": "Area Elective",
+        "free": "Free Elective",
+        "free elective": "Free Elective",
+        "free electives": "Free Elective",
+    }
+    key = name.lower().replace("_", " ").strip()
+    return aliases.get(key, name)
 
 
 def _clean_section_query(text: str) -> str:
@@ -370,7 +389,7 @@ class Toolbox:
             selected = select_graphs(
                 self.session._student.program,
                 self.session._student.admit_term,
-                sections=tuple(sections),
+                sections=tuple(_normalize_section_name(s) for s in sections),
             )
             self.session._selected_graphs = selected
             self.session._graph = selected.merged
@@ -414,21 +433,9 @@ class Toolbox:
         if sg is None:
             return {"error": "degree/admit term not known", "needed": ["degree/program", "admit term"]}
 
-        def norm_section(name: str) -> str:
-            aliases = {
-                "required": "Required",
-                "core": "Core Elective",
-                "core elective": "Core Elective",
-                "area": "Area Elective",
-                "area elective": "Area Elective",
-                "free": "Free Elective",
-                "free elective": "Free Elective",
-            }
-            return aliases.get(name.lower().replace("_", " ").strip(), name)
-
         if section is None and query:
             section = _infer_section_from_text(query)
-        sections = [norm_section(section)] if section else ["Required", "Core Elective", "Area Elective"]
+        sections = [_normalize_section_name(section)] if section else ["Required", "Core Elective", "Area Elective"]
         pool: set[str] = set()
         section_counts: dict[str, int] = {}
         for sec in sections:
