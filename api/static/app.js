@@ -276,6 +276,27 @@ function renderTrace(trace) {
   trace.forEach(ev => {
     if (ev.type === 'turn_start') {
       rows.push(`<div class="trace-item"><div class="trace-title">Turn start</div><div class="trace-meta">${escapeHtml(ev.user_message || '')}</div></div>`);
+    } else if (ev.type === 'session_context') {
+      rows.push(`
+        <div class="trace-item">
+          <div class="trace-title">Session context injected to model</div>
+          <pre>${escapeHtml(ev.content || '')}</pre>
+        </div>
+      `);
+    } else if (ev.type === 'prefetched_recommendation_context') {
+      rows.push(`
+        <div class="trace-item">
+          <div class="trace-title">Prefetched recommendation context</div>
+          <pre>${escapeHtml(ev.content || '')}</pre>
+        </div>
+      `);
+    } else if (ev.type === 'profile_reask_repair') {
+      rows.push(`
+        <div class="trace-item trace-error">
+          <div class="trace-title">Profile re-ask repaired</div>
+          <div class="trace-meta">${escapeHtml(ev.message || '')}</div>
+        </div>
+      `);
     } else if (ev.type === 'assistant_step') {
       const calls = (ev.tool_calls || []).map(tc => {
         let args = tc.arguments || '{}';
@@ -325,7 +346,7 @@ function renderTrace(trace) {
     } else if (ev.type === 'retrieval') {
       const filters = ev.filters || {};
       const hits = (ev.merged_results || []).slice(0, 10).map(h =>
-        `<li><span>${escapeHtml(h.code || '')}</span> ${escapeHtml(h.title || '')}<small>${h.rerank_score != null ? `rerank ${escapeHtml(h.rerank_score)}` : `score ${Number(h.score || 0).toFixed(2)}`}</small></li>`
+        `<li><span>${escapeHtml(h.code || '')}</span> ${escapeHtml(h.title || '')}<small>${h.rerank_score != null ? `rerank ${escapeHtml(h.rerank_score)}` : `score ${Number(h.score || 0).toFixed(2)}`} | eligible ${escapeHtml(h.eligible)} | offered ${escapeHtml(h.likely_offered)}</small></li>`
       ).join('');
       rows.push(`
         <div class="trace-item trace-retrieval">

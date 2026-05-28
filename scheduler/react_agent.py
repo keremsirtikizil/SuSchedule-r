@@ -241,6 +241,183 @@ def _requirements_followup_requested(session: "PlannerSession", text: str) -> bo
     return bool(re.search(r"\b(requirements?|graduation|graduate|remaining|left|need to complete)\b", recent))
 
 
+def _reasks_for_known_profile(text: str) -> bool:
+    low = text.lower()
+    asks = re.search(r"\b(need|provide|confirm|tell me|let me know|could you)\b", low)
+    profile_fields = re.search(
+        r"\b(program|degree|major|admit term|admission|cohort|started|completed courses|in-progress|in progress|transcript)\b",
+        low,
+    )
+    return bool(asks and profile_fields)
+
+
+def _compact_codes(codes: set[str] | list[str] | tuple[str, ...], limit: int = 24) -> str:
+    ordered = sorted(str(c).upper().strip() for c in codes if str(c).strip())
+    if not ordered:
+        return "none"
+    shown = ordered[:limit]
+    suffix = f", ... (+{len(ordered) - limit} more)" if len(ordered) > limit else ""
+    return ", ".join(shown) + suffix
+
+
+def _session_context_message(session: "PlannerSession", user_message: str) -> str:
+    """Compact state injected into the ReAct prompt every turn.
+
+    The UI's transcript-loaded message is not backend conversation history, so
+    the model otherwise has to remember to call get_student_profile before it
+    knows a transcript exists. This message makes loaded academic state visible
+    without replacing the tools as the source of detailed facts.
+    """
+    state = session.state_summary()
+    student = session.student
+    lines = [
+        "Current session state for this turn:",
+        f"- transcript_loaded: {bool(state.get('transcript_loaded'))}",
+        f"- target_term: {state.get('target_term')}",
+        f"- planning_allowed_this_turn: {session.planning_allowed}",
+    ]
+
+    if student is None:
+        lines.extend([
+            "- student_profile: not known",
+            "- exact eligibility/planning requires transcript or manually provided completed courses.",
+        ])
+    else:
+        raw = session._raw or {}
+        lines.extend([
+            f"- student_name: {raw.get('name', 'Student')}",
+            f"- program: {student.program}",
+            f"- admit_term: {student.admit_term}",
+            f"- selected_cohort: {state.get('cohort_term') or 'not yet selected'}",
+            f"- completed_count: {len(student.completed)}",
+            f"- in_progress: {_compact_codes(student.in_progress, limit=16)}",
+            "- transcript authority: if transcript_loaded is true, use this parsed profile and do not ask the user again for program, admit term, completed courses, or in-progress courses.",
+        ])
+
+    if _course_recommendation_requested(user_message):
+        lines.extend([
+            "- turn_intent_hint: course recommendation / course exploration.",
+            "- If the user wants courses that help graduation, use selected degree/cohort graph sections and RAG-ranked catalog descriptions. Prefer eligible scoped courses when transcript context exists.",
+            "- Do not answer by asking for profile fields already present above.",
+        ])
+    elif _requirements_status_requested(user_message):
+        lines.extend([
+            "- turn_intent_hint: degree requirement status.",
+            "- Use selected degree/cohort graphs and requirement state; distinguish mandatory required courses from elective pools.",
+        ])
+
+    return "\n".join(lines)
+
+
+def _prefetch_recommendation_context(
+    session: "PlannerSession",
+    toolbox: "Toolbox",
+    user_message: str,
+) -> str | None:
+    if not _course_recommendation_requested(user_message):
+        return None
+
+    rewrite = toolbox.rewrite_retrieval_queries(user_message)
+    queries = rewrite.get("queries") or _fallback_queries(user_message)
+    _trace(session, {
+        "type": "tool_result",
+        "step": 0,
+        "name": "rewrite_retrieval_queries",
+        "arguments": {"original_message": user_message},
+        "result": rewrite,
+    })
+
+    if session.student is not None:
+        selected = toolbox.select_degree_graphs()
+        _trace(session, {
+            "type": "tool_result",
+            "step": 0,
+            "name": "select_degree_graphs",
+            "arguments": {},
+            "result": selected,
+        })
+
+    needs_requirements = bool(re.search(r"\b(graduat|requirement|core|area|free|elective|help my graduation|count toward)\b", user_message.lower()))
+    requirement_state: dict | None = None
+    if needs_requirements and session.student is not None:
+        requirement_state = toolbox.get_requirement_state()
+        _trace(session, {
+            "type": "tool_result",
+            "step": 0,
+            "name": "get_requirement_state",
+            "arguments": {},
+            "result": requirement_state,
+        })
+
+    section = _infer_section_from_text(user_message)
+    eligible_results = toolbox.retrieve_catalog_courses(
+        queries=queries,
+        k=15,
+        degree_filter=session.student is not None,
+        section=section,
+        eligible_only=session.has_course_context(),
+    )
+    scoped_results: list[dict] = []
+    if session.has_course_context():
+        scoped_results = toolbox.retrieve_catalog_courses(
+            queries=queries,
+            k=15,
+            degree_filter=session.student is not None,
+            section=section,
+            eligible_only=False,
+        )
+
+    lines = [
+        "Prefetched RAG context for this recommendation turn:",
+        f"- rewritten_retrieval_queries: {', '.join(queries)}",
+        f"- degree_filter: {session.student is not None}",
+        f"- eligible_only: {session.has_course_context()}",
+        f"- section_filter: {section or 'auto/all relevant requirement sections'}",
+    ]
+
+    if requirement_state and not requirement_state.get("error"):
+        lines.extend([
+            f"- requirement_scope: {requirement_state.get('program')} / {requirement_state.get('cohort_term')}",
+            f"- required_left: {_compact_codes(requirement_state.get('required_left', []), limit=12)}",
+            f"- core_elective_left_count: {len(requirement_state.get('core_elective_left', []) or [])}",
+            f"- area_elective_left_count: {len(requirement_state.get('area_elective_left', []) or [])}",
+            f"- free_elective_left_count: {len(requirement_state.get('free_elective_left', []) or [])}",
+        ])
+
+    def append_rows(label: str, rows: list[dict]) -> None:
+        lines.append(f"- {label}:")
+        if not rows or (len(rows) == 1 and rows[0].get("error")):
+            lines.append(f"  - retrieval_error: {rows[0].get('error') if rows else 'no results'}")
+            return
+        focused_rows = _filter_rows_by_focus(rows, queries)
+        for row in focused_rows[:8]:
+            code = row.get("code", "")
+            title = row.get("title", "")
+            credits = row.get("credits")
+            eligible = row.get("in_eligible_pool")
+            completed = row.get("already_completed")
+            taking = row.get("currently_taking")
+            likely = row.get("likely_offered_target_term")
+            desc = str(row.get("description") or "").strip().replace("\n", " ")
+            if len(desc) > 260:
+                desc = desc[:257].rstrip() + "..."
+            lines.append(
+                f"  - {code} - {title}"
+                f"{f' ({credits:g} SU)' if isinstance(credits, (int, float)) else ''}"
+                f"; eligible_for_target_term={eligible}"
+                f"; already_completed={completed}"
+                f"; currently_taking={taking}"
+                f"; likely_offered_target_term={likely}; {desc}"
+            )
+
+    append_rows("eligible_retrieved_courses", eligible_results)
+    if scoped_results:
+        append_rows("relevant_degree_courses_even_if_blocked_or_completed", scoped_results)
+
+    lines.append("Use this context to answer the original user message. Do not expose rewritten query mechanics.")
+    return "\n".join(lines)
+
+
 _PROGRAM_PATTERNS: list[tuple[re.Pattern, str]] = [
     (re.compile(r"\b(ie|industrial engineering)\b", re.I), "BSIE-DM"),
     (re.compile(r"\b(cs|computer science)\b", re.I), "BSCS-DM"),
@@ -331,6 +508,19 @@ def _title_topic_boost(query: str, title: str) -> float:
     low_q = query.lower()
     low_t = title.lower()
     boost = 0.0
+    phrase_boosts = {
+        "deep learning": 3.0,
+        "machine learning": 2.2,
+        "natural language": 1.8,
+        "large language": 1.8,
+        "computer vision": 1.6,
+        "artificial intelligence": 1.4,
+        "neural": 1.2,
+        "data science": 1.0,
+    }
+    for phrase, value in phrase_boosts.items():
+        if phrase in low_q and phrase in low_t:
+            boost += value
     if "supply chain" in low_q and "supply chain" in low_t:
         boost += 1.5
     if "logistics" in low_q and "logistics" in low_t:
@@ -346,6 +536,45 @@ def _title_topic_boost(query: str, title: str) -> float:
     if "operations research" in low_q and "operations research" in low_t:
         boost += 1.0
     return boost
+
+
+def _focus_terms_for_queries(queries: list[str]) -> list[str]:
+    joined = " ".join(queries).lower()
+    groups = [
+        (
+            ("deep learning", "neural", "machine learning", "artificial intelligence", " ai ", "nlp", "natural language", "computer vision", "large language"),
+            ["deep learning", "neural", "machine learning", "artificial intelligence", " ai ", "natural language", "computer vision", "large language", "nlp"],
+        ),
+        (
+            ("network", "networking", "security", "cybersecurity", "cryptography"),
+            ["network", "networking", "security", "cybersecurity", "cryptography", "tcp/ip", "firewall"],
+        ),
+        (
+            ("optimization", "operations research", "linear programming", "integer programming"),
+            ["optimization", "operations research", "linear programming", "integer programming", "decision analysis"],
+        ),
+        (
+            ("supply chain", "logistics", "production", "inventory", "operations management"),
+            ["supply chain", "logistics", "production", "inventory", "operations management", "quality"],
+        ),
+    ]
+    padded = f" {joined} "
+    for triggers, terms in groups:
+        if any(trigger in padded for trigger in triggers):
+            return terms
+    return []
+
+
+def _filter_rows_by_focus(rows: list[dict], queries: list[str]) -> list[dict]:
+    terms = _focus_terms_for_queries(queries)
+    if not terms:
+        return rows
+    filtered = []
+    for row in rows:
+        haystack = f" {row.get('code', '')} {row.get('title', '')} {row.get('description', '')} ".lower()
+        if any(term in haystack for term in terms):
+            filtered.append(row)
+    return filtered or rows
 
 
 def _apply_topic_boosts(rows: list[dict], query: str) -> list[dict]:
@@ -770,14 +999,34 @@ class Toolbox:
         queries: list[str] | None = None,
     ) -> set[str] | None:
         self.session._ensure_heavy_state()
-        if eligible_only:
-            return set(self.session._eligible_pool)
         sg = self.session._selected_graphs
         joined = " ".join(queries or [])
         if section is None:
             section = _infer_section_from_text(joined)
         if sg is not None and not degree_filter:
             degree_filter = True
+        if eligible_only:
+            pool = set(self.session._eligible_pool)
+            if degree_filter and sg is not None:
+                if (
+                    self.session._student
+                    and self.session._student.program == "BSIE-DM"
+                    and not section
+                    and _is_ie_operations_query(joined)
+                ):
+                    scoped = sg.candidate_courses("Required") | sg.candidate_courses("Core Elective")
+                elif section:
+                    scoped = sg.candidate_courses(section)
+                elif re.search(r"\bfree\s+elective|free\s+electives\b", joined, re.I):
+                    scoped = sg.candidate_courses("Free Elective")
+                else:
+                    scoped = (
+                        sg.candidate_courses("Required")
+                        | sg.candidate_courses("Core Elective")
+                        | sg.candidate_courses("Area Elective")
+                    )
+                pool &= scoped
+            return pool
         if degree_filter and sg is not None:
             if (
                 self.session._student
@@ -865,11 +1114,32 @@ class Toolbox:
             and _is_ie_operations_query(joined_queries)
         ):
             subj = ["IE", "OPIM"] if section in ("Area Elective", "Free Elective") else ["IE"]
+        elif (
+            subj is None
+            and self.session._student is not None
+            and self.session._student.program == "BSCS-DM"
+            and _focus_terms_for_queries(queries)
+        ):
+            subj = ["CS", "DSA", "EE", "MATH"]
 
         results = self._retrieve_rows(queries, k=k, pool=pool, subj=subj)
+        likely_set = (
+            likely_offered_in(
+                self.session._offerings,
+                self.session.base_request.target_term,
+                same_season_only=True,
+            )
+            if self.session._offerings is not None
+            else set()
+        )
         for row in results:
-            row["is_required_left"] = row.get("code") in self.session._required_injected
-            row["in_eligible_pool"] = row.get("code") in self.session._eligible_pool if self.session.has_course_context() else None
+            code = row.get("code")
+            row["is_required_left"] = code in self.session._required_injected
+            row["in_eligible_pool"] = code in self.session._eligible_pool if self.session.has_course_context() else None
+            if self.session._student is not None:
+                row["already_completed"] = code in self.session._student.completed
+                row["currently_taking"] = code in self.session._student.in_progress
+            row["likely_offered_target_term"] = code in likely_set if self.session._offerings is not None else None
         self.session.last_retrieved = results
         _trace(self.session, {
             "type": "retrieval",
@@ -888,6 +1158,9 @@ class Toolbox:
                     "score": r.get("score"),
                     "rerank_score": r.get("rerank_score"),
                     "source": r.get("source", "lexical"),
+                    "eligible": r.get("in_eligible_pool"),
+                    "completed": r.get("already_completed"),
+                    "likely_offered": r.get("likely_offered_target_term"),
                 }
                 for r in results
             ],
@@ -1046,11 +1319,22 @@ def handle_turn(session: "PlannerSession", user_message: str) -> str:
             _trace(session, {"type": "final_response", "content": final_text})
             return final_text
 
-    messages: list[dict] = [{"role": "system", "content": REACT_SYSTEM}]
+    runtime_context = _session_context_message(session, user_message)
+    _trace(session, {"type": "session_context", "content": runtime_context})
+    recommendation_context = _prefetch_recommendation_context(session, toolbox, user_message)
+
+    messages: list[dict] = [
+        {"role": "system", "content": REACT_SYSTEM},
+        {"role": "system", "content": runtime_context},
+    ]
+    if recommendation_context:
+        _trace(session, {"type": "prefetched_recommendation_context", "content": recommendation_context})
+        messages.append({"role": "system", "content": recommendation_context})
     messages.extend(session.history[-100:])
     messages.append({"role": "user", "content": user_message})
 
     final_text = ""
+    profile_reask_repaired = False
     for step in range(MAX_ITERATIONS):
         assistant_msg = llm_client.call_with_tools(
             model=model,
@@ -1079,6 +1363,25 @@ def handle_turn(session: "PlannerSession", user_message: str) -> str:
         })
         if not tool_calls:
             final_text = assistant_msg.content or ""
+            if (
+                session.transcript_loaded
+                and not profile_reask_repaired
+                and _reasks_for_known_profile(final_text)
+            ):
+                profile_reask_repaired = True
+                _trace(session, {
+                    "type": "profile_reask_repair",
+                    "message": "Model asked for profile fields already available from the uploaded transcript; forcing a revised answer.",
+                })
+                messages.append({
+                    "role": "system",
+                    "content": (
+                        "Revise the previous answer. The transcript is already loaded and authoritative. "
+                        "Use the current session context and prefetched RAG context; do not ask for program, "
+                        "admit term, completed courses, in-progress courses, or transcript again."
+                    ),
+                })
+                continue
             break
         for tc in tool_calls:
             args: dict = {}
