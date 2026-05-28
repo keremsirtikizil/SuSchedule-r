@@ -10,6 +10,7 @@ env/
 # Local secrets
 .env
 .env.*
+*.env
 !.env.example
 
 # Generated local RAG artifacts
@@ -22,11 +23,3 @@ embeddings/*.index
 # Editors
 .idea/
 .vscode/
-
-# Secrets — never commit these
-.env
-*.env
-
-# Generated artifacts (large; re-producible from notebooks/)
-embeddings/*.npy
-embeddings/*.index

@@ -1,56 +1,35 @@
-/* SuSchedule-r frontend — app.js */
+/* SuSchedule-r frontend */
 
-// ── State ──────────────────────────────────────────────────────
-let sessionId   = null;
-let isLoading   = false;
-let courseNames = {};   // code → title (filled from plan reasoning)
-let currentMode = 'pipeline';   // 'pipeline' | 'react'
+let sessionId = null;
+let isLoading = false;
+let courseNames = {};
+const currentMode = 'react';
 
-// ── DOM refs ───────────────────────────────────────────────────
-const dropZone    = document.getElementById('drop-zone');
-const dropLabel   = document.getElementById('drop-label');
-const fileInput   = document.getElementById('file-input');
+const dropZone = document.getElementById('drop-zone');
+const dropLabel = document.getElementById('drop-label');
+const fileInput = document.getElementById('file-input');
 const studentInfo = document.getElementById('student-info');
-const planList    = document.getElementById('plan-list');
+const planList = document.getElementById('plan-list');
 const planCredits = document.getElementById('plan-credits');
-const msgInput    = document.getElementById('msg-input');
-const sendBtn     = document.getElementById('send-btn');
-const chatMsgs    = document.getElementById('chat-messages');
-const statsBody   = document.getElementById('stats-body');
-
-// ── Mode toggle ────────────────────────────────────────────────
-async function setMode(mode) {
-  if (mode === currentMode) return;
-  currentMode = mode;
-
-  // Update button styles
-  document.querySelectorAll('.mode-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.mode === mode);
-  });
-
-  // If a session already exists, tear it down so the new mode takes effect
-  // on the next transcript upload.
-  if (sessionId) {
-    await fetch(`/session/${sessionId}`, { method: 'DELETE' }).catch(() => {});
-    sessionId = null;
-    resetUI();
-    addSystemMsg(`🔄 Switched to **${mode === 'react' ? 'ReAct' : 'Pipeline'}** mode. Please re-upload your transcript to start a new session.`);
-  }
-}
+const msgInput = document.getElementById('msg-input');
+const sendBtn = document.getElementById('send-btn');
+const chatMsgs = document.getElementById('chat-messages');
+const statsBody = document.getElementById('stats-body');
+const traceBody = document.getElementById('trace-body');
 
 function resetUI() {
-  document.getElementById('chat-messages').innerHTML = '';
-  document.getElementById('plan-list').innerHTML = '<div class="plan-empty">No plan yet — chat to get started.</div>';
-  document.getElementById('plan-credits').classList.add('hidden');
-  document.getElementById('student-info').classList.add('hidden');
-  document.getElementById('drop-zone').classList.remove('hidden');
-  document.getElementById('drop-label').innerHTML = 'Drop transcript here<br/><small>JSON or PDF</small>';
-  document.getElementById('drop-zone').style.pointerEvents = '';
-  document.getElementById('stats-body').textContent = '—';
+  chatMsgs.innerHTML = '';
+  planList.innerHTML = '<div class="plan-empty">No plan yet - chat to get started.</div>';
+  planCredits.classList.add('hidden');
+  studentInfo.classList.add('hidden');
+  dropZone.classList.remove('hidden');
+  dropLabel.innerHTML = 'Optional: drop transcript<br/><small>JSON or PDF for exact eligibility</small>';
+  dropZone.style.pointerEvents = '';
+  statsBody.textContent = '-';
+  traceBody.textContent = 'No trace yet.';
   courseNames = {};
 }
 
-// ── Session init ───────────────────────────────────────────────
 async function initSession() {
   const res = await fetch('/session', {
     method: 'POST',
@@ -63,12 +42,16 @@ async function initSession() {
       mode: currentMode,
     }),
   });
+
+  if (!res.ok) {
+    throw new Error('Could not create session');
+  }
+
   const data = await res.json();
   sessionId = data.session_id;
-  updateStats({ target_term: data.term, term_label: data.term_label, mode: currentMode });
+  updateStats({ target_term: data.term, term_label: data.term_label });
 }
 
-// ── File upload ────────────────────────────────────────────────
 dropZone.addEventListener('click', () => fileInput.click());
 dropZone.addEventListener('dragover', e => {
   e.preventDefault();
@@ -87,52 +70,54 @@ fileInput.addEventListener('change', () => {
 
 async function uploadTranscript(file) {
   if (!sessionId) await initSession();
-
-  dropLabel.textContent = '⏳ Uploading…';
+  dropLabel.textContent = 'Uploading...';
   dropZone.style.pointerEvents = 'none';
 
   const form = new FormData();
   form.append('file', file);
 
   try {
-    const res = await fetch(`/session/${sessionId}/transcript`, {
-      method: 'POST',
-      body: form,
-    });
+    const res = await fetch(`/session/${sessionId}/transcript`, { method: 'POST', body: form });
     if (!res.ok) {
       const err = await res.json();
       throw new Error(err.detail || 'Upload failed');
     }
+
     const data = await res.json();
     showStudentInfo(data);
-    addSystemMsg(`✅ Transcript loaded for **${data.name}** (${data.program}).
-Required courses still needed: ${data.required_left.length > 0 ? data.required_left.join(', ') : 'none — almost done!'}.
-What would you like to take this semester?`);
 
+    const requiredLeft = Array.isArray(data.required_left) ? data.required_left : [];
+    addSystemMsg(`Transcript loaded for **${escapeHtml(data.name)}** (${escapeHtml(data.program)}).
+Required courses still needed: ${requiredLeft.length > 0 ? requiredLeft.map(escapeHtml).join(', ') : 'none - almost done'}.
+What would you like to take this semester?`);
   } catch (err) {
-    dropLabel.innerHTML = `❌ ${err.message}<br/><small>Drop to retry</small>`;
+    dropLabel.innerHTML = `${escapeHtml(err.message)}<br/><small>Drop to retry</small>`;
     dropZone.style.pointerEvents = '';
   }
 }
 
 function showStudentInfo(data) {
+  const inProgress = Array.isArray(data.in_progress) ? data.in_progress : [];
+  const requiredLeft = Array.isArray(data.required_left) ? data.required_left : [];
+
   dropZone.classList.add('hidden');
   studentInfo.classList.remove('hidden');
   studentInfo.innerHTML = `
-    <div class="name">${data.name} <span class="tag">${data.program}</span></div>
-    Semester ${data.semester} &nbsp;·&nbsp; CGPA ${data.cgpa.toFixed(2)}<br/>
-    ${data.completed_count} completed &nbsp;·&nbsp;
-    ${data.in_progress.length} in progress<br/>
-    <span style="color:var(--accent2)">Required left: ${data.required_left.length} courses</span>
+    <div class="name">${escapeHtml(data.name)} <span class="tag">${escapeHtml(data.program)}</span></div>
+    Semester ${escapeHtml(data.semester ?? 0)} &nbsp;-&nbsp; CGPA ${Number(data.cgpa || 0).toFixed(2)}<br/>
+    ${escapeHtml(data.completed_count ?? 0)} completed &nbsp;-&nbsp;
+    ${inProgress.length} in progress<br/>
+    <span style="color:var(--accent2)">Required left: ${requiredLeft.length} courses</span>
   `;
 }
 
-// ── Chat ───────────────────────────────────────────────────────
 msgInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
 });
 
-// Auto-resize textarea
 msgInput.addEventListener('input', () => {
   msgInput.style.height = 'auto';
   msgInput.style.height = Math.min(msgInput.scrollHeight, 140) + 'px';
@@ -166,30 +151,25 @@ async function sendMessage() {
       const err = await res.json();
       throw new Error(err.detail || 'Server error');
     }
-    const data = await res.json();
 
+    const data = await res.json();
     typingEl.remove();
     addAgentMsg(data.response, data.intent);
-
+    renderTrace(data.trace || []);
     if (data.plan) updatePlan(data.plan, data.total_credits, data.validation_ok, data.warnings);
     refreshStats(data.token_usage);
-
   } catch (err) {
     typingEl.remove();
-    addAgentMsg(`⚠️ Error: ${err.message}`, 'error');
+    addAgentMsg(`Error: ${escapeHtml(err.message)}`, 'error');
   } finally {
     setLoading(false);
   }
 }
 
-// ── Message rendering ──────────────────────────────────────────
 function addUserMsg(text) {
   const div = document.createElement('div');
   div.className = 'msg user';
-  div.innerHTML = `
-    <div class="avatar">🎓</div>
-    <div class="bubble">${escapeHtml(text)}</div>
-  `;
+  div.innerHTML = `<div class="avatar">You</div><div class="bubble">${escapeHtml(text)}</div>`;
   chatMsgs.appendChild(div);
   scrollBottom();
 }
@@ -200,12 +180,9 @@ function addAgentMsg(text, intent) {
   let badge = '';
   if (intent && intent !== 'error') {
     const cls = intent === 'react' ? 'intent-badge react' : 'intent-badge';
-    badge = `<span class="${cls}">${intent}</span>`;
+    badge = `<span class="${cls}">${escapeHtml(intent)}</span>`;
   }
-  div.innerHTML = `
-    <div class="avatar">🤖</div>
-    <div class="bubble">${badge}${marked.parse(text)}</div>
-  `;
+  div.innerHTML = `<div class="avatar">AI</div><div class="bubble">${badge}${marked.parse(text || '')}</div>`;
   chatMsgs.appendChild(div);
   scrollBottom();
 }
@@ -213,10 +190,7 @@ function addAgentMsg(text, intent) {
 function addSystemMsg(text) {
   const div = document.createElement('div');
   div.className = 'msg agent';
-  div.innerHTML = `
-    <div class="avatar">📋</div>
-    <div class="bubble">${marked.parse(text)}</div>
-  `;
+  div.innerHTML = `<div class="avatar">Info</div><div class="bubble">${marked.parse(text || '')}</div>`;
   chatMsgs.appendChild(div);
   scrollBottom();
 }
@@ -224,16 +198,12 @@ function addSystemMsg(text) {
 function addTypingIndicator() {
   const div = document.createElement('div');
   div.className = 'msg agent';
-  div.innerHTML = `
-    <div class="avatar">🤖</div>
-    <div class="bubble typing"><span></span><span></span><span></span></div>
-  `;
+  div.innerHTML = '<div class="avatar">AI</div><div class="bubble typing"><span></span><span></span><span></span></div>';
   chatMsgs.appendChild(div);
   scrollBottom();
   return div;
 }
 
-// ── Plan sidebar ───────────────────────────────────────────────
 function updatePlan(plan, credits, validationOk, warnings) {
   if (!plan || plan.length === 0) {
     planList.innerHTML = '<div class="plan-empty">No plan yet.</div>';
@@ -241,53 +211,37 @@ function updatePlan(plan, credits, validationOk, warnings) {
     return;
   }
 
-  planList.innerHTML = plan.map(code => {
-    const title = courseNames[code] || '';
-    return `
-      <div class="plan-item">
-        <span class="code">${code}</span>
-        <span class="title-text">${title}</span>
-      </div>
-    `;
-  }).join('');
+  planList.innerHTML = plan.map(code => `
+    <div class="plan-item">
+      <span class="code">${escapeHtml(code)}</span>
+      <span class="title-text">${escapeHtml(courseNames[code] || '')}</span>
+    </div>
+  `).join('');
 
   planCredits.classList.remove('hidden');
   const statusClass = validationOk ? 'ok' : 'warn';
-  const statusIcon  = validationOk ? '✓' : '⚠';
-  planCredits.innerHTML = `
-    <span class="${statusClass}">${statusIcon} ${credits?.toFixed(1)} credits</span>
-  `;
-
+  const statusIcon = validationOk ? 'OK' : 'WARN';
+  planCredits.innerHTML = `<span class="${statusClass}">${statusIcon} ${Number(credits || 0).toFixed(1)} credits</span>`;
   if (warnings && warnings.length) {
-    planCredits.innerHTML += `<br/><small style="color:var(--text-faint)">${warnings[0]}</small>`;
+    planCredits.innerHTML += `<br/><small style="color:var(--text-faint)">${escapeHtml(warnings[0])}</small>`;
   }
 }
 
-// Extract course names from reasoning markdown for the plan sidebar
-function extractCourseNames(responseText) {
-  // e.g. "• **CS 306** — Required course..."
-  const re = /\*\*([A-Z]{2,5}\s+\d+[A-Z]?)\*\*(?:\s*—\s*(.+?))?(?:\n|$)/g;
-  let m;
-  while ((m = re.exec(responseText)) !== null) {
-    // try to get title from the session state endpoint instead
-    courseNames[m[1]] = '';
-  }
-}
-
-// ── Stats ──────────────────────────────────────────────────────
 function updateStats(data) {
   const rows = [];
   if (data.term_label) rows.push(['Term', data.term_label]);
-  const modeLabel = (data.mode || currentMode) === 'react' ? '🔮 ReAct' : '⚙️ Pipeline';
-  rows.push(['Mode', modeLabel]);
+  rows.push(['Advisor', 'RAG + tools']);
   if (data.eligible_pool_size != null) rows.push(['Eligible pool', data.eligible_pool_size]);
   if (data.history_turns != null) rows.push(['Turns', data.history_turns]);
-  if (data.total_tokens != null) rows.push(['Tokens used', data.total_tokens.toLocaleString()]);
-  if (data.this_turn != null) rows.push(['This turn', data.this_turn.toLocaleString()]);
+  if (data.total_tokens != null) rows.push(['Tokens used', Number(data.total_tokens).toLocaleString()]);
+  if (data.this_turn != null) rows.push(['This turn', Number(data.this_turn).toLocaleString()]);
 
-  if (rows.length === 0) { statsBody.textContent = '—'; return; }
+  if (rows.length === 0) {
+    statsBody.textContent = '-';
+    return;
+  }
   statsBody.innerHTML = rows.map(([k, v]) =>
-    `<div class="stat-row"><span>${k}</span><span class="stat-val">${v}</span></div>`
+    `<div class="stat-row"><span>${escapeHtml(k)}</span><span class="stat-val">${escapeHtml(v)}</span></div>`
   ).join('');
 }
 
@@ -302,23 +256,79 @@ async function refreshStats(tokenUsage) {
       history_turns: data.history_turns,
       total_tokens: tokenUsage?.total_tokens,
       this_turn: tokenUsage?.this_turn,
-      mode: currentMode,
     });
-    // Enrich plan sidebar with title info from reasoning
+    if (data.last_trace) renderTrace(data.last_trace);
     if (data.reasoning) {
-      Object.entries(data.reasoning).forEach(([code, reason]) => {
-        const m = reason.match(/^(.{0,40})/);
-        courseNames[code] = '';   // title lookup via reasoning snippets
-      });
+      Object.keys(data.reasoning).forEach(code => { courseNames[code] = ''; });
     }
-  } catch (_) {}
+  } catch (_) {
+    // Session stats are supplemental; keep chat usable if this refresh fails.
+  }
 }
 
-// ── Helpers ────────────────────────────────────────────────────
+function renderTrace(trace) {
+  if (!trace || trace.length === 0) {
+    traceBody.textContent = 'No trace yet.';
+    return;
+  }
+
+  const rows = [];
+  trace.forEach(ev => {
+    if (ev.type === 'turn_start') {
+      rows.push(`<div class="trace-item"><div class="trace-title">Turn start</div><div class="trace-meta">${escapeHtml(ev.user_message || '')}</div></div>`);
+    } else if (ev.type === 'assistant_step') {
+      const calls = (ev.tool_calls || []).map(tc => {
+        let args = tc.arguments || '{}';
+        try { args = JSON.stringify(JSON.parse(args), null, 2); } catch (_) {}
+        return `<div class="trace-call">${escapeHtml(tc.name || '')}<pre>${escapeHtml(args)}</pre></div>`;
+      }).join('');
+      rows.push(`<div class="trace-item"><div class="trace-title">Step ${escapeHtml(ev.step)}: tool decision</div>${calls || '<div class="trace-meta">Final answer step</div>'}</div>`);
+    } else if (ev.type === 'tool_result' && ev.name === 'rewrite_retrieval_queries') {
+      const queries = ev.result?.queries || [];
+      rows.push(`<div class="trace-item"><div class="trace-title">Rewritten retrieval queries</div><div class="trace-meta">${queries.map(escapeHtml).join(' | ')}</div></div>`);
+    } else if (ev.type === 'retrieval') {
+      const filters = ev.filters || {};
+      const hits = (ev.merged_results || []).slice(0, 10).map(h =>
+        `<li><span>${escapeHtml(h.code || '')}</span> ${escapeHtml(h.title || '')}<small>${h.rerank_score != null ? `rerank ${escapeHtml(h.rerank_score)}` : `score ${Number(h.score || 0).toFixed(2)}`}</small></li>`
+      ).join('');
+      rows.push(`
+        <div class="trace-item trace-retrieval">
+          <div class="trace-title">Retrieval</div>
+          <div class="trace-meta">queries: ${(ev.queries || []).map(escapeHtml).join(' | ')}</div>
+          <div class="trace-meta">section: ${escapeHtml(filters.section || 'auto')} | pool: ${escapeHtml(filters.candidate_pool_size ?? 'full')} | subj: ${escapeHtml((filters.subj || ['all']).join(', '))}</div>
+          <ol>${hits}</ol>
+        </div>
+      `);
+    } else if (ev.type === 'section_courses') {
+      const hits = (ev.courses || []).slice(0, 10).map(h =>
+        `<li><span>${escapeHtml(h.code || '')}</span> ${escapeHtml(h.title || '')}</li>`
+      ).join('');
+      rows.push(`
+        <div class="trace-item">
+          <div class="trace-title">Graph section lookup</div>
+          <div class="trace-meta">${escapeHtml((ev.sections || []).join(', '))} | ${escapeHtml(ev.retrieval_query || ev.query || 'no topic filter')}</div>
+          <ol>${hits}</ol>
+        </div>
+      `);
+    } else if (ev.type === 'tool_result' && ev.result?.error) {
+      rows.push(`<div class="trace-item trace-error"><div class="trace-title">${escapeHtml(ev.name || 'tool')} error</div><div class="trace-meta">${escapeHtml(ev.result.error)}</div></div>`);
+    } else if (ev.type === 'final_response') {
+      rows.push(`<div class="trace-item"><div class="trace-title">Final response</div><div class="trace-meta">${escapeHtml((ev.content || '').slice(0, 220))}</div></div>`);
+    }
+  });
+
+  traceBody.innerHTML = rows.join('') + `
+    <details class="trace-raw">
+      <summary>Raw JSON</summary>
+      <pre>${escapeHtml(JSON.stringify(trace, null, 2))}</pre>
+    </details>
+  `;
+}
+
 function setLoading(val) {
   isLoading = val;
   sendBtn.disabled = val;
-  sendBtn.textContent = val ? '…' : 'Send';
+  sendBtn.textContent = val ? '...' : 'Send';
 }
 
 function scrollBottom() {
@@ -326,10 +336,17 @@ function scrollBottom() {
 }
 
 function escapeHtml(str) {
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  str = String(str ?? '');
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 }
 
-// ── Boot ───────────────────────────────────────────────────────
 (async () => {
-  await initSession();
+  try {
+    await initSession();
+  } catch (err) {
+    addAgentMsg(`Error: ${escapeHtml(err.message)}`, 'error');
+  }
 })();

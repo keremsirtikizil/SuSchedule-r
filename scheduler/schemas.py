@@ -134,7 +134,7 @@ class PlannerRequest:
     # "pipeline" → fixed 8-stage scheduler.agent.plan (Phase A/B path).
     # "react"    → tool-using loop in scheduler.react_agent (no intent dispatch,
     #              the LLM decides what to do via tool calls).
-    mode:             Literal["pipeline", "react"] = "pipeline"
+    mode:             Literal["pipeline", "react"] = "react"
 
 
 @dataclass

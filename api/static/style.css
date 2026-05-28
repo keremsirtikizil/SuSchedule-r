@@ -66,6 +66,28 @@ body {
   margin-top: 2px;
 }
 
+.advisor-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 12px;
+  padding: 5px 8px;
+  border: 1px solid rgba(52, 211, 153, 0.22);
+  border-radius: 999px;
+  color: var(--green);
+  background: rgba(52, 211, 153, 0.07);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.12);
+}
+
 /* ── Mode toggle ──────────────────────────────────────────────── */
 .mode-toggle {
   display: flex;
@@ -120,6 +142,40 @@ body {
   text-transform: uppercase;
   color: var(--text-dim);
   margin-bottom: 10px;
+}
+
+.advisor-panel {
+  background: linear-gradient(180deg, rgba(108, 142, 247, 0.08), transparent);
+}
+
+.flow-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--text-dim);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.flow-list div {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 8px;
+  align-items: start;
+}
+
+.flow-list span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(108, 142, 247, 0.16);
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
 }
 
 /* ── Drop zone ────────────────────────────────────────────────── */
@@ -226,6 +282,99 @@ body {
 .stats-body .stat-row { display: flex; justify-content: space-between; }
 .stats-body .stat-val { color: var(--text); font-family: var(--mono); }
 
+/* ── Agent trace ──────────────────────────────────────────────── */
+.trace-body {
+  max-height: 330px;
+  overflow-y: auto;
+  padding-right: 4px;
+  color: var(--text-dim);
+  font-size: 11px;
+}
+
+.trace-item {
+  padding: 8px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.trace-item:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.trace-title {
+  color: var(--text);
+  font-weight: 650;
+  font-size: 11px;
+  margin-bottom: 4px;
+}
+
+.trace-meta {
+  color: var(--text-dim);
+  font-size: 10.5px;
+  overflow-wrap: anywhere;
+}
+
+.trace-call {
+  margin-top: 6px;
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 10px;
+}
+
+.trace-call pre,
+.trace-raw pre {
+  margin-top: 4px;
+  padding: 7px;
+  border-radius: 6px;
+  background: #0b0d13;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--text-dim);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.trace-retrieval ol,
+.trace-item ol {
+  margin: 6px 0 0 16px;
+  padding: 0;
+}
+
+.trace-retrieval li,
+.trace-item li {
+  margin: 3px 0;
+  color: var(--text-dim);
+}
+
+.trace-retrieval li span,
+.trace-item li span {
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.trace-retrieval small {
+  display: block;
+  color: var(--text-faint);
+  font-family: var(--mono);
+}
+
+.trace-error {
+  color: var(--red);
+}
+
+.trace-raw {
+  margin-top: 8px;
+  color: var(--text-faint);
+}
+
+.trace-raw summary {
+  cursor: pointer;
+  font-size: 10px;
+}
+
 /* ── Chat main ────────────────────────────────────────────────── */
 #chat-main {
   flex: 1;
@@ -247,7 +396,7 @@ body {
 
 /* Empty state */
 #chat-messages:empty::before {
-  content: "👋  Upload your transcript, then ask the planner to build your semester.";
+  content: "Ask about courses, topics, prerequisites, or planning. Transcript upload is optional until you need exact eligibility.";
   display: block;
   color: var(--text-faint);
   font-size: 15px;

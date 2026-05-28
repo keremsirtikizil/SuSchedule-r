@@ -1,83 +1,58 @@
-"""
-PlannerSession — stateful conversational planner.
-
-Holds all heavy state (student profile, graph, retriever, offerings, current
-plan, conversation history) so it is loaded once per CLI session and reused
-across turns without re-loading from disk.
-
-Usage
------
-    session = PlannerSession.from_request(PlannerRequest(...))
-    response = session.handle_turn("Plan my Fall 2026 semester. I want ML.")
-    response = session.handle_turn("Swap CS 406 for something about NLP.")
-    response = session.handle_turn("Why did you pick CS 306?")
-"""
+"""Stateful conversational planner session."""
 from __future__ import annotations
 
 import json
-import pickle
-from pathlib import Path
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 import networkx as nx
 
+from scheduler.catalog import Catalog
+from scheduler.eligibility import EligibilityOptions, Student, eligible_courses
+from scheduler.graph_selector import SelectedGraphs, select_graphs
+from scheduler.offerings import likely_offered_in, load_offerings
+from scheduler.requirements import RequirementsReport, compute_remaining
 from scheduler.schemas import PlannerRequest, TermPlan
-from scheduler.eligibility import Student, EligibilityOptions, eligible_courses
-from scheduler.offerings import load_offerings, likely_offered_in
-from scheduler.requirements import compute_remaining, RequirementsReport
-from scheduler.retriever import Retriever
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
 
 
-# --------------------------------------------------------------------------- #
-# Session class
-# --------------------------------------------------------------------------- #
-
 @dataclass
 class PlannerSession:
-    """All state needed across conversational turns.
+    """All state needed across conversational turns."""
 
-    Instantiate via ``PlannerSession.from_request(...)`` — the factory method
-    loads the transcript and initialises cached fields.
-    """
-
-    # Config (fixed for the whole session)
     base_request: PlannerRequest
 
-    # Loaded once from transcript
-    _student: Student = field(default=None, repr=False)        # type: ignore[assignment]
+    _student: Student | None = field(default=None, repr=False)
     _raw: dict = field(default_factory=dict, repr=False)
+    transcript_loaded: bool = False
+    known_interests: list[str] = field(default_factory=list)
+    last_retrieved: list[dict] = field(default_factory=list)
 
-    # Loaded lazily on first plan() call
     _graph: nx.DiGraph | None = field(default=None, repr=False)
+    _selected_graphs: SelectedGraphs | None = field(default=None, repr=False)
     _offerings: dict | None = field(default=None, repr=False)
-    _retriever: Retriever | None = field(default=None, repr=False)
+    _retriever: Any | None = field(default=None, repr=False)
+    _catalog: Catalog | None = field(default=None, repr=False)
+    _retriever_error: str | None = None
     _remaining: RequirementsReport | None = field(default=None, repr=False)
     _eligible_pool: set[str] = field(default_factory=set, repr=False)
     _required_injected: set[str] = field(default_factory=set, repr=False)
     _candidates_cache: list = field(default_factory=list, repr=False)
 
-    # Conversational state
     current_plan: TermPlan | None = None
-    history: list[dict] = field(default_factory=list)   # OpenAI message list
-
-    # ------------------------------------------------------------------ #
-    # Factory
-    # ------------------------------------------------------------------ #
+    history: list[dict] = field(default_factory=list)
+    planning_allowed: bool = False
+    last_trace: list[dict] = field(default_factory=list)
 
     @classmethod
     def from_request(cls, request: PlannerRequest) -> "PlannerSession":
-        """Load the transcript and return a ready session."""
         session = cls(base_request=request)
-        session._load_student()
+        if request.transcript_json or request.transcript_pdf:
+            session._load_student()
         return session
-
-    # ------------------------------------------------------------------ #
-    # Lazy loaders
-    # ------------------------------------------------------------------ #
 
     def _load_student(self) -> None:
         req = self.base_request
@@ -87,7 +62,7 @@ class PlannerSession:
             from scheduler.transcript import parse_transcript
             raw = parse_transcript(str(req.transcript_pdf))
         else:
-            raise ValueError("PlannerRequest must set transcript_json or transcript_pdf.")
+            return
 
         self._raw = raw
         self._student = Student(
@@ -97,42 +72,85 @@ class PlannerSession:
             in_progress=set(raw.get("in_progress", [])),
             cumulative_credits=float(raw.get("cumulative_credits", 0.0)),
         )
+        self.transcript_loaded = True
+        self._reset_academic_state()
+
+    def load_student_from_path(self, path: Path) -> None:
+        is_json = path.suffix.lower() == ".json"
+        self.base_request.transcript_json = path if is_json else None
+        self.base_request.transcript_pdf = path if not is_json else None
+        self._load_student()
+
+    def update_manual_context(
+        self,
+        program: str | None = None,
+        admit_term: str | None = None,
+        completed: set[str] | None = None,
+        in_progress: set[str] | None = None,
+    ) -> None:
+        if self._student is None:
+            self._student = Student()
+        if program:
+            self._student.program = program.upper().strip()
+        if admit_term:
+            self._student.admit_term = str(admit_term).strip()
+        if completed is not None:
+            self._student.completed = set(completed)
+        if in_progress is not None:
+            self._student.in_progress = set(in_progress)
+        self._reset_academic_state()
+
+    def _reset_academic_state(self) -> None:
+        self._graph = None
+        self._selected_graphs = None
+        self._remaining = None
+        self._eligible_pool = set()
+        self._required_injected = set()
+        self._candidates_cache = []
+
+    def has_course_context(self) -> bool:
+        return bool(
+            self.transcript_loaded
+            or (self._student and (self._student.completed or self._student.in_progress))
+        )
 
     def _ensure_heavy_state(self) -> None:
-        """Load graph, offerings, retriever, requirements — once."""
-        if self._graph is None:
-            full = DATA_DIR / "SU_full_graph.gpickle"
-            prog = DATA_DIR / f"{self._student.program}_202601_graph.gpickle"
-            path = full if full.exists() else prog
-            print(f"[Session] Loading prereq graph from {path.name}…")
-            with path.open("rb") as f:
-                self._graph = pickle.load(f)
-
         if self._offerings is None:
             self._offerings = load_offerings()
 
-        if self._retriever is None:
-            print("[Session] Loading retriever…")
-            self._retriever = Retriever.load(device="cpu")
+        if self._catalog is None:
+            self._catalog = Catalog.load()
+
+        if self._student is None:
+            return
+
+        if self._selected_graphs is None or self._graph is None:
+            self._selected_graphs = select_graphs(
+                self._student.program,
+                self._student.admit_term,
+            )
+            self._graph = self._selected_graphs.merged
 
         if self._remaining is None:
             self._remaining = compute_remaining(
                 program=self._student.program,
                 completed_for_eligibility=self._student.completed,
                 in_progress=self._student.in_progress,
+                admit_term=self._student.admit_term,
             )
 
-        # Build eligible pool if empty
-        if not self._eligible_pool:
+        if not self._eligible_pool and self.has_course_context():
             offered = likely_offered_in(
                 self._offerings,
                 self.base_request.target_term,
                 same_season_only=True,
             )
+            scoped_candidates = self._selected_graphs.all_requirement_courses()
             self._eligible_pool = eligible_courses(
-                self._graph, self._student,
+                self._graph,
+                self._student,
                 options=EligibilityOptions(),
-                candidate_pool=offered,
+                candidate_pool=scoped_candidates & offered,
             )
             if self.base_request.include_required:
                 self._required_injected = {
@@ -140,35 +158,39 @@ class PlannerSession:
                     if c in self._eligible_pool
                 }
 
-    # ------------------------------------------------------------------ #
-    # Public properties (safe access with auto-load)
-    # ------------------------------------------------------------------ #
+    def _ensure_retriever(self) -> Any | None:
+        if self._retriever is not None or self._retriever_error is not None:
+            return self._retriever
+        try:
+            from scheduler.retriever import Retriever
+            self._retriever = Retriever.load(device="cpu")
+        except Exception as exc:
+            self._retriever_error = f"{type(exc).__name__}: {exc}"
+            self._retriever = None
+        return self._retriever
 
     @property
-    def student(self) -> Student:
+    def student(self) -> Student | None:
         return self._student
 
     @property
-    def retriever(self) -> Retriever:
+    def retriever(self) -> Any | None:
         self._ensure_heavy_state()
-        return self._retriever  # type: ignore[return-value]
+        return self._ensure_retriever()
+
+    @property
+    def catalog(self) -> Catalog:
+        self._ensure_heavy_state()
+        return self._catalog  # type: ignore[return-value]
 
     @property
     def graph(self) -> nx.DiGraph:
         self._ensure_heavy_state()
-        return self._graph  # type: ignore[return-value]
-
-    # ------------------------------------------------------------------ #
-    # Main entry point
-    # ------------------------------------------------------------------ #
+        if self._graph is None:
+            raise ValueError("No degree graph selected yet; degree/admit term required.")
+        return self._graph
 
     def handle_turn(self, user_message: str) -> str:
-        """Process one user turn and return the assistant's response.
-
-        Routes to either the legacy intent-classifier pipeline or the ReAct
-        tool-using loop depending on ``base_request.mode``. In both cases the
-        (user, assistant) pair is appended to ``self.history``.
-        """
         self._ensure_heavy_state()
 
         if self.base_request.mode == "react":
@@ -177,46 +199,41 @@ class PlannerSession:
         else:
             from scheduler.intents import (
                 classify_intent,
-                handle_plan, handle_swap, handle_drop,
-                handle_add, handle_explain, handle_unknown,
+                handle_add,
+                handle_drop,
+                handle_explain,
+                handle_plan,
+                handle_swap,
+                handle_unknown,
             )
 
-            intent = classify_intent(
-                user_message,
-                self.history,
-                model=self.base_request.intent_model,
-            )
-
+            intent = classify_intent(user_message, self.history, model=self.base_request.intent_model)
             dispatch = {
-                "plan":    handle_plan,
-                "swap":    handle_swap,
-                "drop":    handle_drop,
-                "add":     handle_add,
+                "plan": handle_plan,
+                "swap": handle_swap,
+                "drop": handle_drop,
+                "add": handle_add,
                 "explain": handle_explain,
                 "unknown": handle_unknown,
             }
-            handler = dispatch.get(intent.intent, handle_unknown)
-            response = handler(self, intent)
+            response = dispatch.get(intent.intent, handle_unknown)(self, intent)
 
-        # Update conversation history
         self.history.append({"role": "user", "content": user_message})
         self.history.append({"role": "assistant", "content": response})
-
-        # Keep history bounded (last 20 messages = 10 turns)
-        if len(self.history) > 20:
-            self.history = self.history[-20:]
-
+        if len(self.history) > 100:
+            self.history = self.history[-100:]
         return response
-
-    # ------------------------------------------------------------------ #
-    # State snapshot (for debugging / serialisation)
-    # ------------------------------------------------------------------ #
 
     def state_summary(self) -> dict:
         return {
             "program": self._student.program if self._student else None,
+            "admit_term": self._student.admit_term if self._student else None,
+            "cohort_term": self._selected_graphs.cohort_term if self._selected_graphs else None,
+            "transcript_loaded": self.transcript_loaded,
             "target_term": self.base_request.target_term,
             "eligible_pool_size": len(self._eligible_pool),
             "current_plan": self.current_plan.plan if self.current_plan else None,
             "history_turns": len(self.history) // 2,
+            "retriever_error": self._retriever_error,
+            "last_trace": self.last_trace,
         }
