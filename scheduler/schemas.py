@@ -107,6 +107,7 @@ class PlannerRequest:
     # -- Transcript source (exactly one must be set) --
     transcript_json: Path | None = None    # path to transcript_*.json
     transcript_pdf:  Path | None = None    # path to Academic Records PDF
+    transcript_html: Path | None = None    # path to Degree Evaluation HTML
 
     # -- Credit constraints --
     target_credits:  float = 17.0

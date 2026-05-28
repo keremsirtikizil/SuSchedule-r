@@ -47,6 +47,7 @@ Available tools
 - set_plan(plan, reasoning, summary)
 - list_minors()                : all available SU undergraduate minors
 - get_minor_requirements(minor): a minor's courses + the student's progress
+- get_science_engineering_progress(): Engineering & Basic-Science ECTS gap toward graduation
 
 Workflow heuristics
 -------------------
@@ -74,6 +75,12 @@ Workflow heuristics
     list_minors to show options). Minor elective sections normally require a
     chosen subset, not every listed course — say so rather than implying all
     are mandatory.
+11. For science/engineering credit questions ("do I have enough engineering
+    credits", "how many basic science ECTS do I still need"), call
+    get_science_engineering_progress. When recommending or validating a plan for
+    an engineering degree, check this: if Engineering or Basic-Science ECTS are
+    still short, prefer courses that fill the gap and pass the candidate codes to
+    the tool to compare their contributions.
 
 Answer style
 ------------
@@ -166,6 +173,9 @@ TOOLS: list[dict] = [
     _tool("get_minor_requirements", "Return a minor's required/elective courses and, when a transcript is loaded, the student's progress toward it. Accepts a code ('FIN-MINOR'), short code ('FIN'), or name ('finance').", {
         "minor": {"type": "string"},
     }, ["minor"]),
+    _tool("get_science_engineering_progress", "Return Engineering and Basic-Science ECTS progress toward graduation (minimum required, completed, remaining). Engineering degrees must satisfy both. Optionally pass candidate course codes to see how much Engineering/Basic-Science ECTS each would contribute.", {
+        "courses": {"type": "array", "items": {"type": "string"}},
+    }),
 ]
 
 
@@ -395,21 +405,43 @@ class Toolbox:
                 "credit_range": {"min": req.min_credits, "max": req.max_credits, "target": req.target_credits},
             }
         raw = self.session._raw
-        return {
+        profile = {
             "has_profile": True,
             "transcript_loaded": self.session.transcript_loaded,
+            "source": raw.get("source", "transcript"),
             "name": raw.get("name", "Student"),
             "program": s.program,
             "admit_term": s.admit_term,
             "current_semester": raw.get("current_semester", 0),
             "cgpa": raw.get("cgpa", 0.0),
             "cumulative_credits": s.cumulative_credits,
+            "minors": raw.get("minors", []),
+            "intended_minor": raw.get("intended_minor"),
             "completed_count": len(s.completed),
             "completed": sorted(s.completed),
             "in_progress": sorted(s.in_progress),
             "target_term": req.target_term,
             "credit_range": {"min": req.min_credits, "max": req.max_credits, "target": req.target_credits},
         }
+        # Compact Engineering / Basic-Science status (from a degree evaluation),
+        # so the planner is aware of these graduation constraints up front.
+        sr = self.session.section_requirements or {}
+        eng, sci = sr.get("ENGINEERING"), sr.get("BASIC SCIENCE")
+        if eng or sci:
+            def _gap(section: dict | None) -> dict | None:
+                if not section:
+                    return None
+                min_e = section.get("min_ects")
+                done_e = section.get("completed_ects")
+                rem = None
+                if min_e is not None and done_e is not None:
+                    rem = round(max(0.0, float(min_e) - float(done_e)), 1)
+                return {"min_ects": min_e, "completed_ects": done_e, "remaining_ects": rem}
+            profile["science_engineering"] = {
+                "engineering": _gap(eng),
+                "basic_science": _gap(sci),
+            }
+        return profile
 
     def set_student_context(
         self,
@@ -867,6 +899,41 @@ class Toolbox:
                 },
             }
         _trace(self.session, {"type": "minor_requirements", "code": code, "name": result.get("name")})
+        return result
+
+    def get_science_engineering_progress(self, courses: list[str] | None = None) -> dict:
+        """Engineering / Basic-Science ECTS progress toward graduation.
+
+        Uses the degree-evaluation minimums when available, else estimates from
+        the catalog. If ``courses`` are given, also reports how much Engineering
+        / Basic-Science ECTS each would add (e.g. to fill a remaining gap).
+        """
+        from scheduler.eng_sci import EngSciCredits, progress
+
+        self.session._ensure_heavy_state()
+        student = self.session.student
+        completed = set(student.completed) if student else set()
+        in_progress = set(student.in_progress) if student else set()
+        creds = EngSciCredits.load()
+        result = progress(
+            self.session.section_requirements,
+            completed,
+            in_progress,
+            credits=creds,
+        )
+        if not self.session.section_requirements:
+            result["warning"] = (
+                "No degree evaluation uploaded — minimums unknown and totals are "
+                "estimated from the catalog. Upload a Degree Evaluation HTML for "
+                "authoritative Engineering/Basic-Science requirements."
+            )
+        if courses:
+            result["candidate_contributions"] = creds.contributions(courses)
+        _trace(self.session, {
+            "type": "eng_sci_progress",
+            "eng_remaining": result["engineering"].get("remaining_ects"),
+            "sci_remaining": result["basic_science"].get("remaining_ects"),
+        })
         return result
 
     def dispatch(self, name: str, arguments: dict) -> Any:

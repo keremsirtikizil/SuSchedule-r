@@ -27,6 +27,7 @@ class PlannerSession:
 
     _student: Student | None = field(default=None, repr=False)
     _raw: dict = field(default_factory=dict, repr=False)
+    section_requirements: dict = field(default_factory=dict, repr=False)
     transcript_loaded: bool = False
     known_interests: list[str] = field(default_factory=list)
     last_retrieved: list[dict] = field(default_factory=list)
@@ -56,7 +57,10 @@ class PlannerSession:
 
     def _load_student(self) -> None:
         req = self.base_request
-        if req.transcript_json:
+        if req.transcript_html:
+            from scheduler.degree_eval import parse_degree_evaluation
+            raw = parse_degree_evaluation(req.transcript_html)
+        elif req.transcript_json:
             raw = json.loads(Path(req.transcript_json).read_text(encoding="utf-8"))
         elif req.transcript_pdf:
             from scheduler.transcript import parse_transcript
@@ -65,6 +69,7 @@ class PlannerSession:
             return
 
         self._raw = raw
+        self.section_requirements = raw.get("section_requirements", {}) or {}
         self._student = Student(
             program=normalize_program_code(raw.get("program")) or "BSCS-DM",
             admit_term=str(raw.get("admit_term", "202101")),
@@ -76,9 +81,12 @@ class PlannerSession:
         self._reset_academic_state()
 
     def load_student_from_path(self, path: Path) -> None:
-        is_json = path.suffix.lower() == ".json"
+        suffix = path.suffix.lower()
+        is_html = suffix in (".html", ".htm")
+        is_json = suffix == ".json"
+        self.base_request.transcript_html = path if is_html else None
         self.base_request.transcript_json = path if is_json else None
-        self.base_request.transcript_pdf = path if not is_json else None
+        self.base_request.transcript_pdf = path if not (is_html or is_json) else None
         self._load_student()
 
     def update_manual_context(

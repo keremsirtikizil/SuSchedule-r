@@ -155,7 +155,14 @@ async def create_session(req: CreateSessionRequest):
 
 @app.post("/session/{session_id}/transcript", response_model=TranscriptResponse)
 async def upload_transcript(session_id: str, file: UploadFile = File(...)):
-    """Upload a transcript JSON or PDF and initialize the planning session."""
+    """Upload a Degree Evaluation HTML, transcript JSON, or PDF and initialize
+    the planning session.
+
+    The file type is detected by extension (.html/.htm -> Degree Evaluation,
+    .json -> parsed transcript, otherwise -> Academic Records PDF). The Degree
+    Evaluation is preferred: it also carries the per-degree Engineering /
+    Basic-Science ECTS requirements used by science/engineering credit tracking.
+    """
     if session_id not in _sessions:
         raise HTTPException(404, f"Session {session_id} not found.")
 
