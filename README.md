@@ -1,595 +1,532 @@
 # SuSchedule-r
 
-A **course planning assistant for Sabancı University** — built as the term
-project for **CS 455 / CS 555: Large Language Models (Spring 2025/2026)**.
+A **conversational course-planning agent for Sabancı University** — built as the term project for **CS 455 / CS 555: Large Language Models (Spring 2025/2026)**.
 
-The system ingests a student's PDF transcript, scrapes the full SU
-undergraduate catalog into a structured prerequisite graph, and produces a
-feasible, conflict-free term plan that combines a deterministic symbolic
-core (eligibility + scheduling) with an LLM-driven recommendation layer
-(RAG over course descriptions).
-
-This branch (`kero`) contains the **catalog scraping pipeline** — the data
-foundation everything else builds on.
+The system reads a student's PDF transcript, retrieves semantically relevant courses from the SU catalog via a two-stage RAG pipeline, and builds a graduation-aligned semester plan through either a **fixed 8-stage pipeline** or a **tool-using ReAct loop** backed by GPT-4o. Plans are validated deterministically against real prereq/coreq rules before being shown to the student.
 
 ---
 
 ## Table of Contents
 
-1. [What this repo does](#what-this-repo-does)
-2. [Quick start](#quick-start)
-3. [Pipeline overview](#pipeline-overview)
-4. [Repository layout](#repository-layout)
-5. [The scraper modules in detail](#the-scraper-modules-in-detail)
-6. [The scheduler modules](#the-scheduler-modules)
-7. [Data formats](#data-formats)
-8. [How to run the full pipeline](#how-to-run-the-full-pipeline)
-9. [Verification & regression checks](#verification--regression-checks)
-10. [Roadmap](#roadmap)
+1. [What this system does](#1-what-this-system-does)
+2. [Architecture](#2-architecture)
+3. [Repository layout](#3-repository-layout)
+4. [Quick start](#4-quick-start)
+5. [Data layer (scraper pipeline)](#5-data-layer-scraper-pipeline)
+6. [FAISS index (embeddings)](#6-faiss-index-embeddings)
+7. [Scheduler modules](#7-scheduler-modules)
+8. [Agent modes](#8-agent-modes)
+9. [CLI usage](#9-cli-usage)
+10. [Web UI](#10-web-ui)
+11. [Data formats](#11-data-formats)
+12. [Verification & regression checks](#12-verification--regression-checks)
+13. [Credits](#13-credits)
 
 ---
 
-## What this repo does
+## 1. What this system does
 
-| Concern                                  | Module                                  | Output                                              |
-| ---------------------------------------- | --------------------------------------- | --------------------------------------------------- |
-| Discover every course at SU              | `scraper/discover.py`                   | `data/discovery_manifest.json`                      |
-| Fetch each course's detail page          | `scraper/scrape_full.py`                | `data/SU_full_catalog.json`                         |
-| Build a unified prereq DAG               | `scraper/build_graph.py --full`         | `data/SU_full_graph.{json,gpickle,_report.txt}`     |
-| Build per-degree, per-section DAGs       | `scraper/build_degree_graphs.py`        | `data/degree_graphs/<PROGRAM>/<SECTION>.*`          |
-| Audit prereq-parser coverage             | `scraper/audit_prereqs.py`              | console report + `data/unparsed_prereqs.txt`        |
-| Scrape per-term section offerings (CRNs) | `scraper/scrape_offerings.py`           | `data/offerings_<TERM>.json`                        |
-| Parse a transcript PDF                   | `scheduler/transcript.py`               | profile JSON                                        |
-| Eligibility check                        | `scheduler/eligibility.py`              | list of allowed courses + violations                |
-| Time-conflict / timetable feasibility    | `scheduler/timetable.py`                | feasible CRN combos                                 |
-| Offering-window filter                   | `scheduler/offerings.py`                | season-aware course filter                          |
-
----
-
-## Quick start
-
-This project targets **Python 3.10+**. The system Python on recent macOS is
-externally-managed (PEP 668), so use a virtualenv.
-
-```bash
-# 1. clone & enter the repo
-git clone git@github.com:keremsirtikizil/SuSchedule-r.git
-cd SuSchedule-r
-git checkout kero
-
-# 2. create and activate a virtualenv
-python3 -m venv .venv
-source .venv/bin/activate           # on macOS / Linux
-# .venv\Scripts\activate            # on Windows
-
-# 3. install dependencies
-pip install -r requirements.txt
-```
-
-`requirements.txt` pins four libraries:
-
-| Package          | Purpose                                                         |
-| ---------------- | --------------------------------------------------------------- |
-| `requests`       | HTTP client for hitting Sabancı's Banner endpoints              |
-| `beautifulsoup4` | HTML parsing for degree / pool / course pages                   |
-| `networkx`       | Directed-graph data structure and DAG utilities for prereqs     |
-| `pdfplumber`     | Text extraction from "Academic Records Summary" transcript PDFs |
-
-> **Activating the venv:** every new shell needs
-> `source .venv/bin/activate`. When active, your prompt is prefixed with
-> `(.venv)`.
+| Concern | Where handled | Technology |
+|---|---|---|
+| Discover every SU course | `scraper/` | BeautifulSoup + Banner HTML |
+| Parse prereq text → boolean tree | `scraper/prereq_parser.py` | Recursive-descent parser |
+| Build prereq DAG | `scraper/build_graph.py` | NetworkX DiGraph |
+| Eligibility check (hard rules) | `scheduler/eligibility.py` | Symbolic (no LLM) |
+| Timetable / conflict check | `scheduler/timetable.py` | Symbolic (no LLM) |
+| Transcript → student profile | `scheduler/transcript.py` | pdfplumber |
+| Semantic course retrieval | `scheduler/retriever.py` | FAISS + cross-encoder |
+| Graduation requirements | `scheduler/requirements.py` | Degree graph slices |
+| Plan proposal | `scheduler/agent.py` | GPT-4o structured outputs |
+| Plan repair loop | `scheduler/agent.py` | GPT-4o → validate → retry |
+| Conversational session | `scheduler/session.py` | Stateful, history-aware |
+| Intent dispatch (pipeline mode) | `scheduler/intents.py` | GPT-4o-mini classifier |
+| ReAct tool loop | `scheduler/react_agent.py` | GPT-4o with function calling |
+| Web API | `api/main.py` | FastAPI + uvicorn |
+| Web frontend | `api/static/` | Vanilla JS, dark-theme SPA |
 
 ---
 
-## Pipeline overview
+## 2. Architecture
+
+### 2a. Data layer
 
 ```
-┌─────────────────┐
-│  Sabancı Banner │  (suis.sabanciuniv.edu/prod/...)
-└────────┬────────┘
-         │ HTTP GET (polite 0.4s delay, cached on disk)
-         ▼
-┌────────────────────────────────────────────────────────────┐
-│  STAGE 1 — discover.py                                     │
-│                                                            │
-│  1a. For each of 14 UG degree codes × 3 admit terms,       │
-│      fetch the degree-requirements page + every elective   │
-│      pool it links to. Record every (subj, num) found,     │
-│      tagged with (program, term, section).                 │
-│                                                            │
-│  1b. (optional) Subject brute-force: for every subject     │
-│      code seen, enumerate crse_numb in 100..499 to catch   │
-│      orphan courses outside any degree pool.               │
-│                                                            │
-│  Output: data/discovery_manifest.json                      │
-└────────┬───────────────────────────────────────────────────┘
-         │
-         ▼
-┌────────────────────────────────────────────────────────────┐
-│  STAGE 2 — scrape_full.py                                  │
-│                                                            │
-│  For every (subj, num) in the manifest, fetch the          │
-│  English course-detail page (cached in courses/*.html)     │
-│  and parse it into a structured record:                    │
-│    code, subj, num, title, su_credit, ects_text,           │
-│    description, prereq_text, coreq_text,                   │
-│    offered_terms[], program_sections[]                     │
-│                                                            │
-│  Output: data/SU_full_catalog.json                         │
-└────────┬───────────────────────────────────────────────────┘
-         │
-         ▼
-┌────────────────────────────────────────────────────────────┐
-│  STAGE 3 — build_graph.py --full                           │
-│                                                            │
-│  Parse every prereq_text into a boolean expression tree    │
-│  (and/or/parens). Strict parser first; lenient fallback    │
-│  for non-CS grammar variants. Add a directed edge          │
-│  u -> v for every "v lists u as a prereq", tagged with     │
-│  role ∈ {required, alternative}.                           │
-│                                                            │
-│  Output: data/SU_full_graph.{json,gpickle,_report.txt}     │
-└────────┬───────────────────────────────────────────────────┘
-         │
-         ▼
-┌────────────────────────────────────────────────────────────┐
-│  STAGE 3b — build_degree_graphs.py                         │
-│                                                            │
-│  Slice the unified catalog into per-(degree, section)      │
-│  sub-DAGs. For each program × {Required, Core, Area, Free} │
-│  emit a graph containing the in-section courses plus all   │
-│  upstream prereq nodes they reference.                     │
-│                                                            │
-│  Output: data/degree_graphs/<PROGRAM>/<SECTION>.*          │
-└────────────────────────────────────────────────────────────┘
+Sabancı Banner
+     │ HTTP (cached on disk)
+     ▼
+scraper/discover.py        →  data/discovery_manifest.json   (688 courses, 14 programs)
+scraper/scrape_full.py     →  data/SU_full_catalog.json
+scraper/build_graph.py     →  data/SU_full_graph.gpickle     (721 nodes, 729 prereq edges)
+scraper/build_degree_graphs.py → data/degree_graphs/<PROGRAM>/{Required,Core_Elective,...}.gpickle
+scraper/scrape_offerings.py→  data/offerings_<TERM>.json     (per-term CRN / meeting data)
 ```
 
-Every stage is **idempotent and resumable**. HTML responses are cached on
-disk, so re-runs only hit the network for missing pages.
+### 2b. RAG index (built once in Colab)
+
+```
+data/SU_full_catalog.json
+     │
+     ├─ BAAI/bge-base-en-v1.5  (bi-encoder, 768-dim, L2-normalised)
+     │        │
+     │        ▼
+     │  embeddings/su_courses.index      (FAISS IndexFlatIP, 688 vectors)
+     │  embeddings/su_courses.parquet    (metadata DataFrame)
+     │  embeddings/su_courses_embeddings.npy
+     │  embeddings/id_map.json
+     │
+     └─ BAAI/bge-reranker-base  (cross-encoder, re-ranks top-k at query time)
+```
+
+### 2c. Planning session
+
+```
+User turn
+   │
+   ▼
+PlannerSession.handle_turn()
+   │
+   ├── mode="pipeline" ──────────────────────────────────────────────────────┐
+   │       │                                                                  │
+   │   classify_intent()  (gpt-4o-mini)                                       │
+   │       │                                                                  │
+   │   ┌──────────────┐                                                       │
+   │   │ plan intent  │──▶ agent.plan() ──────────────────────────────────────┤
+   │   │              │    Stage 1: load transcript                            │
+   │   │              │    Stage 2: compute_remaining()                        │
+   │   │              │    Stage 3: eligible pool (eligibility + offerings)    │
+   │   │              │    Stage 4: RAG (intent split → retrieve → rerank)     │
+   │   │              │    Stage 5: gpt-4o structured output → PlannerOutput   │
+   │   │              │    Stage 6: validate_plan()                            │
+   │   │              │    Stage 7: repair loop (max 3 iters)                  │
+   │   │              │    Stage 8: timetable resolution                       │
+   │   │ swap/drop/add│──▶ hardcoded handler + re-validate                    │
+   │   │ explain      │──▶ read session.current_plan.reasoning                 │
+   │   └──────────────┘                                                       │
+   │                                                                          │
+   └── mode="react" ──────────────────────────────────────────────────────────┘
+           │
+       react_agent.handle_turn()
+           │
+       [system prompt + history]
+           │
+       ┌────────────────────────────────────────────────────────────────┐
+       │  ReAct loop (max 12 steps)                                     │
+       │                                                                │
+       │  call_with_tools(gpt-4o, messages, TOOLS)                      │
+       │       │                                                        │
+       │  if tool_calls → dispatch → append tool results → repeat       │
+       │  if no tool_calls → return final assistant message             │
+       └────────────────────────────────────────────────────────────────┘
+```
+
+**Tools available to the ReAct agent:**
+
+| Tool | What it does |
+|---|---|
+| `get_student_profile()` | Transcript snapshot (program, completed, in-progress, CGPA) |
+| `get_remaining_requirements()` | What's still needed for graduation |
+| `get_current_plan()` | Currently committed plan + per-course reasoning |
+| `retrieve_courses(query, k, subj)` | Two-stage semantic search (FAISS → cross-encoder) |
+| `check_prereqs(code)` | Full prereq/coreq text + whether student is eligible |
+| `get_offerings(code)` | Historical offering terms + likely-offered flag |
+| `validate_plan(plan)` | Eligibility check — ok/violations/total_credits |
+| `set_plan(plan, reasoning, summary)` | Commit a validated plan to the session |
 
 ---
 
-## Repository layout
+## 3. Repository layout
 
 ```
 SuSchedule-r/
-├── README.md                  ← you are here
-├── LICENSE                    ← MIT
-├── requirements.txt           ← Python dependencies
-├── .gitignore
+├── README.md
+├── LICENSE                        ← MIT
+├── requirements.txt
+├── .env.example                   ← copy to .env and add OPENAI_API_KEY
 │
-├── scraper/                   ← Stage 1–3 catalog pipeline
-│   ├── scrape_cs.py           ← original CS-only scraper (parameterised)
-│   ├── discover.py            ← NEW — Stage 1: course-set discovery
-│   ├── scrape_full.py         ← NEW — Stage 2: full catalog fetch
-│   ├── prereq_parser.py       ← prereq_text → boolean expression tree
-│   ├── build_graph.py         ← Stage 3: unified prereq DAG
-│   ├── build_degree_graphs.py ← NEW — Stage 3b: per-degree, per-section
-│   ├── audit_prereqs.py       ← NEW — parser-coverage diagnostic
-│   └── scrape_offerings.py    ← per-term section / CRN scraper
+├── notebooks/
+│   └── build_faiss_index.ipynb   ← Colab notebook to build the FAISS index
 │
-├── scheduler/                 ← downstream symbolic core
-│   ├── transcript.py          ← PDF transcript → Student profile JSON
-│   ├── eligibility.py         ← prereq / credit-load / coreq checking
-│   ├── offerings.py           ← "is course X offered in Fall?" filter
-│   └── timetable.py           ← time-conflict detection, feasible CRN combo
+├── embeddings/                    ← built by the notebook; commit parquet + id_map only
+│   ├── su_courses.parquet         ← 688-row metadata DataFrame
+│   ├── id_map.json                ← row_int → course_code
+│   ├── su_courses_embeddings.npy  ← gitignored (2 MB, rebuild from notebook)
+│   └── su_courses.index           ← gitignored (2 MB, rebuild from notebook)
 │
-├── courses/                   ← cached <SUBJ>_<NUM>.html course pages
-├── degrees/                   ← cached degree-requirements HTML
-├── pools/                     ← cached elective-pool HTML
-├── offerings/                 ← cached per-term section listings (HTML)
+├── scheduler/
+│   ├── __init__.py
+│   ├── transcript.py              ← PDF transcript → student profile JSON
+│   ├── eligibility.py             ← prereq / coreq / credit-load checker (symbolic)
+│   ├── offerings.py               ← season-aware "likely offered?" filter
+│   ├── timetable.py               ← time-conflict detection, feasible CRN combos
+│   ├── requirements.py            ← graduation requirements per program
+│   ├── retriever.py               ← FAISS bi-encoder + bge-reranker-base (two-stage RAG)
+│   ├── schemas.py                 ← Pydantic + dataclass I/O models (PlannerRequest, TermPlan, …)
+│   ├── llm_client.py              ← OpenAI wrapper (structured outputs, tool calls, retry, usage)
+│   ├── prompts.py                 ← all system / user prompt templates
+│   ├── agent.py                   ← 8-stage pipeline (Phase A/B entry point)
+│   ├── intents.py                 ← intent classifier + swap/drop/add/explain handlers
+│   ├── session.py                 ← stateful conversational session (routes pipeline vs ReAct)
+│   ├── react_agent.py             ← ReAct tool-using loop + Toolbox class
+│   └── cli.py                     ← interactive REPL with slash commands
 │
-└── data/
-    ├── BSCS-DM_202601_catalog.json   ← original CS-only baseline
-    ├── BSCS-DM_202601_graph.{json,gpickle}
-    ├── BSCS-DM_202601_graph_report.txt
-    │
-    ├── discovery_manifest.json       ← Stage 1 output
-    ├── SU_full_catalog.json          ← Stage 2 output (688 courses)
-    ├── SU_full_graph.{json,gpickle}  ← Stage 3 output
-    ├── SU_full_graph_report.txt
-    │
-    ├── degree_graphs/                ← Stage 3b output
-    │   ├── BSCS-DM/
-    │   │   ├── Required.{json,gpickle}
-    │   │   ├── Required_report.txt
-    │   │   ├── Core_Elective.{json,gpickle}
-    │   │   ├── Area_Elective.{json,gpickle}
-    │   │   └── Free_Elective.{json,gpickle}
-    │   ├── BSEE-DM/   …
-    │   └── (14 programs × 4 sections)
-    │
-    ├── offerings_<TERM>.json         ← per-term CRN / meeting data
-    └── transcript_cagan.json         ← parsed sample transcript
+├── api/
+│   ├── __init__.py
+│   ├── main.py                    ← FastAPI backend (6 REST endpoints)
+│   └── static/
+│       ├── index.html             ← SPA shell
+│       ├── style.css              ← dark-theme CSS
+│       └── app.js                 ← drag-and-drop upload, chat, plan sidebar
+│
+├── scraper/                       ← data-layer pipeline (run once)
+│   ├── discover.py                ← Stage 1: enumerate all (subj, num) pairs
+│   ├── scrape_full.py             ← Stage 2: fetch each course-detail page
+│   ├── prereq_parser.py           ← prereq text → boolean expression tree
+│   ├── build_graph.py             ← Stage 3: unified prereq DAG
+│   ├── build_degree_graphs.py     ← Stage 3b: per-(program, section) sub-DAGs
+│   ├── audit_prereqs.py           ← parser coverage diagnostic
+│   └── scrape_offerings.py        ← per-term CRN / meeting scraper
+│
+├── data/
+│   ├── SU_full_catalog.json       ← 688 courses, structured
+│   ├── SU_full_graph.gpickle      ← 721-node prereq DAG (NetworkX)
+│   ├── degree_graphs/             ← per-(program, section) sub-DAGs
+│   │   ├── BSCS-DM/
+│   │   │   ├── Required.gpickle
+│   │   │   ├── Core_Elective.gpickle
+│   │   │   ├── Area_Elective.gpickle
+│   │   │   └── Free_Elective.gpickle
+│   │   └── … (14 programs × 4 sections)
+│   ├── offerings_*.json           ← per-term section listings (202401 → 202503)
+│   └── transcript_cagan.json      ← sample parsed transcript
+│
+├── courses/                       ← cached course-detail HTML pages
+├── degrees/                       ← cached degree-requirements HTML pages
+├── pools/                         ← cached elective-pool HTML pages
+└── offerings/                     ← cached per-term section HTML pages
 ```
 
 ---
 
-## The scraper modules in detail
+## 4. Quick start
 
-### `scraper/scrape_cs.py` — the foundational scraper
+### Prerequisites
 
-The original single-program scraper, **refactored to be reusable**.
-Hardcoded `PROGRAM = "BSCS-DM"` and `DEFAULT_TERM = "202601"` constants
-remain for back-compatibility, but the URL builders and HTML parsers
-(`fetch_degree_page`, `parse_degree_page`, `fetch_pool_page`,
-`parse_pool_page`, `fetch_course_page`, `parse_course_page`) now accept
-program / term arguments and are imported by the new modules.
+- Python 3.10+
+- An OpenAI API key (GPT-4o access required)
 
-Snapshot paths were corrected from the old `snapshots/{degrees,pools,courses}`
-layout to the flat `degrees/`, `pools/`, `courses/` directories actually
-present in the repo. A new helper `section_labels_for(program)` generates
-the four-variant anchor map needed because SU's degree pages use
-**four different anchor naming conventions** for Required / Core / Area / Free
-sections (e.g. `BSCS-DM_R`, `BAECONDM_R`, `BAPOLSDMC1`, even a typo
-`BAVACDD_C1`).
-
-**Run standalone (CS-only, baseline):**
+### Install
 
 ```bash
-python -m scraper.scrape_cs 202601
+git clone git@github.com:keremsirtikizil/SuSchedule-r.git
+cd SuSchedule-r
+git checkout cgnlast
+
+python3 -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
 ```
 
----
-
-### `scraper/discover.py` — Stage 1 course discovery
-
-Builds the master set of `(subj, num)` pairs to fetch in Stage 2. Two
-complementary passes:
-
-| Pass | What it does                                                                                                                                | Network cost                     |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| 1a   | For each of **14 UG degree codes** × **3 admit terms** (`202501`, `202502`, `202601`), fetch the degree page and every elective pool it links to. Track every `(subj, num)` plus the `(program, term, section)` it appeared under. | ~50 requests, ~30 s |
-| 1b   | (optional) Brute-force `crse_numb` 100–499 for every subject code seen in 1a's HTML. Early-stops a subject after 20 consecutive misses; skips entirely after 50 zero-hit probes.                                                    | up to ~21 600 requests, ~1.5 h |
-
-The 14 degree codes are seeded from
-`scheduler/transcript.py::PROGRAM_NAME_TO_CODE`:
-
-> BSCS-DM, BSDSA-DM, BAECON-DM, BSEE-DM, BSIE-DM, BAIS-DM, BAMAN-DM,
-> BSMAT-DM, BSME-DM, BSBIO-DM, BAPOLS-DM, BAPSIR-DM, BAPSY-DM, BAVACD-DM
-
-The three terms — Fall 25-26, Spring 25-26, Fall 26-27 — were chosen so the
-same scrape covers the typical "next 1–2 semesters" window a student plans
-around.
-
-**Run:**
+### Set your API key
 
 ```bash
-python -m scraper.discover --degrees           # Stage 1a only (recommended first)
-python -m scraper.discover --degrees --subjects  # both passes
-python -m scraper.discover --all               # shortcut for both
+cp .env.example .env
+# then edit .env and set:
+# OPENAI_API_KEY=sk-...
+```
+
+### (Re)build the FAISS index — one time only
+
+Open `notebooks/build_faiss_index.ipynb` in Google Colab (free GPU/CPU runtime works fine), run all cells, then download the four output files from `/content/out/` and place them in `embeddings/`:
+
+```
+embeddings/
+├── su_courses.parquet         ✓ committed
+├── id_map.json                ✓ committed
+├── su_courses_embeddings.npy  ← download from Colab
+└── su_courses.index           ← download from Colab
 ```
 
 ---
 
-### `scraper/scrape_full.py` — Stage 2 detail-page fetch
+## 5. Data layer (scraper pipeline)
 
-Consumes `data/discovery_manifest.json` and fetches one course-detail
-page per unique `(subj, num)`. Course pages are **term-agnostic and
-subject-agnostic** — the same `(subj, num)` returns the same content
-regardless of which degree page led you there, so each pair is fetched
-once.
-
-Reuses `parse_course_page()` from `scrape_cs.py`. Each course record
-carries the full `program_sections[]` list aggregating every
-`(program, term, section)` it appeared under during Stage 1 — this is what
-makes `build_degree_graphs.py` possible without re-scraping.
-
-**Run:**
-
-```bash
-python -m scraper.scrape_full
-# → data/SU_full_catalog.json
-```
-
----
-
-### `scraper/prereq_parser.py` — prereq text → expression tree
-
-Turns a raw `prereq_text` such as
-
-```
-(MATH 201 - Undergraduate - Min Grade D or MATH 212 - Undergraduate - Min Grade D)
-  and MATH 203 - Undergraduate - Min Grade D
-```
-
-into a structured boolean tree:
-
-```jsonc
-{
-  "op": "and",
-  "operands": [
-    { "op": "or",
-      "operands": [
-        { "course": "MATH 201", "min_grade": "D", "concurrent": false },
-        { "course": "MATH 212", "min_grade": "D", "concurrent": false }
-      ]
-    },
-    { "course": "MATH 203", "min_grade": "D", "concurrent": false }
-  ]
-}
-```
-
-Two public entry points:
-
-| Function                  | Behavior                                                                                                                                  |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `parse_prereq(text)`      | **Strict**: raises `ValueError` on anything outside the observed CS grammar. Used as a regression baseline.                               |
-| `parse_prereq_lenient(text)` | **Forgiving**: tries strict first, then falls back to a broader parser. Never raises. Wraps unrecognised spans as `{"raw": ..., "unparsed": true}` leaves so downstream code can flag them. |
-
-Helpers:
-
-- `flatten_courses(expr)` — list every course code in the tree.
-- `expr_satisfied(expr, completed_set)` — evaluate against a student's
-  completed courses. Treats `note` leaves as satisfied and `unparsed`
-  leaves as not-satisfied (fail-safe → forces manual review).
-- `has_unparsed(expr)` — true if any leaf is `unparsed`.
-
----
-
-### `scraper/build_graph.py` — Stage 3 unified DAG
-
-Reads a catalog JSON and emits a NetworkX `DiGraph`. Two modes:
-
-| Mode                  | Invocation                              | Reads                                | Writes                                                      |
-| --------------------- | --------------------------------------- | ------------------------------------ | ----------------------------------------------------------- |
-| Single-program        | `python -m scraper.build_graph 202601`  | `BSCS-DM_202601_catalog.json`        | `BSCS-DM_202601_graph.{json,gpickle,_report.txt}`           |
-| Unified (full SU)     | `python -m scraper.build_graph --full`  | `SU_full_catalog.json`               | `SU_full_graph.{json,gpickle,_report.txt}` (lenient parser) |
-
-**Edge semantics** — for every prereq tree:
-
-- `u → v` with `role="required"` means *every* satisfying assignment of `v`'s
-  tree contains `u` (i.e. `u` only appears under ANDs from the root).
-- `u → v` with `role="alternative"` means `u` appears under at least one OR
-  branch (one of several substitutes).
-
-The report file at the end summarises node/edge counts, source/sink lists,
-and runs `nx.is_directed_acyclic_graph()` as a sanity check.
-
----
-
-### `scraper/build_degree_graphs.py` — Stage 3b per-(degree, section)
-
-Slices `SU_full_catalog.json` into one DAG per `(program, section)` pair,
-where section is one of `Required`, `Core Elective`, `Area Elective`,
-`Free Elective`.
-
-Output layout:
-
-```
-data/degree_graphs/
-├── BSCS-DM/
-│   ├── Required.{json,gpickle,_report.txt}
-│   ├── Core_Elective.{json,gpickle,_report.txt}
-│   ├── Area_Elective.{json,gpickle,_report.txt}
-│   └── Free_Elective.{json,gpickle,_report.txt}
-├── BSEE-DM/  …
-└── (14 programs × 4 sections)
-```
-
-Each slice graph keeps **upstream prereq nodes** as `in_slice=False` so
-eligibility-check traversal (which walks backwards from a target course)
-stays self-contained. Each in-slice node also carries
-`terms_in_section: ["202501", …]` so a planner can answer "is CS 305 a
-Required course for BSCS-DM in Fall 26-27?"
-
-**Run:**
-
-```bash
-python -m scraper.build_degree_graphs
-# default = all 14 programs × 4 sections
-python -m scraper.build_degree_graphs --sections Required "Core Elective"
-```
-
----
-
-### `scraper/audit_prereqs.py` — parser coverage diagnostic
-
-Runs the parser over a catalog and buckets every course's `prereq_text`:
-
-| Bucket    | Meaning                                                                              |
-| --------- | ------------------------------------------------------------------------------------ |
-| `empty`   | no prereq                                                                            |
-| `strict`  | parsed cleanly by `parse_prereq()`                                                   |
-| `lenient` | strict failed, but lenient parser produced a clean tree (no `unparsed` leaves)       |
-| `partial` | lenient parser produced a tree containing some `unparsed` leaves                     |
-| `failed`  | only `unparsed` leaves — parser couldn't extract any structure                       |
-
-Also writes the residual unparsed spans to `data/unparsed_prereqs.txt` so
-new patterns can be folded back into the strict parser, **and** runs a
-regression check confirming every CS prereq still strict-parses exactly as
-it does today.
-
-```bash
-python -m scraper.audit_prereqs
-```
-
-Current state on `data/SU_full_catalog.json`:
-
-```
-Audit of SU_full_catalog.json: 688 courses
-     empty: 262
-    strict: 426
-   lenient: 0
-   partial: 0
-    failed: 0
-regression OK (BSCS-DM_202601_catalog.json): all prereq_text strict-parses
-```
-
-100% coverage — every prereq in the dataset parses strictly.
-
----
-
-### `scraper/scrape_offerings.py` — per-term section scraper
-
-Separate pipeline that hits Banner's schedule-search endpoint (POST) and
-extracts every section/CRN/meeting-pattern row for a given term:
-
-```jsonc
-{
-  "CS 201": [
-    { "crn": "10190", "section": "A",
-      "meetings": [{ "type": "lecture", "days": [0, 2], "start": 600, "end": 690,
-                     "where": "FENS L067", "instructor": "Erkay Savaş" }],
-      "instructors": ["Erkay Savaş"], "locations": ["FENS L067"] }
-  ]
-}
-```
-
-Output files are already in the repo for terms 202401 → 202503. The
-downstream `scheduler/timetable.py` module consumes these.
-
----
-
-## The scheduler modules
-
-These are **not** part of the scraping pipeline but they're the downstream
-consumers — useful to understand why the catalog is shaped the way it is.
-
-| Module                        | Role                                                                                                                                                                                                                                                                                       |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `scheduler/transcript.py`     | Parses Sabancı's "Academic Records Summary" PDF into a structured profile (`completed`, `in_progress`, `terms[]`, `cgpa`, `admit_term`, `program`, `minors`).                                                                                                                              |
-| `scheduler/eligibility.py`    | Pure symbolic eligibility. Given a graph + student profile, returns the set of courses they can take next term. Owns the rules we refuse to delegate to an LLM: prereq satisfaction, no-retake-completed, credit-load cap, coreq pairing. Also has `validate_plan()` for post-LLM checking.|
-| `scheduler/offerings.py`      | "Is course X likely to run in season S?" Backed by `offerings_<TERM>.json`. The proposal's rule: keep a course if it ran in its usual season at least once in the last four terms.                                                                                                          |
-| `scheduler/timetable.py`      | Given a set of course codes + a target term, finds a CRN-section combination whose meetings don't overlap. Returns a feasible weekly timetable or reports the conflicting pair.                                                                                                            |
-
----
-
-## Data formats
-
-### `data/discovery_manifest.json`
-
-```jsonc
-{
-  "discovered_at": "2026-05-25T09:24:11Z",
-  "degrees": ["BSCS-DM", "BSEE-DM", ...],
-  "terms":   ["202501", "202502", "202601"],
-  "subjects_discovered": ["ACC", "ANTH", "BIO", ...],   // 54 subjects
-  "missing_degrees": [],                                // any 404s land here
-  "course_count": 688,
-  "courses": {
-    "CS 201": {
-      "subj": "CS", "num": "201",
-      "program_sections": [
-        {"program": "BSCS-DM", "term": "202601", "section": "Required"},
-        {"program": "BSEE-DM", "term": "202601", "section": "Engineering"}
-      ]
-    }
-  }
-}
-```
-
-### `data/SU_full_catalog.json`
-
-```jsonc
-{
-  "source": "SU_full",
-  "degrees": [...],
-  "terms":   [...],
-  "course_count": 688,
-  "error_count": 0,
-  "errors": [],
-  "courses": [
-    {
-      "code": "CS 201", "subj": "CS", "num": "201",
-      "title": "Programming Fundamentals",
-      "su_credit": 3.0, "ects_text": "ECTS Credit: 6.00",
-      "description": "Introduction to computer programming using ...",
-      "prereq_text": "", "coreq_text": "CS 201R - Undergraduate - Min Grade D",
-      "offered_terms": [
-        {"term": "202401", "name": "Programming Fundamentals", "su_credit": "3.00"}
-      ],
-      "program_sections": [...]
-    }
-  ]
-}
-```
-
-### `data/SU_full_graph.json` (and per-section graphs)
-
-Node-link JSON. Every node carries the full course metadata
-(`title`, `description`, `prereq_expr`, etc.) plus an `in_catalog` /
-`in_slice` flag distinguishing real catalog courses from dangling external
-prereqs (e.g. an old course code that was renamed). Every edge carries
-`role`, `min_grade`, `concurrent`.
-
-For programmatic use, prefer the pickle:
-
-```python
-import pickle, networkx as nx
-G: nx.DiGraph = pickle.load(open("data/SU_full_graph.gpickle", "rb"))
-print(G.number_of_nodes(), G.number_of_edges())  # 721 729
-print(G.nodes["CS 305"]["prereq_text"])
-list(G.predecessors("CS 305"))                   # direct prereqs
-nx.ancestors(G, "CS 305")                        # everything you eventually need
-```
-
----
-
-## How to run the full pipeline
-
-After the venv is set up:
+The scraper runs **once** to build the catalog. All outputs are already committed; only re-run if Sabancı updates its Banner pages.
 
 ```bash
 source .venv/bin/activate
 
-# Stage 1: discover the full set of (subj, num) pairs (~30 s)
+# Stage 1a: enumerate courses from degree pages (~30 s)
 python -m scraper.discover --degrees
 
-# Optional Stage 1b: subject brute-force to catch orphan courses (~1.5 h)
+# Stage 1b (optional): brute-force subject ranges for orphan courses (~1.5 h)
 python -m scraper.discover --subjects
 
-# Stage 2: fetch each course's detail page once, cached in courses/
+# Stage 2: fetch each course-detail page (cached in courses/)
 python -m scraper.scrape_full
 
-# Stage 3a: unified prereq DAG
+# Stage 3a: unified prereq DAG (721 nodes, 729 edges, 100% parse coverage)
 python -m scraper.build_graph --full
 
-# Stage 3b: per-degree, per-section DAGs
+# Stage 3b: per-(degree, section) sub-DAGs
 python -m scraper.build_degree_graphs
 
-# Audit how well the parser covered the data
+# Audit parser coverage (should report: strict=426, all others=0 failures)
 python -m scraper.audit_prereqs
 ```
 
-Every step caches its raw HTML inputs to disk — a Ctrl-C mid-run is
-recoverable, and re-runs are nearly instant when the cache is warm.
-
-The total cold-cache wall-clock for Stages 1a + 2 + 3 + 3b is about
-**4 minutes**. Adding Stage 1b pushes it to roughly **1.5 hours** of mostly
-idle network time.
+Every step is **idempotent and resumable** — HTML pages are cached; Ctrl-C mid-run is safe.
 
 ---
 
-## Verification & regression checks
+## 6. FAISS index (embeddings)
 
-| What                                            | How                                                                                       |
-| ----------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| All CS courses preserved after the big scrape   | `audit_prereqs.py` regression block — diffs the new catalog against `BSCS-DM_202601_catalog.json` |
-| Prereq parser still produces identical CS trees | `audit_prereqs.py` re-parses every CS prereq and reports any mismatch                     |
-| The full SU prereq graph is acyclic             | `SU_full_graph_report.txt` line `Is DAG?  True`                                           |
-| Each per-degree slice is acyclic                | `data/degree_graphs/<PROGRAM>/<SECTION>_report.txt`                                       |
-| Discovery didn't drop any degree pages          | `discovery_manifest.json` → `"missing_degrees": []`                                       |
+Built in `notebooks/build_faiss_index.ipynb` using **BAAI/bge-base-en-v1.5** (768-dim).
 
----
+Embedding text per course:
+```
+<CODE> — <Title>
+<description>
+```
 
-## Roadmap
+Index type: `IndexFlatIP` (exact cosine search via L2-normalised inner product — fine for 688 vectors).
 
-This branch covers the **data layer**. The downstream work, in rough order:
+At query time `scheduler/retriever.py` runs two stages:
+1. **Bi-encoder** — encode query with BGE query prefix, score against all eligible courses in the FAISS index.
+2. **Cross-encoder** — `BAAI/bge-reranker-base` re-ranks the top-k bi-encoder hits with full pair attention.
 
-1. **FAISS index over `description` fields** — for the RAG "which course
-   matches my interest in X?" retriever.
-2. **End-to-end planner agent** — combine eligibility + offerings +
-   timetable + retriever into a single LLM call that proposes a term plan.
-3. **Hard-constraint validator** — re-run `scheduler.eligibility.validate_plan`
-   on the LLM's output and surface every violation.
-4. **Web UI** — upload a transcript PDF, get a planned semester.
+> ⚠️ **macOS Apple Silicon note:** `SentenceTransformer` must be imported **before** `faiss` in the same process. Both link OpenBLAS; double-init causes a segfault (exit code 139). `retriever.py` handles this — don't reorder the imports.
 
 ---
 
-## Credits
+## 7. Scheduler modules
 
-- **Course:** CS 455 / CS 555 — Large Language Models, Spring 2025/2026
-  (Sabancı University, Faculty of Engineering and Natural Sciences).
-- **Instructor:** Inanc Arin.
-- **License:** MIT — see `LICENSE`.
+| Module | Role | LLM? |
+|---|---|---|
+| `transcript.py` | Parse Sabancı "Academic Records" PDF → student profile dict | No |
+| `eligibility.py` | Prereq / coreq / credit-load check; `validate_plan()` | No |
+| `offerings.py` | "Is course X likely offered in Fall 26-27?" | No |
+| `timetable.py` | Find a CRN combo with no time conflicts | No |
+| `requirements.py` | Graduation requirements left by program | No |
+| `retriever.py` | Two-stage RAG (FAISS + cross-encoder) | No |
+| `schemas.py` | `PlannerRequest`, `TermPlan`, LLM output schemas | — |
+| `llm_client.py` | OpenAI wrapper with retry + usage tracking | — |
+| `prompts.py` | All system/user prompt templates | — |
+| `agent.py` | 8-stage fixed pipeline (`plan()`) | GPT-4o |
+| `intents.py` | Intent classifier + swap/drop/add/explain handlers | GPT-4o-mini |
+| `session.py` | Stateful session; routes pipeline vs ReAct per turn | — |
+| `react_agent.py` | ReAct loop + toolbox; all intents handled by the model | GPT-4o |
+| `cli.py` | Interactive REPL | — |
+
+---
+
+## 8. Agent modes
+
+`PlannerRequest.mode` selects the agent style. Default is `"pipeline"`.
+
+### `mode="pipeline"` (default)
+
+Fixed 8-stage execution:
+1. Load student profile from transcript
+2. Compute graduation requirements remaining
+3. Build eligible + offered candidate pool
+4. Parse user intent into retrieval queries (gpt-4o-mini) → retrieve + re-rank
+5. GPT-4o proposes a plan (structured output — guaranteed JSON schema)
+6. Validate plan against hard rules (`eligibility.validate_plan`)
+7. Repair loop if violations (up to 3 iterations)
+8. Best-effort timetable resolution
+
+For subsequent turns (swap / drop / add / explain), a lightweight intent classifier routes to a hardcoded handler — no full re-planning.
+
+### `mode="react"` (tool-using ReAct loop)
+
+The model receives the same 8 tools at every turn and decides what to call and in what order. It can:
+- Search for courses across multiple queries before deciding
+- Look up prereqs for specific codes before committing
+- Check offering history to verify a course will actually run
+- Validate a plan, get the violation list, and fix it without being explicitly told to retry
+
+The loop runs up to **12 steps** per turn. On the final step with no tool calls the model's text is returned to the user.
+
+`set_plan()` includes a re-validation guardrail — it will not commit a plan that `validate_plan()` would reject, even if the model skips the explicit validation step.
+
+---
+
+## 9. CLI usage
+
+```bash
+source .venv/bin/activate
+
+# Interactive REPL (pipeline mode, default)
+python -m scheduler.cli \
+    --transcript data/transcript_cagan.json \
+    --term 202601
+
+# Interactive REPL (ReAct mode)
+python -m scheduler.cli \
+    --transcript data/transcript_cagan.json \
+    --term 202601 \
+    --mode react
+
+# With an automatic first message (useful for demos)
+python -m scheduler.cli \
+    --transcript data/transcript_cagan.json \
+    --mode react \
+    --first-message "Plan my fall semester. I want ML and a databases course."
+```
+
+### Slash commands inside the REPL
+
+| Command | What it does |
+|---|---|
+| `/plan` | Re-run planning (same as typing a plan request) |
+| `/state` | Print current plan + session summary |
+| `/json` | Print the current plan as raw JSON |
+| `/usage` | Print token usage for the session |
+| `/help` | List commands |
+| `/exit` or Ctrl-D | Quit |
+
+### One-shot agent (no REPL)
+
+```bash
+python -m scheduler.agent \
+    --transcript data/transcript_cagan.json \
+    --request "I want ML and a database course, no early classes" \
+    --term 202601 \
+    --json   # raw JSON output
+```
+
+---
+
+## 10. Web UI
+
+### Run the server
+
+```bash
+source .venv/bin/activate
+uvicorn api.main:app --reload --port 8000
+```
+
+Then open [http://localhost:8000](http://localhost:8000).
+
+### REST API
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/` | Serve the SPA |
+| `POST` | `/session` | Create session (term, credit range, mode) |
+| `POST` | `/session/{id}/transcript` | Upload transcript PDF or JSON |
+| `POST` | `/session/{id}/turn` | Send a message, get a response + plan |
+| `GET` | `/session/{id}/state` | Current session state + plan |
+| `DELETE` | `/session/{id}` | Clean up |
+
+### Selecting the agent mode via API
+
+```jsonc
+// POST /session
+{
+  "term": "202601",
+  "min_credits": 12,
+  "max_credits": 21,
+  "target_credits": 17,
+  "mode": "react"           // ← "pipeline" or "react"
+}
+```
+
+### UI features
+
+- **Drag-and-drop transcript upload** — PDF or JSON
+- **Chat interface** with markdown rendering (marked.js)
+- **Live plan sidebar** — updated after every turn that changes the plan
+- **Intent badge** on each agent response (pipeline mode)
+- **Token usage stats** in the sidebar
+
+---
+
+## 11. Data formats
+
+### `data/transcript_cagan.json` (student profile)
+
+```jsonc
+{
+  "name": "Student Name",
+  "program": "BSCS-DM",
+  "admit_term": "202101",
+  "current_semester": 7,
+  "cgpa": 3.40,
+  "cumulative_credits": 127.0,
+  "completed_for_eligibility": ["CS 201", "CS 201R", "CS 204", …],
+  "in_progress": ["CS 412"],
+  "minors": []
+}
+```
+
+### `data/offerings_<TERM>.json`
+
+```jsonc
+{
+  "CS 201": [
+    {
+      "crn": "10190",
+      "section": "A",
+      "meetings": [
+        {
+          "type": "lecture",
+          "days": [0, 2],
+          "start": 600,
+          "end": 690,
+          "days_raw": "MW",
+          "where": "FENS L067",
+          "instructor": "Erkay Savaş"
+        }
+      ]
+    }
+  ]
+}
+```
+
+`start` / `end` are minutes since midnight. `days` is a list of weekday integers (0=Monday).
+
+### `TermPlan` (agent output, also returned by the API)
+
+```jsonc
+{
+  "plan": ["CS 306", "CS 412", "MATH 212", "CS 449", "ENS 492"],
+  "reasoning": {
+    "CS 306": "Required course; enables CS 406 and CS 437 next term.",
+    "MATH 212": "Required — Differential Equations, needed for graduation."
+  },
+  "summary": "Five-course, 16-credit semester covering required milestones and one CS elective.",
+  "total_credits": 16.0,
+  "validation_ok": true,
+  "violations": [],
+  "auto_added_coreqs": [],
+  "timetable": {
+    "CS 306": { "crn": "12345", "section": "A", "meetings": […] }
+  },
+  "iterations": 0,
+  "alternatives": ["CS 402", "CS 421"],
+  "candidate_pool_size": 87,
+  "warnings": ["No live section data for term 202601 — timetable skipped."]
+}
+```
+
+---
+
+## 12. Verification & regression checks
+
+| Check | How |
+|---|---|
+| Prereq parser: 100% coverage | `python -m scraper.audit_prereqs` — strict=426, failures=0 |
+| Full prereq graph is a DAG | `data/SU_full_graph_report.txt` → `Is DAG? True` |
+| Eligibility smoke test | `python -m scheduler.eligibility` |
+| Offerings smoke test | `python -m scheduler.offerings` |
+| Retriever smoke test | `python -m scheduler.retriever` |
+
+---
+
+## 13. Credits
+
+- **Course:** CS 455 / CS 555 — Large Language Models, Spring 2025/2026 (Sabancı University)
+- **Instructor:** Inanç Arın
+- **Models used:** BAAI/bge-base-en-v1.5 (bi-encoder), BAAI/bge-reranker-base (cross-encoder), OpenAI GPT-4o (planner + ReAct), OpenAI GPT-4o-mini (intent classifier)
+- **License:** MIT — see `LICENSE`
