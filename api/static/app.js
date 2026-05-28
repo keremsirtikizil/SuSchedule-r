@@ -306,6 +306,22 @@ function renderTrace(trace) {
           <div class="trace-meta">core left: ${escapeHtml(ev.core_left_count ?? 0)} | area left: ${escapeHtml(ev.area_left_count ?? 0)} | free left: ${escapeHtml(ev.free_left_count ?? 0)}</div>
         </div>
       `);
+    } else if (ev.type === 'requirement_credit_progress') {
+      const progress = ev.progress || {};
+      const creditRows = Object.entries(progress).map(([section, value]) => {
+        const min = value.minimum_credits ?? '-';
+        const done = value.completed_credits ?? 0;
+        const doing = value.in_progress_credits ?? 0;
+        const left = value.remaining_credits ?? '-';
+        return `<li><span>${escapeHtml(section)}</span> ${escapeHtml(done)} done + ${escapeHtml(doing)} in progress / min ${escapeHtml(min)}; left ${escapeHtml(left)}</li>`;
+      }).join('');
+      rows.push(`
+        <div class="trace-item">
+          <div class="trace-title">Requirement credit progress</div>
+          <div class="trace-meta">program: ${escapeHtml(ev.program)} | cohort: ${escapeHtml(ev.cohort_term)}</div>
+          <ol>${creditRows}</ol>
+        </div>
+      `);
     } else if (ev.type === 'retrieval') {
       const filters = ev.filters || {};
       const hits = (ev.merged_results || []).slice(0, 10).map(h =>

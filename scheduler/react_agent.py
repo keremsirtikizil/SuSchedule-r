@@ -1,8 +1,10 @@
 """SuSchedule-r ReAct course-advising agent."""
 from __future__ import annotations
 
+import html as html_lib
 import json
 import re
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field
@@ -18,6 +20,8 @@ from scheduler.schemas import TermPlan
 
 if TYPE_CHECKING:
     from scheduler.session import PlannerSession
+
+ROOT = Path(__file__).resolve().parent.parent
 
 
 REACT_SYSTEM = """\
@@ -359,6 +363,96 @@ def _fmt_code_list(codes: list[str], limit: int = 16) -> str:
     return ", ".join(shown) + suffix
 
 
+def _course_info(session: "PlannerSession", code: str) -> tuple[str, float]:
+    course = session.catalog.get(code)
+    if course:
+        return course.title or "", float(course.su_credit or 0)
+    graph = session._graph
+    if graph is not None and graph.has_node(code):
+        node = graph.nodes[code]
+        return str(node.get("title") or ""), float(node.get("su_credit") or 0)
+    return "", 0.0
+
+
+def _fmt_course_lines(session: "PlannerSession", codes: list[str], limit: int = 18) -> list[str]:
+    if not codes:
+        return ["- none"]
+    lines: list[str] = []
+    for code in codes[:limit]:
+        title, credits = _course_info(session, code)
+        label = f"{code} - {title}" if title else code
+        lines.append(f"- `{label}` ({credits:g} SU)")
+    if len(codes) > limit:
+        lines.append(f"- ...and {len(codes) - limit} more")
+    return lines
+
+
+def _degree_section_text(program: str, cohort: str, title: str) -> str:
+    path = ROOT / "degrees" / f"{program}_{cohort}.html"
+    if not path.exists():
+        return ""
+    raw = path.read_text(encoding="utf-8", errors="ignore")
+    match = re.search(
+        rf"<p>\s*<a name=\"[^\"]+\"></a>\s*<b>{re.escape(title)}</b>\s*</p>(.*?)(?=<p>\s*<a name=\"[^\"]+\"></a>\s*<b>|</body>|$)",
+        raw,
+        flags=re.I | re.S,
+    )
+    if not match:
+        return ""
+    text = re.sub(r"<[^>]+>", " ", match.group(1))
+    return re.sub(r"\s+", " ", html_lib.unescape(text)).strip()
+
+
+def _degree_credit_rules(program: str, cohort: str) -> dict[str, float]:
+    title_by_section = {
+        "Core Elective": "Core Electives",
+        "Area Elective": "Area Electives",
+        "Free Elective": "Free Electives",
+    }
+    rules: dict[str, float] = {}
+    for section, title in title_by_section.items():
+        text = _degree_section_text(program, cohort, title)
+        if not text:
+            continue
+        match = re.search(r"Minimum\s+(\d+(?:\.\d+)?)\s+SU credits", text, re.I)
+        if not match:
+            match = re.search(r"total of\s+(\d+(?:\.\d+)?)\s+SU credits", text, re.I)
+        if match:
+            rules[section] = float(match.group(1))
+    return rules
+
+
+def _section_credit_progress(session: "PlannerSession", section: str, minimum: float | None) -> dict:
+    sg = session._selected_graphs
+    student = session.student
+    if sg is None or student is None:
+        return {}
+    pool = sg.candidate_courses(section)
+    completed = sorted(pool & student.completed)
+    in_progress = sorted(pool & student.in_progress)
+
+    def credits(codes: list[str]) -> float:
+        return sum(_course_info(session, code)[1] for code in codes)
+
+    completed_credits = credits(completed)
+    in_progress_credits = credits(in_progress)
+    counted_credits = completed_credits + in_progress_credits
+    remaining_credits = None
+    if minimum is not None:
+        remaining_credits = max(0.0, minimum - counted_credits)
+    return {
+        "section": section,
+        "minimum_credits": minimum,
+        "completed": completed,
+        "in_progress": in_progress,
+        "completed_credits": completed_credits,
+        "in_progress_credits": in_progress_credits,
+        "counted_credits": counted_credits,
+        "remaining_credits": remaining_credits,
+        "pool_size": len(pool),
+    }
+
+
 def _deterministic_requirement_answer(session: "PlannerSession", toolbox: "Toolbox") -> str | None:
     student = session.student
     if student is None:
@@ -384,30 +478,61 @@ def _deterministic_requirement_answer(session: "PlannerSession", toolbox: "Toolb
     area_left = req.get("area_elective_left", [])
     free_left = req.get("free_elective_left", [])
     section_counts = graphs.get("section_counts", {})
+    credit_rules = _degree_credit_rules(req["program"], req["cohort_term"])
+    progress = {
+        section: _section_credit_progress(session, section, credit_rules.get(section))
+        for section in ("Core Elective", "Area Elective", "Free Elective")
+    }
 
     lines = [
         f"Using your uploaded transcript, I read your program as `{req['program']}` and your entrance cohort as `{req['cohort_term']}` ({admit_label}).",
         "",
-        "**Remaining required courses:**",
-        f"- `{_fmt_code_list(required_left)}`",
-        f"- Required credits left: `{req.get('required_credits_left', 0.0)}` SU credits",
+        "**Required courses still not completed:**",
+        *_fmt_course_lines(session, required_left),
+        f"- Total required credits left: `{req.get('required_credits_left', 0.0):g}` SU",
     ]
     if required_in_progress:
-        lines.append(f"- Required courses already in progress: `{_fmt_code_list(required_in_progress)}`")
+        lines.extend([
+            "",
+            "**Required courses already in progress:**",
+            *_fmt_course_lines(session, required_in_progress),
+        ])
+
+    lines.extend(["", "**Elective credit progress from your degree rules:**"])
+    for section in ("Core Elective", "Area Elective", "Free Elective"):
+        p = progress.get(section) or {}
+        minimum = p.get("minimum_credits")
+        minimum_text = f"{minimum:g}" if minimum is not None else "unknown"
+        remaining = p.get("remaining_credits")
+        remaining_text = f"{remaining:g}" if remaining is not None else "unknown"
+        lines.append(
+            f"- {section}: `{p.get('completed_credits', 0):g}` completed + "
+            f"`{p.get('in_progress_credits', 0):g}` in progress / minimum `{minimum_text}` SU "
+            f"=> at least `{remaining_text}` SU still needed"
+        )
+        if p.get("in_progress"):
+            lines.append(f"  - In progress here: `{_fmt_code_list(p['in_progress'])}`")
 
     lines.extend([
         "",
-        "**Elective requirement pools still open after your transcript:**",
-        f"- Core Elective pool: `{len(core_left)}` remaining candidate courses from `{section_counts.get('Core Elective', len(core_left))}` graph courses",
-        f"- Area Elective pool: `{len(area_left)}` remaining candidate courses from `{section_counts.get('Area Elective', len(area_left))}` graph courses",
-        f"- Free Elective pool: `{len(free_left)}` remaining candidate courses from `{section_counts.get('Free Elective', len(free_left))}` graph courses",
+        "**Remaining elective pools, not mandatory course lists:**",
+        f"- Core Elective candidates not yet taken/in progress: `{len(core_left)}` from `{section_counts.get('Core Elective', len(core_left))}` graph courses",
+        f"- Area Elective candidates not yet taken/in progress: `{len(area_left)}` from `{section_counts.get('Area Elective', len(area_left))}` graph courses",
+        f"- Free Elective candidates not yet taken/in progress: `{len(free_left)}` from `{section_counts.get('Free Elective', len(free_left))}` graph courses",
         "",
-        "Important: the elective lists are pools, not courses you must all take. For exact next-semester choices, I should filter these pools by prerequisites, likely Fall offerings, and your interests.",
+        "I am intentionally not naming random electives here: those are choice pools, and the exact courses should be selected by focus area, prerequisites, and likely Fall offerings.",
     ])
 
     if session.transcript_loaded:
         lines.append("Your transcript context is locked as authoritative, so chat wording cannot overwrite this program/cohort.")
     lines.append("Next useful step: ask me to find eligible Fall courses inside Core/Area electives for a focus like security, AI, theory, systems, or networking.")
+    _trace(session, {
+        "type": "requirement_credit_progress",
+        "program": req["program"],
+        "cohort_term": req["cohort_term"],
+        "credit_rules": credit_rules,
+        "progress": progress,
+    })
     return "\n".join(lines)
 
 
