@@ -45,6 +45,8 @@ Available tools
 - validate_plan(plan)          : validate a candidate plan
 - validate_courses(codes)      : check courses individually
 - set_plan(plan, reasoning, summary)
+- list_minors()                : all available SU undergraduate minors
+- get_minor_requirements(minor): a minor's courses + the student's progress
 
 Workflow heuristics
 -------------------
@@ -67,6 +69,11 @@ Workflow heuristics
 8. Never call set_plan unless validate_plan returned ok=true.
 9. If degree/admit/transcript is missing, say exactly what is missing. You may
    still answer general RAG questions, but do not claim exact takeability.
+10. For minor questions ("can I minor in X", "what does the finance minor need",
+    "how close am I to a math minor"), call get_minor_requirements (or
+    list_minors to show options). Minor elective sections normally require a
+    chosen subset, not every listed course — say so rather than implying all
+    are mandatory.
 
 Answer style
 ------------
@@ -155,6 +162,10 @@ TOOLS: list[dict] = [
         "reasoning": {"type": "object", "additionalProperties": {"type": "string"}},
         "summary": {"type": "string"},
     }, ["plan", "reasoning", "summary"]),
+    _tool("list_minors", "List all available SU undergraduate minors (code + name).", {}),
+    _tool("get_minor_requirements", "Return a minor's required/elective courses and, when a transcript is loaded, the student's progress toward it. Accepts a code ('FIN-MINOR'), short code ('FIN'), or name ('finance').", {
+        "minor": {"type": "string"},
+    }, ["minor"]),
 ]
 
 
@@ -353,6 +364,18 @@ def _trace(session: "PlannerSession", event: dict) -> None:
     session.last_trace.append(_compact_for_trace(event))
     if len(session.last_trace) > 120:
         session.last_trace = session.last_trace[-120:]
+
+
+_MINOR_CATALOG: Any | None = None
+
+
+def _minor_catalog() -> Any:
+    """Lazy module-level singleton for the minor requirements catalog."""
+    global _MINOR_CATALOG
+    if _MINOR_CATALOG is None:
+        from scheduler.minors import MinorCatalog
+        _MINOR_CATALOG = MinorCatalog.load()
+    return _MINOR_CATALOG
 
 
 class Toolbox:
@@ -810,6 +833,42 @@ class Toolbox:
         )
         return {"committed": True, "plan": plan, "total_credits": report.total_credits, "auto_added_coreqs": report.auto_added_coreqs}
 
+    def list_minors(self) -> dict:
+        return {"minors": _minor_catalog().list_minors()}
+
+    def get_minor_requirements(self, minor: str) -> dict:
+        mc = _minor_catalog()
+        code, candidates = mc.resolve(minor)
+        if code is None:
+            if candidates:
+                return {"error": "ambiguous minor reference", "candidates": candidates}
+            return {
+                "error": f"unknown minor: {minor!r}",
+                "available": [m["code"] for m in mc.list_minors()],
+            }
+        self.session._ensure_heavy_state()
+        catalog = self.session.catalog
+        student = self.session.student
+        if student is not None and self.session.has_course_context():
+            result = mc.progress(code, student.completed, student.in_progress, catalog=catalog)
+        else:
+            data = mc.get(code) or {}
+            result = {
+                "code": data.get("code", code),
+                "name": data.get("name", code),
+                "term": data.get("term"),
+                "note": "No transcript loaded — showing requirements only, no progress.",
+                "sections": {
+                    sec: [
+                        {"code": c, "title": (catalog.get(c).title if catalog.get(c) else "")}
+                        for c in codes
+                    ]
+                    for sec, codes in data.get("sections", {}).items()
+                },
+            }
+        _trace(self.session, {"type": "minor_requirements", "code": code, "name": result.get("name")})
+        return result
+
     def dispatch(self, name: str, arguments: dict) -> Any:
         method = getattr(self, name, None)
         if method is None or name.startswith("_"):
@@ -839,7 +898,19 @@ def handle_turn(session: "PlannerSession", user_message: str) -> str:
         "state": session.state_summary(),
     })
 
-    messages: list[dict] = [{"role": "system", "content": REACT_SYSTEM}]
+    # When student context is already loaded (transcript or manual), inject a
+    # compact profile snapshot so the LLM starts informed without needing a
+    # get_student_profile() tool call on every turn.
+    system_content = REACT_SYSTEM
+    if session.has_course_context():
+        profile = toolbox.get_student_profile()
+        system_content += (
+            "\n\n--- Student context (already loaded) ---\n"
+            + json.dumps(profile, ensure_ascii=False)
+            + "\n--- Use this; do not ask the student to repeat it. ---"
+        )
+
+    messages: list[dict] = [{"role": "system", "content": system_content}]
     messages.extend(session.history[-100:])
     messages.append({"role": "user", "content": user_message})
 
