@@ -254,8 +254,7 @@ async def handle_turn(session_id: str, req: TurnRequest):
     except Exception as exc:
         raise HTTPException(500, f"Planner error: {exc}")
 
-    usage_after = llm_client.get_session_usage()["total_tokens"]
-
+    usage = llm_client.get_session_usage()
     plan = session.current_plan
     return TurnResponse(
         response=response_text,
@@ -265,8 +264,8 @@ async def handle_turn(session_id: str, req: TurnRequest):
         warnings=plan.warnings if plan else [],
         intent=intent_label,
         token_usage={
-            **llm_client.get_session_usage(),
-            "this_turn": usage_after - usage_before,
+            **usage,
+            "this_turn": usage["total_tokens"] - usage_before,
         },
         trace=session.last_trace,
     )

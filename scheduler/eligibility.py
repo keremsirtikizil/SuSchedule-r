@@ -31,8 +31,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import pickle
-import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterable
@@ -311,41 +309,6 @@ def validate_plan(
 # --------------------------------------------------------------------------- #
 
 
-_COHORT_TERMS = ("202201", "202301", "202401", "202601")
-
-def _cohort_for_admit(admit_term: str) -> str:
-    """Map any admit term to the nearest fall cohort catalog.
-
-    Spring admits (XX02) follow the preceding fall's catalog (XX01).
-    Returns the closest available cohort term on or before admit_term.
-    """
-    # If it's a spring term, use the same year's fall.
-    if admit_term.endswith("02"):
-        admit_term = admit_term[:-2] + "01"
-    # Find the latest cohort term that is <= admit_term.
-    best = _COHORT_TERMS[0]
-    for ct in _COHORT_TERMS:
-        if ct <= admit_term:
-            best = ct
-    return best
-
-
-def load_section_graph(
-    program: str,
-    cohort_term: str,
-    section: str,
-) -> nx.DiGraph:
-    """Load one (program, cohort_term, section) graph from degree_graphs/."""
-    slug = section.replace(" ", "_")
-    path = DATA_DIR / "degree_graphs" / program / cohort_term / f"{slug}.gpickle"
-    if not path.exists():
-        raise SystemExit(
-            f"Missing {path} -- run 'python -m scraper.build_degree_graphs' first."
-        )
-    with path.open("rb") as f:
-        return pickle.load(f)
-
-
 def load_graph(
     program: str = "BSCS-DM",
     admit_term: str = "202601",
@@ -353,37 +316,15 @@ def load_graph(
         "Required", "Core Elective", "Area Elective", "Free Elective"
     ),
 ) -> nx.DiGraph:
-    """Load and merge all section graphs for a given program and admit term.
+    """Load and merge section graphs for a program/admit-term.
 
-    The admit_term is mapped to the nearest cohort catalog term so that
-    each student sees the degree requirements that applied when they enrolled.
+    Delegates to graph_selector.select_graphs so cohort mapping and graph
+    merging stay in one place. The old per-function duplicates
+    (_cohort_for_admit, load_section_graph, hardcoded _COHORT_TERMS)
+    are removed — graph_selector is the single source of truth.
     """
-    cohort = _cohort_for_admit(admit_term)
-    merged: nx.DiGraph | None = None
-    for section in sections:
-        try:
-            G = load_section_graph(program, cohort, section)
-        except SystemExit:
-            continue
-        if merged is None:
-            merged = G
-        else:
-            for node, attrs in G.nodes(data=True):
-                if not merged.has_node(node):
-                    merged.add_node(node, **attrs)
-                else:
-                    # Promote in_slice if the node is in-slice in any section.
-                    if attrs.get("in_slice"):
-                        merged.nodes[node]["in_slice"] = True
-            for u, v, attrs in G.edges(data=True):
-                if not merged.has_edge(u, v):
-                    merged.add_edge(u, v, **attrs)
-    if merged is None:
-        raise SystemExit(
-            f"No graphs found for {program}/{cohort} -- "
-            "run 'python -m scraper.build_degree_graphs' first."
-        )
-    return merged
+    from scheduler.graph_selector import select_graphs
+    return select_graphs(program, admit_term, sections=sections).merged
 
 
 def _smoke_test() -> None:

@@ -114,7 +114,7 @@ TOOLS: list[dict] = [
     _tool("get_requirement_state", "Return remaining degree requirements.", {
         "section": {"type": "string"},
     }),
-    _tool("get_degree_section_courses", "Return courses from selected graph section, optionally RAG-ranked by topic.", {
+    _tool("get_degree_section_courses", "Return courses from selected graph section. RAG-ranked by topic when a query is given; otherwise returned alphabetically.", {
         "section": {"type": "string"},
         "query": {"type": "string"},
         "k": {"type": "integer", "minimum": 1, "maximum": 80},
@@ -123,7 +123,7 @@ TOOLS: list[dict] = [
     _tool("rewrite_retrieval_queries", "Rewrite user message into retrieval queries; internal only.", {
         "original_message": {"type": "string"},
     }, ["original_message"]),
-    _tool("retrieve_catalog_courses", "RAG search over catalog descriptions with optional degree/section/eligibility filters.", {
+    _tool("retrieve_catalog_courses", "RAG search over catalog descriptions. degree_filter=true (default) scopes to student's degree requirements; degree_filter=false searches the full catalog for open exploration.", {
         "queries": {"type": "array", "items": {"type": "string"}},
         "k": {"type": "integer", "minimum": 1, "maximum": 15},
         "subj": {"type": "array", "items": {"type": "string"}},
@@ -192,29 +192,51 @@ def _planning_requested(text: str) -> bool:
     return bool(re.search(r"\b(plan|schedule|semester plan|term plan|two terms|next term|next semester)\b", text.lower()))
 
 
+# NOTE: convenience pre-pass only; the LLM's set_student_context tool is the
+# authoritative way to update degree context. This regex must NOT fire on
+# casual phrasing like "tell me…" — so bare 2-letter codes are excluded.
+# Short codes require an explicit degree-marker word to avoid false matches.
 _PROGRAM_PATTERNS: list[tuple[re.Pattern, str]] = [
-    (re.compile(r"\b(ie|industrial engineering)\b", re.I), "BSIE-DM"),
-    (re.compile(r"\b(cs|computer science)\b", re.I), "BSCS-DM"),
-    (re.compile(r"\b(ee|electronics engineering|electrical engineering)\b", re.I), "BSEE-DM"),
-    (re.compile(r"\b(dsa|data science)\b", re.I), "BSDSA-DM"),
-    (re.compile(r"\b(me|mechatronics)\b", re.I), "BSME-DM"),
-    (re.compile(r"\b(management|business)\b", re.I), "BAMAN-DM"),
-    (re.compile(r"\b(econ|economics)\b", re.I), "BAECON-DM"),
-    (re.compile(r"\b(psychology|psych)\b", re.I), "BAPSY-DM"),
+    # Full program names — always safe
+    (re.compile(r"\bindustrial\s+engineering\b", re.I), "BSIE-DM"),
+    (re.compile(r"\bcomputer\s+science\b", re.I), "BSCS-DM"),
+    (re.compile(r"\belectronics?\s+engineering\b|\belectrical\s+engineering\b", re.I), "BSEE-DM"),
+    (re.compile(r"\bdata\s+science\b", re.I), "BSDSA-DM"),
+    (re.compile(r"\bmechatronics\b", re.I), "BSME-DM"),
+    (re.compile(r"\bbusiness\s+administration\b|\bmanagement\s+engineering\b", re.I), "BAMAN-DM"),
+    (re.compile(r"\beconomics\b", re.I), "BAECON-DM"),
+    (re.compile(r"\bpsychology\b", re.I), "BAPSY-DM"),
 ]
+
+# Short codes (ie/cs/ee/me/dsa) only when paired with a degree-marker word
+# to prevent matching everyday tokens ("tell me…", "access control", "cs" in urls).
+_SHORT_CODE_PATTERN = re.compile(
+    r"\b(ie|cs|ee|me|dsa)\s+(?:major|student|degree|program|department)\b",
+    re.I,
+)
+_SHORT_CODE_MAP: dict[str, str] = {
+    "ie": "BSIE-DM", "cs": "BSCS-DM", "ee": "BSEE-DM",
+    "me": "BSME-DM", "dsa": "BSDSA-DM",
+}
 
 
 def _infer_context_from_message(session: "PlannerSession", text: str) -> None:
+    # Only call update_manual_context when confident — wrong inferences reset
+    # the graph/eligibility state for the whole session.
     program = None
     for pattern, code in _PROGRAM_PATTERNS:
         if pattern.search(text):
             program = code
             break
+    if program is None:
+        sc_match = _SHORT_CODE_PATTERN.search(text)
+        if sc_match:
+            program = _SHORT_CODE_MAP.get(sc_match.group(1).lower())
     admit_term = None
-    m = re.search(r"\b(?:admit(?:ted)?|entry|entrance|started|start|freshman|cohort)\D{0,20}(20\d{2})(?:\s*(fall|spring|summer))?\b", text, re.I)
-    if m:
-        year = m.group(1)
-        season = (m.group(2) or "fall").lower()
+    at_match = re.search(r"\b(?:admit(?:ted)?|entry|entrance|started|start|freshman|cohort)\D{0,20}(20\d{2})(?:\s*(fall|spring|summer))?\b", text, re.I)
+    if at_match:
+        year = at_match.group(1)
+        season = (at_match.group(2) or "fall").lower()
         admit_term = year + {"fall": "01", "spring": "02", "summer": "03"}[season]
     if program or admit_term:
         session.update_manual_context(program=program, admit_term=admit_term)
@@ -426,8 +448,15 @@ class Toolbox:
             "required_credits_left": r.required_credits_left,
         }
         if section:
-            key = section.lower().replace(" ", "_")
-            return {"program": r.program, "cohort_term": r.cohort_term, "section": section, "left": data.get(f"{key}_left", [])}
+            normalized = _normalize_section_name(section)
+            _key_map = {
+                "Required": "required_left",
+                "Core Elective": "core_elective_left",
+                "Area Elective": "area_elective_left",
+                "Free Elective": "free_elective_left",
+            }
+            left = data.get(_key_map.get(normalized, ""), [])
+            return {"program": r.program, "cohort_term": r.cohort_term, "section": normalized, "left": left}
         _trace(self.session, {
             "type": "requirements",
             "program": r.program,
@@ -534,7 +563,7 @@ class Toolbox:
 
     def _candidate_pool(
         self,
-        degree_filter: bool = False,
+        degree_filter: bool = True,
         section: str | None = None,
         eligible_only: bool = False,
         queries: list[str] | None = None,
@@ -546,8 +575,8 @@ class Toolbox:
         joined = " ".join(queries or [])
         if section is None:
             section = _infer_section_from_text(joined)
-        if sg is not None and not degree_filter:
-            degree_filter = True
+        # degree_filter=True (default): scope to the student's degree graph.
+        # degree_filter=False: search the full catalog (open exploration).
         if degree_filter and sg is not None:
             if (
                 self.session._student
@@ -617,7 +646,7 @@ class Toolbox:
         queries: list[str],
         k: int = 8,
         subj: list[str] | None = None,
-        degree_filter: bool = False,
+        degree_filter: bool = True,
         section: str | None = None,
         eligible_only: bool = False,
     ) -> list[dict]:

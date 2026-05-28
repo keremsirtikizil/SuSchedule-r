@@ -152,10 +152,15 @@ def compute_remaining(
     done = set(completed_for_eligibility)
     wip = set(in_progress)
     all_done_or_wip = done | wip
+    # Track codes already placed in a higher-precedence section so a course
+    # that appears in multiple section JSON files is only counted once.
+    # Precedence: Required > Core Elective > Area Elective > Free Elective.
+    seen: set[str] = set()
 
     # Required ----------------------------------------------------------------
     req_codes = _load_in_slice_codes(prog_dir / SECTION_FILES["required"])
     for code, credits in req_codes.items():
+        seen.add(code)
         if code in done:
             continue
         if code in wip:
@@ -167,6 +172,9 @@ def compute_remaining(
     # Core elective -----------------------------------------------------------
     core_codes = _load_in_slice_codes(prog_dir / SECTION_FILES["core_elective"])
     for code in core_codes:
+        if code in seen:
+            continue
+        seen.add(code)
         if code in done:
             continue
         if code in wip:
@@ -177,14 +185,18 @@ def compute_remaining(
     # Area elective -----------------------------------------------------------
     area_codes = _load_in_slice_codes(prog_dir / SECTION_FILES["area_elective"])
     for code in area_codes:
-        if code not in all_done_or_wip:
-            report.area_left.append(code)
+        if code in seen or code in all_done_or_wip:
+            continue
+        seen.add(code)
+        report.area_left.append(code)
 
     # Free elective -----------------------------------------------------------
     free_codes = _load_in_slice_codes(prog_dir / SECTION_FILES["free_elective"])
     for code in free_codes:
-        if code not in all_done_or_wip:
-            report.free_left.append(code)
+        if code in seen or code in all_done_or_wip:
+            continue
+        seen.add(code)
+        report.free_left.append(code)
 
     # Sort for deterministic output
     report.required_left.sort()
