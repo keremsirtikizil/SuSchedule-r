@@ -87,6 +87,32 @@ def sections_for(off: dict, term: str, code: str) -> list[dict]:
     return list(off.get(term, {}).get(code, []))
 
 
+def resolve_schedule_term(offerings: dict, target_term: str) -> tuple[str, bool]:
+    """Pick the term whose published meeting times we actually schedule against.
+
+    Future planning terms (e.g. 202601) usually have no offerings yet. When the
+    target term is missing we fall back to the most recent term of the *same
+    season* and flag it as a proxy. Returns ``(schedule_term, is_proxy)``;
+    ``schedule_term`` is empty if no same-season data exists at all.
+    """
+    if target_term in offerings:
+        return target_term, False
+    from scheduler.offerings import terms_of_season, season_of
+
+    same_season = terms_of_season(offerings, season_of(target_term))
+    if same_season:
+        return same_season[0], True
+    return "", False
+
+
+def annotate_meeting(m: dict) -> dict:
+    """Add human-readable day/clock labels to a meeting dict (in place)."""
+    m["start_label"] = _fmt_clock(m["start"]) if "start" in m else ""
+    m["end_label"] = _fmt_clock(m["end"]) if "end" in m else ""
+    m["day_labels"] = [DAY_LABELS[d] for d in m.get("days", []) if 0 <= d < 7]
+    return m
+
+
 # --------------------------------------------------------------------------- #
 # Search
 # --------------------------------------------------------------------------- #

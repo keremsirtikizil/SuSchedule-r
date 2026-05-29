@@ -37,6 +37,28 @@
           "OPIM 413"
         ]
       },
+      "requirements": {
+        "Required": {
+          "min_ects": null,
+          "min_su": 6,
+          "min_courses": 2
+        },
+        "Core Elective": {
+          "min_ects": null,
+          "min_su": 6,
+          "min_courses": 2
+        },
+        "Area Elective": {
+          "min_ects": null,
+          "min_su": 6,
+          "min_courses": 2
+        },
+        "total": {
+          "min_ects": null,
+          "min_su": 18,
+          "min_courses": 6
+        }
+      },
       "course_count": 22,
       "choice_groups": [
         {
@@ -78,6 +100,23 @@
           "VA 423"
         ]
       },
+      "requirements": {
+        "Required": {
+          "min_ects": null,
+          "min_su": 9,
+          "min_courses": 3
+        },
+        "Core Elective": {
+          "min_ects": null,
+          "min_su": 9,
+          "min_courses": 3
+        },
+        "total": {
+          "min_ects": null,
+          "min_su": 18,
+          "min_courses": 6
+        }
+      },
       "course_count": 13
     },
     "BSE-MINOR": {
@@ -105,6 +144,28 @@
           "ME 303",
           "ME 309"
         ]
+      },
+      "requirements": {
+        "Required": {
+          "min_ects": null,
+          "min_su": 9,
+          "min_courses": 3
+        },
+        "Core Elective": {
+          "min_ects": null,
+          "min_su": 6,
+          "min_courses": 2
+        },
+        "Area Elective": {
+          "min_ects": null,
+          "min_su": 9,
+          "min_courses": 3
+        },
+        "total": {
+          "min_ects": null,
+          "min_su": 24,
+          "min_courses": 8
+        }
       },
       "course_count": 14
     },
@@ -135,6 +196,23 @@
           "PHYS 304"
         ]
       },
+      "requirements": {
+        "Required": {
+          "min_ects": null,
+          "min_su": 18,
+          "min_courses": null
+        },
+        "Core Elective": {
+          "min_ects": null,
+          "min_su": 6,
+          "min_courses": null
+        },
+        "total": {
+          "min_ects": null,
+          "min_su": 24,
+          "min_courses": null
+        }
+      },
       "course_count": 17
     },
     "CONF-MINOR": {
@@ -161,6 +239,23 @@
           "PSY 344",
           "PSY 444"
         ]
+      },
+      "requirements": {
+        "Required": {
+          "min_ects": null,
+          "min_su": 6,
+          "min_courses": 2
+        },
+        "Area Elective": {
+          "min_ects": null,
+          "min_su": 12,
+          "min_courses": 4
+        },
+        "total": {
+          "min_ects": null,
+          "min_su": 18,
+          "min_courses": 6
+        }
       },
       "course_count": 15
     },
@@ -192,6 +287,23 @@
           "PSY 344",
           "PSY 350"
         ]
+      },
+      "requirements": {
+        "Required": {
+          "min_ects": null,
+          "min_su": 6,
+          "min_courses": 2
+        },
+        "Core Elective": {
+          "min_ects": null,
+          "min_su": 12,
+          "min_courses": 4
+        },
+        "total": {
+          "min_ects": null,
+          "min_su": 18,
+          "min_courses": 6
+        }
       },
       "course_count": 19
     },
@@ -246,6 +358,23 @@
           "POLS 307"
         ]
       },
+      "requirements": {
+        "Core Elective": {
+          "min_ects": null,
+          "min_su": 15,
+          "min_courses": 5
+        },
+        "Area Elective": {
+          "min_ects": null,
+          "min_su": 6,
+          "min_courses": 2
+        },
+        "total": {
+          "min_ects": null,
+          "min_su": 21,
+          "min_courses": 7
+        }
+      },
       "course_count": 41
     },
     "ENTREP-MINOR": {
@@ -268,6 +397,28 @@
           "MKTG 301"
         ],
         "Area Elective": []
+      },
+      "requirements": {
+        "Required": {
+          "min_ects": null,
+          "min_su": 6,
+          "min_courses": 2
+        },
+        "Core Elective": {
+          "min_ects": null,
+          "min_su": 6,
+          "min_courses": 2
+        },
+        "Area Elective": {
+          "min_ects": null,
+          "min_su": 6,
+          "min_courses": 2
+        },
+        "total": {
+          "min_ects": null,
+          "min_su": 18,
+          "min_courses": 6
+        }
       },
       "course_count": 10
     },
@@ -308,6 +459,28 @@
           "FIN 451"
         ]
       },
+      "requirements": {
+        "Required": {
+          "min_ects": null,
+          "min_su": 3,
+          "min_courses": 1
+        },
+        "Core Elective": {
+          "min_ects": null,
+          "min_su": 12,
+          "min_courses": 4
+        },
+        "Area Elective": {
+          "min_ects": null,
+          "min_su": 3,
+          "min_courses": 1
+        },
+        "total": {
+          "min_ects": 35,
+          "min_su": 18,
+          "min_courses": 6
+        }
+      },
       "course_count": 25
     },
     "GENDER-MINOR": {
@@ -333,6 +506,23 @@
           "LIT 445",
           "SOC 432"
         ]
+      },
+      "requirements": {
+        "Required": {
+          "min_ects": null,
+          "min_su": 6,
+          "min_courses": 2
+        },
+        "Area Elective": {
+          "min_ects": null,
+          "min_su": 12,
+          "min_courses": 4
+        },
+        "total": {
+          "min_ects": null,
+          "min_su": 18,
+          "min_courses": 6
+        }
       },
       "course_count": 14
     },
@@ -368,6 +558,28 @@
           "SPS 374"
         ]
       },
+      "requirements": {
+        "Required": {
+          "min_ects": null,
+          "min_su": 6,
+          "min_courses": 2
+        },
+        "Core Elective": {
+          "min_ects": null,
+          "min_su": 6,
+          "min_courses": 2
+        },
+        "Area Elective": {
+          "min_ects": null,
+          "min_su": 6,
+          "min_courses": 2
+        },
+        "total": {
+          "min_ects": null,
+          "min_su": 18,
+          "min_courses": 6
+        }
+      },
       "course_count": 20
     },
     "MATH-MINOR": {
@@ -396,6 +608,23 @@
           "MATH 484"
         ]
       },
+      "requirements": {
+        "Required": {
+          "min_ects": null,
+          "min_su": 9,
+          "min_courses": null
+        },
+        "Core Elective": {
+          "min_ects": null,
+          "min_su": 12,
+          "min_courses": null
+        },
+        "total": {
+          "min_ects": null,
+          "min_su": 21,
+          "min_courses": null
+        }
+      },
       "course_count": 16
     },
     "MKTG-MINOR": {
@@ -422,6 +651,28 @@
           "MKTG 414"
         ],
         "Area Elective": []
+      },
+      "requirements": {
+        "Required": {
+          "min_ects": null,
+          "min_su": 3,
+          "min_courses": 1
+        },
+        "Core Elective": {
+          "min_ects": null,
+          "min_su": 9,
+          "min_courses": 3
+        },
+        "Area Elective": {
+          "min_ects": null,
+          "min_su": 6,
+          "min_courses": 2
+        },
+        "total": {
+          "min_ects": null,
+          "min_su": 18,
+          "min_courses": 6
+        }
       },
       "course_count": 14
     },
@@ -451,6 +702,28 @@
           "PHIL 322",
           "PHIL 399"
         ]
+      },
+      "requirements": {
+        "Required": {
+          "min_ects": null,
+          "min_su": 6,
+          "min_courses": 2
+        },
+        "Core Elective": {
+          "min_ects": null,
+          "min_su": 6,
+          "min_courses": 2
+        },
+        "Area Elective": {
+          "min_ects": null,
+          "min_su": 6,
+          "min_courses": 2
+        },
+        "total": {
+          "min_ects": null,
+          "min_su": 18,
+          "min_courses": 6
+        }
       },
       "course_count": 15
     },
@@ -491,6 +764,23 @@
           "PHYS 401",
           "PHYS 484"
         ]
+      },
+      "requirements": {
+        "Required": {
+          "min_ects": null,
+          "min_su": 12,
+          "min_courses": null
+        },
+        "Core Elective": {
+          "min_ects": null,
+          "min_su": 6,
+          "min_courses": null
+        },
+        "total": {
+          "min_ects": null,
+          "min_su": 18,
+          "min_courses": null
+        }
       },
       "course_count": 28
     },
@@ -539,6 +829,28 @@
           "VA 311",
           "VA 315"
         ]
+      },
+      "requirements": {
+        "Required": {
+          "min_ects": null,
+          "min_su": 6,
+          "min_courses": 2
+        },
+        "Core Elective": {
+          "min_ects": null,
+          "min_su": 6,
+          "min_courses": 2
+        },
+        "Area Elective": {
+          "min_ects": null,
+          "min_su": 6,
+          "min_courses": 2
+        },
+        "total": {
+          "min_ects": null,
+          "min_su": 18,
+          "min_courses": 6
+        }
       },
       "course_count": 34
     },
@@ -589,6 +901,28 @@
           "SOC 420",
           "SPS 384"
         ]
+      },
+      "requirements": {
+        "Required": {
+          "min_ects": null,
+          "min_su": 3,
+          "min_courses": 1
+        },
+        "Core Elective": {
+          "min_ects": null,
+          "min_su": 9,
+          "min_courses": 3
+        },
+        "Area Elective": {
+          "min_ects": null,
+          "min_su": 6,
+          "min_courses": 2
+        },
+        "total": {
+          "min_ects": null,
+          "min_su": 18,
+          "min_courses": 6
+        }
       },
       "course_count": 36
     }

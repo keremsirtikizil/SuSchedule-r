@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import re
+from datetime import date
 from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field
@@ -48,6 +49,9 @@ Available tools
 - list_minors()                : all available SU undergraduate minors
 - get_minor_requirements(minor): a minor's courses + the student's progress
 - get_science_engineering_progress(): Engineering & Basic-Science ECTS gap toward graduation
+- find_courses_by_credit_type(): courses that actually carry Basic-Science / Engineering ECTS
+- build_timetable(courses)     : conflict-free weekly schedule from real section meeting times
+- get_current_schedule()       : the courses/times the student assembled in the UI builder
 
 Workflow heuristics
 -------------------
@@ -62,6 +66,15 @@ Workflow heuristics
    get_degree_section_courses/get_requirement_state. If the user asks about a
    focus such as supply chain, distinguish official degree requirements from
    focus-relevant electives.
+   When get_requirement_state returns a 'requirement' / 'section_credit_status'
+   block, that is AUTHORITATIVE (from the degree evaluation): answer "how many
+   do I still need" from its su_credits_remaining and satisfied flag. The
+   *_left / 'options' lists are only the pool of eligible courses, NOT
+   outstanding requirements — a section can be fully satisfied while its pool is
+   non-empty, so never count the pool as courses the student still needs and
+   never invent a required/completed course count. If the section is satisfied,
+   say so plainly. If a section has no credit status (completion_unknown), say
+   the required amount is unknown rather than guessing.
 5. For IE operations/supply-chain/logistics/production questions, use the BSIE
    scoped graph and prefer Required + Core Elective IE courses first.
 6. Answer the immediate question first. Offer 2-4 concrete next actions when useful.
@@ -71,16 +84,54 @@ Workflow heuristics
 9. If degree/admit/transcript is missing, say exactly what is missing. You may
    still answer general RAG questions, but do not claim exact takeability.
 10. For minor questions ("can I minor in X", "what does the finance minor need",
-    "how close am I to a math minor"), call get_minor_requirements (or
-    list_minors to show options). Minor elective sections normally require a
-    chosen subset, not every listed course — say so rather than implying all
-    are mandatory.
+    "how close am I to a math minor", "how many more courses/credits do I need"),
+    call get_minor_requirements (or list_minors to show options). Answer counts
+    from the returned fields: per section use min_courses / min_su_credits and
+    courses_remaining / su_credits_remaining; for the whole minor use
+    required_total and the top-level courses_remaining / su_credits_remaining.
+    Each elective section requires only the listed min_courses from its
+    'options' pool, NOT every option — never imply all options are mandatory.
+    Some minors are credit-based (min_courses null); answer those in SU credits.
+    Minor progress is tracked ONLY in SU credits and course counts. NEVER
+    convert between SU credits and ECTS or estimate completed/remaining ECTS.
+    The only ECTS value available is total_ects_whole_minor (the whole minor's
+    grand total); if asked about ECTS, state that number as-is and say the
+    per-course ECTS breakdown isn't tracked, so completed ECTS can't be given.
 11. For science/engineering credit questions ("do I have enough engineering
     credits", "how many basic science ECTS do I still need"), call
     get_science_engineering_progress. When recommending or validating a plan for
     an engineering degree, check this: if Engineering or Basic-Science ECTS are
     still short, prefer courses that fill the gap and pass the candidate codes to
     the tool to compare their contributions.
+    For "suggest/list courses WITH science (or engineering) credits" (optionally
+    by subject, e.g. "CS courses with science credits"), call
+    find_courses_by_credit_type — NEVER answer this from catalog retrieval and
+    NEVER treat a course's SU credits as science/engineering credits. Only list
+    courses the tool returns, and report each course's basic_sci_ects / eng_ects
+    (a course can have 0 science ECTS even though it has SU credits). If a
+    subject has few or no such courses, say so honestly.
+12. For scheduling/time questions ("what time is CS 412", "do these courses
+    clash", "build/show me a weekly schedule", "is this plan conflict-free"),
+    call build_timetable with the course codes and answer ONLY from its result.
+    NEVER invent or recall meeting days, times, classrooms, or CRNs from memory.
+    A weekly grid is rendered for the user in the UI, so keep your text SHORT: a
+    one-line verdict (conflict-free or which pairs clash) plus each course's day/
+    time using the per-pick 'when' field — do not paste a full ASCII grid.
+    Report only the days/times the tool returns; if 'crn' is null, do NOT state a
+    CRN or section number (they apply only to a past proxy term). If the tool
+    reports proxy_term_used, add one sentence that the times come from the most
+    recent same-season term because the target term isn't published yet and may
+    shift. If a course is in 'missing' (not offered) or 'no_meetings' (TBA), say
+    so plainly. If ok is false, state no conflict-free combination exists and
+    name the clashing courses from 'reason'.
+13. When the user asks you to check/review "my schedule" or "my current
+    schedule" (e.g. via the Check Schedule button), call get_current_schedule.
+    Comment on: time conflicts (from has_conflicts/conflicts), total SU credit
+    load vs the min/max range, and — if a transcript is loaded — how the picked
+    courses fit remaining degree requirements (cross-reference get_requirement_state
+    / required-left). Be concise and concrete; do not invent meeting times beyond
+    what the tool returns. If has_schedule is false, tell the user to add courses
+    to the builder on the right first.
 
 Answer style
 ------------
@@ -176,6 +227,15 @@ TOOLS: list[dict] = [
     _tool("get_science_engineering_progress", "Return Engineering and Basic-Science ECTS progress toward graduation (minimum required, completed, remaining). Engineering degrees must satisfy both. Optionally pass candidate course codes to see how much Engineering/Basic-Science ECTS each would contribute.", {
         "courses": {"type": "array", "items": {"type": "string"}},
     }),
+    _tool("find_courses_by_credit_type", "Find courses that actually carry Basic-Science or Engineering ECTS credit, using the per-course credit table. Use this for any 'courses with science/engineering credits' request — do NOT infer credit type from the catalog. credit_type is 'basic_science' or 'engineering'; subject optionally restricts to a code prefix like 'CS'.", {
+        "credit_type": {"type": "string", "enum": ["basic_science", "engineering"]},
+        "subject": {"type": "string"},
+        "limit": {"type": "integer"},
+    }, ["credit_type"]),
+    _tool("build_timetable", "Build a conflict-free weekly timetable (or report clashes) for a set of courses, using real per-section meeting times. Pass the course codes to schedule. Returns chosen sections (CRN, day/time, location, instructor) when a clash-free combination exists, or the conflicting pairs when none does. Also flags courses not offered or with no scheduled meeting time. Use this for any 'do these courses clash', 'build/show my schedule', or 'what time is course X' request.", {
+        "courses": {"type": "array", "items": {"type": "string"}},
+    }, ["courses"]),
+    _tool("get_current_schedule", "Return the schedule the student has assembled in the UI schedule builder: the picked courses, their meeting times, total SU credits, and any time conflicts between them. Use this whenever the user asks to review, check, or comment on 'my schedule' / 'my current schedule'.", {}),
 ]
 
 
@@ -376,6 +436,43 @@ def _trace(session: "PlannerSession", event: dict) -> None:
         session.last_trace = session.last_trace[-120:]
 
 
+# Normalized degree-section name -> the matching key in a parsed degree
+# evaluation's ``section_requirements`` (which carries the authoritative
+# min / completed SU-credit figures per section).
+_SECTION_TO_EVAL_KEY = {
+    "Required": "REQUIRED COURSES",
+    "Core Elective": "CORE ELECTIVES",
+    "Area Elective": "AREA ELECTIVES",
+    "Free Elective": "FREE ELECTIVES",
+}
+
+
+def _section_credit_status(section_requirements: dict, normalized: str) -> dict | None:
+    """Authoritative SU-credit status for a degree section from a degree eval.
+
+    Returns ``None`` when no degree-evaluation figures are available for the
+    section (e.g. a plain JSON transcript was uploaded instead).
+    """
+    sr = section_requirements or {}
+    entry = sr.get(_SECTION_TO_EVAL_KEY.get(normalized, ""))
+    if not entry:
+        return None
+    min_su = entry.get("min_su")
+    done_su = entry.get("completed_su")
+    remaining = None
+    satisfied = None
+    if min_su is not None and done_su is not None:
+        remaining = round(max(0.0, float(min_su) - float(done_su)), 1)
+        satisfied = float(done_su) >= float(min_su)
+    return {
+        "min_su_credits": min_su,
+        "completed_su_credits": done_su,
+        "su_credits_remaining": remaining,
+        "satisfied": satisfied,
+        "source": "degree_evaluation",
+    }
+
+
 _MINOR_CATALOG: Any | None = None
 
 
@@ -502,6 +599,7 @@ class Toolbox:
             "required_in_progress": r.required_in_progress,
             "required_credits_left": r.required_credits_left,
         }
+        sr = self.session.section_requirements or {}
         if section:
             normalized = _normalize_section_name(section)
             _key_map = {
@@ -511,7 +609,34 @@ class Toolbox:
                 "Free Elective": "free_elective_left",
             }
             left = data.get(_key_map.get(normalized, ""), [])
-            return {"program": r.program, "cohort_term": r.cohort_term, "section": normalized, "left": left}
+            out = {"program": r.program, "cohort_term": r.cohort_term, "section": normalized}
+            status = _section_credit_status(sr, normalized)
+            if status is not None:
+                out["requirement"] = status
+                if status.get("satisfied"):
+                    out["note"] = (
+                        f"This section is already SATISFIED "
+                        f"({status['completed_su_credits']}/{status['min_su_credits']} "
+                        f"SU credits). 'options' are not additional requirements."
+                    )
+                else:
+                    out["note"] = (
+                        "'options' is the pool of courses that can count toward "
+                        "this section — pick enough to cover su_credits_remaining, "
+                        "not all of them."
+                    )
+                out["options"] = left
+            else:
+                # No degree-evaluation figures — we only know the remaining pool,
+                # not how much of the section is already satisfied.
+                out["completion_unknown"] = True
+                out["note"] = (
+                    "No degree-evaluation credit figures available; 'left' is the "
+                    "remaining course pool only — the required count for this "
+                    "section is unknown, so do not state one."
+                )
+                out["left"] = left
+            return out
         _trace(self.session, {
             "type": "requirements",
             "program": r.program,
@@ -526,6 +651,31 @@ class Toolbox:
             "free_left": r.free_left,
             "required_credits_left": r.required_credits_left,
         })
+        # Authoritative per-section credit status from the degree evaluation,
+        # so the agent answers "how many do I still need" from real figures
+        # rather than treating the option pools as outstanding requirements.
+        if sr:
+            credit_status = {}
+            for normalized in _SECTION_TO_EVAL_KEY:
+                st = _section_credit_status(sr, normalized)
+                if st is not None:
+                    credit_status[normalized] = st
+            if credit_status:
+                data["section_credit_status"] = credit_status
+                # Align the legacy graph-derived figure with the authoritative
+                # degree-evaluation remaining credits so there is a single,
+                # consistent number for the Required section.
+                req_status = credit_status.get("Required")
+                if req_status and req_status.get("su_credits_remaining") is not None:
+                    data["required_credits_left"] = req_status["su_credits_remaining"]
+                data["note"] = (
+                    "section_credit_status is authoritative (from the degree "
+                    "evaluation): use it for how many credits each section still "
+                    "needs, including required_credits_left. The *_left lists are "
+                    "only the pools of eligible courses, NOT outstanding "
+                    "requirements — a section can be fully satisfied even while "
+                    "its *_left pool is non-empty."
+                )
         return data
 
     def get_remaining_requirements(self) -> dict:
@@ -849,6 +999,16 @@ class Toolbox:
         report = elig_validate_plan(self.session._graph, self.session._student, plan, opts)
         if not report.ok:
             return {"committed": False, "reason": "validate_plan failed; not committing", "violations": [v.to_dict() for v in report.violations]}
+        # Attach a best-effort weekly timetable (uses a same-season proxy term
+        # when the target term has no published offerings yet).
+        committed_courses = plan + [c for c in report.auto_added_coreqs if c not in plan]
+        timetable_payload = None
+        try:
+            tt = self.build_timetable(committed_courses)
+            if "error" not in tt:
+                timetable_payload = {tt.get("schedule_term", "schedule"): tt}
+        except Exception:
+            timetable_payload = None
         self.session.current_plan = TermPlan(
             plan=plan,
             reasoning={str(k).upper().strip(): str(v) for k, v in (reasoning or {}).items()},
@@ -857,7 +1017,7 @@ class Toolbox:
             validation_ok=True,
             violations=[],
             auto_added_coreqs=report.auto_added_coreqs,
-            timetable=None,
+            timetable=timetable_payload,
             iterations=0,
             alternatives=[],
             candidate_pool_size=len(self.session._eligible_pool),
@@ -885,19 +1045,37 @@ class Toolbox:
             result = mc.progress(code, student.completed, student.in_progress, catalog=catalog)
         else:
             data = mc.get(code) or {}
+            reqs = data.get("requirements", {})
+            total = reqs.get("total", {})
             result = {
                 "code": data.get("code", code),
                 "name": data.get("name", code),
                 "term": data.get("term"),
-                "note": "No transcript loaded — showing requirements only, no progress.",
+                "credit_unit": "SU credit",
+                "note": "No transcript loaded — showing requirements only, no progress. All credit figures are SU credits.",
+                "required_total": {
+                    "min_courses": total.get("min_courses"),
+                    "min_su_credits": total.get("min_su"),
+                },
                 "sections": {
-                    sec: [
-                        {"code": c, "title": (catalog.get(c).title if catalog.get(c) else "")}
-                        for c in codes
-                    ]
+                    sec: {
+                        "min_courses": (reqs.get(sec) or {}).get("min_courses"),
+                        "min_su_credits": (reqs.get(sec) or {}).get("min_su"),
+                        "options": [
+                            {"code": c, "title": (catalog.get(c).title if catalog.get(c) else "")}
+                            for c in codes
+                        ],
+                    }
                     for sec, codes in data.get("sections", {}).items()
                 },
             }
+            total_ects = total.get("min_ects")
+            if total_ects is not None:
+                result["total_ects_whole_minor"] = total_ects
+                result["ects_note"] = (
+                    "Whole-minor ECTS total only; no per-course ECTS data, so "
+                    "completed/remaining ECTS is unknown. Do not estimate it."
+                )
         _trace(self.session, {"type": "minor_requirements", "code": code, "name": result.get("name")})
         return result
 
@@ -936,6 +1114,197 @@ class Toolbox:
         })
         return result
 
+    def find_courses_by_credit_type(
+        self, credit_type: str, subject: str | None = None, limit: int = 25
+    ) -> dict:
+        """List courses that genuinely carry Basic-Science or Engineering ECTS."""
+        from scheduler.eng_sci import EngSciCredits
+
+        self.session._ensure_heavy_state()
+        catalog = self.session.catalog
+        creds = EngSciCredits.load()
+        matches = creds.find(credit_type=credit_type, subject=subject)
+        key = "basic_sci_ects" if credit_type.lower().startswith("basic") else "eng_ects"
+        label = "Basic-Science" if key == "basic_sci_ects" else "Engineering"
+        courses = []
+        for m in matches[: max(1, int(limit or 25))]:
+            course = catalog.get(m["code"]) if catalog else None
+            courses.append({
+                "code": m["code"],
+                "title": course.title if course else "",
+                f"{label.lower().replace('-', '_')}_ects": m[key],
+                "eng_ects": m["eng_ects"],
+                "basic_sci_ects": m["basic_sci_ects"],
+                "ects_total": m["ects_total"],
+            })
+        _trace(self.session, {
+            "type": "find_by_credit_type",
+            "credit_type": credit_type,
+            "subject": subject,
+            "match_count": len(matches),
+        })
+        return {
+            "credit_type": label,
+            "subject": (subject or "any").upper(),
+            "total_matches": len(matches),
+            "returned": len(courses),
+            "courses": courses,
+            "note": (
+                f"These courses carry {label} ECTS per the catalog credit table. "
+                "The reported ECTS is the credit-type contribution, NOT the "
+                "course's SU credits. Courses not listed carry 0 "
+                f"{label} ECTS."
+            ),
+        }
+
+    def build_timetable(self, courses: list[str]) -> dict:
+        """Build a conflict-free weekly timetable from real section meeting times.
+
+        The target planning term often has no published offerings yet (it is a
+        future term). When that happens we fall back to the most recent term of
+        the *same season* that we do have data for (e.g. plan for Fall 2026-2027
+        using Fall 2025-2026 sections) and clearly flag that the times are a
+        proxy, since exact meeting times for the future term are not yet known.
+        """
+        from scheduler.timetable import (
+            build_timetable as _bt,
+            format_timetable as _fmt,
+            load_offerings as _load_off,
+            resolve_schedule_term,
+            annotate_meeting,
+        )
+
+        codes = [c.upper().strip() for c in (courses or []) if c and c.strip()]
+        if not codes:
+            return {"error": "no courses given to schedule"}
+
+        offerings = self.session._offerings or _load_off()
+        target_term = self.session.base_request.target_term
+
+        # Pick the term whose meeting times we actually schedule against.
+        schedule_term, is_proxy = resolve_schedule_term(offerings, target_term)
+        if not schedule_term:
+            return {
+                "error": "no offerings available to build a timetable",
+                "target_term": target_term,
+            }
+
+        result = _bt(codes, schedule_term, offerings=offerings)
+        payload = result.to_dict()
+        payload["target_term"] = target_term
+        payload["schedule_term"] = schedule_term
+        payload["proxy_term_used"] = is_proxy
+
+        # When scheduling against a proxy (past) term, the CRNs and section
+        # numbers are NOT valid for the future target term — drop them so neither
+        # the model nor the UI presents them as registerable identifiers.
+        if is_proxy:
+            for p in payload["picks"]:
+                p["reference_crn_past_term"] = p.pop("crn", None)
+                p["crn"] = None
+                p["crn_note"] = "CRN/section apply to the proxy term only; will differ for the target term."
+
+        # Add ready-to-render, human-readable meeting strings to every pick so
+        # the frontend can draw a weekly grid without re-deriving anything.
+        for p in payload["picks"]:
+            for m in p.get("meetings", []):
+                annotate_meeting(m)
+            p["when"] = "; ".join(
+                f"{'/'.join(m.get('day_labels', []))} {m['start_label']}-{m['end_label']}"
+                for m in p.get("meetings", [])
+            )
+
+        # Build the LLM-facing text from the (CRN-scrubbed) payload, not the raw
+        # engine output, so the model never quotes a stale CRN.
+        payload["text"] = _fmt(result)
+        if is_proxy:
+            payload["text"] = re.sub(r",\s*CRN\s*\d+", "", payload["text"])
+
+        if is_proxy:
+            from scheduler.prompts import term_label as _term_label
+            try:
+                tgt_lbl = _term_label(target_term)
+                proxy_lbl = _term_label(schedule_term)
+            except Exception:
+                tgt_lbl, proxy_lbl = target_term, schedule_term
+            payload["note"] = (
+                f"Exact meeting times for {tgt_lbl} (term {target_term}) are not "
+                f"published yet, so this timetable uses the most recent same-season "
+                f"term, {proxy_lbl} (term {schedule_term}), as a proxy. Days/times "
+                "are typical for the course but may shift, and CRNs/section numbers "
+                "are NOT shown because they will differ for the target term."
+            )
+        _trace(self.session, {
+            "type": "build_timetable",
+            "courses": codes,
+            "target_term": target_term,
+            "schedule_term": schedule_term,
+            "proxy_term_used": is_proxy,
+            "ok": result.ok,
+            "missing": result.missing,
+            "no_meetings": result.no_meetings,
+        })
+        return payload
+
+    def get_current_schedule(self) -> dict:
+        """Return the schedule the student is assembling in the UI builder.
+
+        Includes each picked course's meeting times, total SU credits, and a
+        server-computed list of time conflicts between the chosen sections.
+        Use this whenever the user asks to review/check "my schedule".
+        """
+        from scheduler.timetable import conflict_report
+
+        picks = self.session.user_schedule or []
+        if not picks:
+            return {
+                "has_schedule": False,
+                "note": "The student has not added any courses to the builder yet.",
+            }
+
+        total_credits = round(sum(float(p.get("su_credit") or 0) for p in picks), 1)
+        # conflict_report needs each section to carry a 'label' + 'meetings'.
+        for p in picks:
+            p.setdefault("label", f"{p.get('code', '?')} ({p.get('section', '?')})")
+        clashes = conflict_report(picks)
+        conflicts = [
+            {
+                "between": [a, b],
+                "day": ma.get("days_raw") or "/".join(ma.get("day_labels", [])),
+                "times": f"{ma.get('start_label','')}-{ma.get('end_label','')} vs "
+                         f"{mb.get('start_label','')}-{mb.get('end_label','')}",
+            }
+            for (a, b, ma, mb) in clashes
+        ]
+        return {
+            "has_schedule": True,
+            "target_term": self.session.base_request.target_term,
+            "course_count": len(picks),
+            "total_su_credits": total_credits,
+            "courses": [
+                {
+                    "code": p.get("code"),
+                    "title": p.get("title", ""),
+                    "section": p.get("section"),
+                    "su_credit": p.get("su_credit"),
+                    "when": p.get("when", ""),
+                }
+                for p in picks
+            ],
+            "has_conflicts": bool(conflicts),
+            "conflicts": conflicts,
+            "credit_range": {
+                "min": self.session.base_request.min_credits,
+                "max": self.session.base_request.max_credits,
+            },
+            "note": (
+                "This is the student's own assembled schedule. Meeting times come "
+                "from offerings data (a same-season proxy term if the target term "
+                "isn't published yet), so days/times are indicative and CRNs may "
+                "differ for the actual term."
+            ),
+        }
+
     def dispatch(self, name: str, arguments: dict) -> Any:
         method = getattr(self, name, None)
         if method is None or name.startswith("_"):
@@ -965,10 +1334,28 @@ def handle_turn(session: "PlannerSession", user_message: str) -> str:
         "state": session.state_summary(),
     })
 
+    # Always inject the real-world clock and the session's planning term so the
+    # agent never guesses today's date or "next semester" from training memory.
+    from scheduler.prompts import term_label as _term_label
+
+    target_term = session.base_request.target_term
+    try:
+        target_label = _term_label(target_term)
+    except Exception:
+        target_label = target_term
+    system_content = REACT_SYSTEM + (
+        "\n\n--- Current environment (authoritative) ---\n"
+        f"Today's date: {date.today().isoformat()}.\n"
+        f"Planning / target semester (this is what \"next semester\" means here): "
+        f"{target_label} (term code {target_term}).\n"
+        "Answer any date or 'which/next semester' question from these values, "
+        "never from prior knowledge.\n"
+        "--- end environment ---"
+    )
+
     # When student context is already loaded (transcript or manual), inject a
     # compact profile snapshot so the LLM starts informed without needing a
     # get_student_profile() tool call on every turn.
-    system_content = REACT_SYSTEM
     if session.has_course_context():
         profile = toolbox.get_student_profile()
         system_content += (

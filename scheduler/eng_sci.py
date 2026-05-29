@@ -67,6 +67,36 @@ class EngSciCredits:
                 sci += rec.basic_sci_ects
         return eng, sci
 
+    def find(
+        self,
+        credit_type: str = "basic_science",
+        subject: str | None = None,
+        min_ects: float = 0.5,
+    ) -> list[dict]:
+        """Find courses that carry the requested credit type.
+
+        ``credit_type`` is ``"basic_science"`` or ``"engineering"``. ``subject``
+        optionally restricts to a subject prefix (e.g. ``"CS"``). Results are
+        sorted by the relevant ECTS contribution, descending.
+        """
+        key = "basic_sci_ects" if credit_type.lower().startswith("basic") else "eng_ects"
+        subj = subject.upper().strip() if subject else None
+        out: list[dict] = []
+        for code, rec in self._courses.items():
+            value = float(rec.get(key, 0.0) or 0.0)
+            if value < min_ects:
+                continue
+            if subj and code.upper().split(" ", 1)[0] != subj:
+                continue
+            out.append({
+                "code": code,
+                "eng_ects": float(rec.get("eng_ects", 0.0) or 0.0),
+                "basic_sci_ects": float(rec.get("basic_sci_ects", 0.0) or 0.0),
+                "ects_total": float(rec.get("ects_total", 0.0) or 0.0),
+            })
+        out.sort(key=lambda d: d[key], reverse=True)
+        return out
+
     def contributions(self, codes) -> list[dict]:
         """Per-course Engineering / Basic-Science contribution for ``codes``.
 

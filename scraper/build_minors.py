@@ -120,6 +120,54 @@ def parse_minor_detail(html: str) -> dict[str, list[str]]:
     return sections
 
 
+def _num(cell: str) -> int | None:
+    """Parse a summary-table credit/course cell ('-' or '' -> None)."""
+    cell = cell.strip()
+    if not cell or cell == "-":
+        return None
+    try:
+        return int(float(cell))
+    except ValueError:
+        return None
+
+
+def parse_minor_requirements(html: str) -> dict[str, dict]:
+    """Parse the "SUMMARY OF DEGREE REQUIREMENTS" table.
+
+    Returns ``{section_label: {min_courses, min_su, min_ects}}`` with an extra
+    ``"total"`` entry. Section rows link to their anchor (e.g. ``#FIN_REQ``),
+    which is mapped to a canonical label; the ``Total`` row has no anchor. Some
+    minors specify only credits (no course count), so ``min_courses`` may be
+    ``None``.
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    out: dict[str, dict] = {}
+    for table in soup.find_all("table"):
+        htxt = table.get_text(" ", strip=True)
+        if "Min. Courses" not in htxt or "Course Category" not in htxt:
+            continue
+        for tr in table.find_all("tr"):
+            cells = [c.get_text(" ", strip=True) for c in tr.find_all("td")]
+            if len(cells) != 4:
+                continue
+            anchor = tr.find("a", href=True)
+            if anchor and anchor["href"].startswith("#"):
+                label = _section_for_anchor(anchor["href"][1:])
+            elif cells[0].strip().lower() == "total":
+                label = "total"
+            else:
+                label = None
+            if not label:
+                continue
+            out[label] = {
+                "min_ects": _num(cells[1]),
+                "min_su": _num(cells[2]),
+                "min_courses": _num(cells[3]),
+            }
+        break
+    return out
+
+
 def parse_minor_choice_groups(html: str, listed_codes: set[str]) -> list[dict]:
     """Extract either/or choice groups from a minor detail page's footnotes.
 
@@ -156,6 +204,7 @@ def build(term: str = DEFAULT_TERM, verbose: bool = True) -> dict:
         try:
             html = fetch_minor_detail(code, term)
             sections = parse_minor_detail(html)
+            requirements = parse_minor_requirements(html)
         except Exception as exc:
             if verbose:
                 print(f"  ! {code}: {exc}")
@@ -172,6 +221,7 @@ def build(term: str = DEFAULT_TERM, verbose: bool = True) -> dict:
             "name": name,
             "term": term,
             "sections": sections,
+            "requirements": requirements,
             "course_count": total,
         }
         if choice_groups:

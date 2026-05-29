@@ -9,67 +9,26 @@
 </head>
 <body>
 
-<!-- ──────────────────────────────── SIDEBAR ──────────────────────────── -->
-<aside id="sidebar">
-  <div class="sidebar-header">
+<!-- ──────────────────────────── LEFT: AI CHAT ──────────────────────────── -->
+<section id="chat-pane">
+  <header id="chat-header">
     <div class="logo">SuSchedule<span class="logo-r">-r</span></div>
     <div class="logo-sub">Course Advisor - Sabancı University</div>
-    <div class="advisor-status">
-      <span class="status-dot"></span>
-      Agentic RAG advisor
+    <div class="header-row">
+      <span class="advisor-status"><span class="status-dot"></span> Agentic RAG advisor</span>
+      <button id="upload-btn" class="mini-btn">Upload transcript</button>
+      <input type="file" id="file-input" accept=".json,.pdf,.html,.htm" hidden />
     </div>
-  </div>
-
-  <div class="panel advisor-panel">
-    <div class="panel-title">Advisor Flow</div>
-    <div class="flow-list">
-      <div><span>1</span> Ask about courses, topics, or focus areas</div>
-      <div><span>2</span> Upload transcript for personalized eligibility</div>
-      <div><span>3</span> Request a plan only when you want one</div>
-    </div>
-  </div>
-
-  <!-- Upload panel -->
-  <div class="panel" id="upload-panel">
-    <div class="panel-title">Transcript Context</div>
-    <div id="drop-zone" class="drop-zone">
-      <span id="drop-label">Optional: drop transcript<br/><small>JSON or PDF for exact eligibility</small></span>
-      <input type="file" id="file-input" accept=".json,.pdf" hidden />
-    </div>
+    <div id="upload-status" class="upload-status hidden"></div>
     <div id="student-info" class="student-info hidden"></div>
-  </div>
+  </header>
 
-  <!-- Current plan panel -->
-  <div class="panel" id="plan-panel">
-    <div class="panel-title">Current Plan</div>
-    <div id="plan-list" class="plan-list">
-      <div class="plan-empty">No plan yet - chat to get started.</div>
-    </div>
-    <div id="plan-credits" class="plan-credits hidden"></div>
-  </div>
-
-  <!-- Stats -->
-  <div class="panel" id="stats-panel">
-    <div class="panel-title">Session</div>
-    <div id="stats-body" class="stats-body">—</div>
-  </div>
-
-  <div class="panel" id="trace-panel">
-    <div class="panel-title">Agent Trace</div>
-    <div id="trace-body" class="trace-body">No trace yet.</div>
-  </div>
-</aside>
-
-<!-- ──────────────────────────────── CHAT ──────────────────────────── -->
-<main id="chat-main">
   <div id="chat-messages"></div>
 
   <div id="input-area">
     <div id="suggestions">
       <span class="chip" onclick="sendSuggestion(this)">Suggest theoretical CS courses</span>
-      <span class="chip" onclick="sendSuggestion(this)">Suggest networking courses</span>
       <span class="chip" onclick="sendSuggestion(this)">What does CS 412 cover?</span>
-      <span class="chip" onclick="sendSuggestion(this)">Core electives for supply chain in IE</span>
       <span class="chip" onclick="sendSuggestion(this)">Plan my next semester</span>
     </div>
     <div id="input-row">
@@ -79,7 +38,51 @@
       <button id="send-btn" onclick="sendMessage()">Send</button>
     </div>
   </div>
-</main>
+
+  <details id="debug-drawer">
+    <summary>Session &amp; agent trace</summary>
+    <div class="panel">
+      <div class="panel-title">Agent-committed Plan</div>
+      <div id="plan-list" class="plan-list"><div class="plan-empty">No committed plan yet.</div></div>
+      <div id="plan-credits" class="plan-credits hidden"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Session</div>
+      <div id="stats-body" class="stats-body">—</div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Agent Trace</div>
+      <div id="trace-body" class="trace-body">No trace yet.</div>
+    </div>
+  </details>
+</section>
+
+<!-- ─────────────────────── RIGHT: SCHEDULE BUILDER ──────────────────────── -->
+<section id="builder-pane">
+  <header id="builder-header">
+    <div class="builder-titlebar">
+      <span class="builder-title">My Schedule</span>
+      <span id="builder-term" class="builder-term"></span>
+    </div>
+    <div id="add-course-row">
+      <input id="course-input" placeholder="Add a course, e.g. CS 412" autocomplete="off" />
+      <button id="add-course-btn">Add</button>
+    </div>
+    <div id="builder-note" class="builder-note hidden"></div>
+  </header>
+
+  <div id="builder-body">
+    <div id="schedule-grid" class="schedule-grid"></div>
+    <div id="course-list" class="course-list">
+      <div class="course-list-empty">No courses yet — add one above to build your weekly schedule.</div>
+    </div>
+  </div>
+
+  <footer id="builder-footer">
+    <div id="builder-summary" class="builder-summary">0 courses · 0.0 SU credits</div>
+    <button id="check-schedule-btn" onclick="checkSchedule()">Check Schedule</button>
+  </footer>
+</section>
 
 <script src="/static/app.js"></script>
 </body>

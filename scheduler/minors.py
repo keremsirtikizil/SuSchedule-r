@@ -125,13 +125,22 @@ class MinorCatalog:
         in_progress: set[str],
         catalog=None,
     ) -> dict:
-        """Per-section breakdown of done / in-progress / remaining courses."""
+        """Per-section breakdown of done / in-progress / remaining courses.
+
+        Uses the scraped per-section requirements (min courses / min SU
+        credits) so that "how many more do I need" answers reflect the
+        *required subset* of each elective pool, not the full list.
+        """
         minor = self.get(code)
         if minor is None:
             return {"error": f"unknown minor: {code}"}
 
         done = {c.upper().strip() for c in completed}
         wip = {c.upper().strip() for c in in_progress}
+        reqs = minor.get("requirements", {})
+
+        def _course(c: str):
+            return catalog.get(c) if catalog is not None else None
 
         # Either/or footnote groups (e.g. "take IR 391 or IR 394"): hide unused
         # alternatives from 'remaining' so completing one isn't reported as
@@ -140,46 +149,100 @@ class MinorCatalog:
         suppress = _suppressed_codes(groups, done, wip)
 
         def _title(c: str) -> str:
-            if catalog is not None:
-                course = catalog.get(c)
-                if course:
-                    return course.title
-            return ""
+            course = _course(c)
+            return course.title if course else ""
+
+        def _su(c: str) -> float:
+            course = _course(c)
+            return float(course.su_credit) if course and course.su_credit else 0.0
 
         sections_out: dict[str, dict] = {}
-        total_done = 0
-        total_in_section = 0
+        agg = {
+            "courses_done": 0,
+            "courses_remaining": 0,
+            "su_done": 0.0,
+            "su_remaining": 0.0,
+            "has_course_req": False,
+            "has_su_req": False,
+        }
         for section in SECTION_ORDER:
             codes = minor.get("sections", {}).get(section)
-            if not codes:
+            req = reqs.get(section)
+            if not codes and not req:
                 continue
+            codes = codes or []
             sec_done = [c for c in codes if c in done]
             sec_wip = [c for c in codes if c in wip and c not in done]
             sec_left = [
                 c for c in codes
                 if c not in done and c not in wip and c not in suppress
             ]
-            total_done += len(sec_done)
-            total_in_section += len(codes)
+
+            min_courses = (req or {}).get("min_courses")
+            min_su = (req or {}).get("min_su")
+            su_done = sum(_su(c) for c in sec_done)
+
+            # Courses still required from this section (counting in-progress as
+            # on track toward the minimum).
+            courses_remaining = None
+            if min_courses is not None:
+                courses_remaining = max(0, min_courses - len(sec_done) - len(sec_wip))
+            su_remaining = None
+            if min_su is not None:
+                su_in_flight = su_done + sum(_su(c) for c in sec_wip)
+                su_remaining = max(0.0, min_su - su_in_flight)
+
+            agg["courses_done"] += len(sec_done)
+            agg["su_done"] += su_done
+            if courses_remaining is not None:
+                agg["courses_remaining"] += courses_remaining
+                agg["has_course_req"] = True
+            if su_remaining is not None:
+                agg["su_remaining"] += su_remaining
+                agg["has_su_req"] = True
+
+
             sections_out[section] = {
-                "total": len(codes),
+                "min_courses": min_courses,
+                "min_su_credits": min_su,
                 "completed": sorted(sec_done),
                 "in_progress": sorted(sec_wip),
-                "remaining": [
-                    {"code": c, "title": _title(c)} for c in sec_left
-                ],
+                "courses_remaining": courses_remaining,
+                "su_credits_remaining": su_remaining,
+                "options": [{"code": c, "title": _title(c)} for c in sec_left],
             }
 
-        return {
+        total = reqs.get("total", {})
+        result = {
             "code": minor["code"],
             "name": minor.get("name", minor["code"]),
             "term": minor.get("term", self.term),
-            "completed_count": total_done,
-            "total_listed": total_in_section,
+            "credit_unit": "SU credit",
+            "required_total": {
+                "min_courses": total.get("min_courses"),
+                "min_su_credits": total.get("min_su"),
+            },
+            "completed_courses": agg["courses_done"],
+            "completed_su_credits": agg["su_done"],
+            "courses_remaining": agg["courses_remaining"] if agg["has_course_req"] else None,
+            "su_credits_remaining": agg["su_remaining"] if agg["has_su_req"] else None,
             "note": (
-                "Advisory only. Elective sections usually require choosing a "
-                "subset, not all listed courses; consult the official minor "
-                "page for exact counts."
+                "Advisory only. All credit figures are SU credits. 'options' "
+                "lists the pool for each elective section; you choose the "
+                "required number from it. Extra core electives can often count "
+                "toward area electives — consult the official minor page for "
+                "exact rules."
             ),
             "sections": sections_out,
         }
+        # ECTS is published by SUIS only as a whole-minor grand total, with no
+        # per-section or per-course breakdown — so completed/remaining ECTS
+        # cannot be derived. Expose it as a clearly-scoped FYI only.
+        total_ects = total.get("min_ects")
+        if total_ects is not None:
+            result["total_ects_whole_minor"] = total_ects
+            result["ects_note"] = (
+                "Whole-minor ECTS total only; no per-course ECTS data, so "
+                "completed/remaining ECTS is unknown. Do not estimate it."
+            )
+        return result
