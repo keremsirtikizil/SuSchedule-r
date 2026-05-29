@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-05-28T19:28:16.534445+00:00",
+  "scraped_at": "2026-05-29T06:51:12.085101+00:00",
   "term": "202601",
   "minor_count": 17,
   "minors": {
@@ -37,7 +37,23 @@
           "OPIM 413"
         ]
       },
-      "course_count": 22
+      "course_count": 22,
+      "choice_groups": [
+        {
+          "choose": 1,
+          "options": [
+            "MATH 306",
+            "MGMT 203"
+          ]
+        },
+        {
+          "choose": 1,
+          "options": [
+            "IE 405",
+            "OPIM 410"
+          ]
+        }
+      ]
     },
     "ARTTC-MINOR": {
       "code": "ARTTC-MINOR",

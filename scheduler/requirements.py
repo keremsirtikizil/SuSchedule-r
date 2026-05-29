@@ -117,6 +117,46 @@ def _load_in_slice_codes(json_path: Path) -> dict[str, float]:
     }
 
 
+# Path to the either/or choice-group config (data/requirement_choice_groups.json),
+# generated from the degree-page footnotes by scraper.extract_choice_groups.
+_CHOICE_GROUPS_PATH = DATA_DIR.parent / "requirement_choice_groups.json"
+
+
+def _load_choice_groups(program: str) -> list[list[list[str]]]:
+    """Return the either/or Required-section groups configured for a program.
+
+    Each group is normalized to a list of *alternatives*, where each alternative
+    is a list of course codes that must ALL be completed to satisfy the group.
+    Two config forms are accepted:
+
+    * ``{"choose": 1, "options": ["A", "B"]}`` — symmetric one-of-many; becomes
+      ``[["A"], ["B"]]``.
+    * ``{"satisfied_by_any_of": [["A"], ["B", "C"]]}`` — compound; the group is
+      satisfied by A alone, or by B and C together. Used verbatim.
+
+    Returns an empty list when no config file exists or the program has none.
+    """
+    if not _CHOICE_GROUPS_PATH.exists():
+        return []
+    data = json.loads(_CHOICE_GROUPS_PATH.read_text(encoding="utf-8"))
+    out: list[list[list[str]]] = []
+    for g in data.get(program, []):
+        if not isinstance(g, dict):
+            continue
+        if g.get("satisfied_by_any_of"):
+            alts = [list(a) for a in g["satisfied_by_any_of"] if a]
+        elif g.get("options"):
+            # Only "choose 1" is expressible as independent single-course alts.
+            if int(g.get("choose", 1)) != 1:
+                continue
+            alts = [[opt] for opt in g["options"]]
+        else:
+            continue
+        if alts:
+            out.append(alts)
+    return out
+
+
 # --------------------------------------------------------------------------- #
 # Main entry point
 # --------------------------------------------------------------------------- #
@@ -159,8 +199,19 @@ def compute_remaining(
 
     # Required ----------------------------------------------------------------
     req_codes = _load_in_slice_codes(prog_dir / SECTION_FILES["required"])
+
+    # Either/or groups (e.g. "take MATH 201 or MATH 212"; "MATH 212, or both
+    # MATH 201 and MATH 202"). Each group is a list of alternatives; completing
+    # all courses in any one alternative satisfies it. Members are handled by the
+    # group logic below and skipped in the per-code loop so that taking one
+    # option does not leave the alternatives flagged as still-needed.
+    choice_groups = _load_choice_groups(program)
+    grouped_codes = {c for grp in choice_groups for alt in grp for c in alt}
+
     for code, credits in req_codes.items():
         seen.add(code)
+        if code in grouped_codes:
+            continue
         if code in done:
             continue
         if code in wip:
@@ -168,6 +219,41 @@ def compute_remaining(
         else:
             report.required_left.append(code)
             report.required_credits_left += credits
+
+    for alternatives in choice_groups:
+        # Already satisfied: every course of some alternative is completed.
+        if any(all(c in done for c in alt) for alt in alternatives):
+            continue
+
+        # On track: some alternative is fully completed-or-in-progress. Credit
+        # its in-progress courses and list nothing as still-needed.
+        on_track = [alt for alt in alternatives
+                    if all(c in all_done_or_wip for c in alt)]
+        if on_track:
+            best = min(on_track, key=lambda a: sum(c in wip for c in a))
+            report.required_in_progress.extend(
+                c for c in best if c in wip and c not in done
+            )
+            continue
+
+        # Otherwise pick the cheapest alternative to finish and list its untaken
+        # courses, so the student is shown one concrete path (not every option).
+        # Tie-breakers: fewest courses left, prefer alternatives whose courses are
+        # in the Required slice, then most progress already made.
+        def _untaken(alt: list[str]) -> list[str]:
+            return [c for c in alt if c not in all_done_or_wip]
+
+        def _cost(alt: list[str]) -> tuple:
+            return (
+                len(_untaken(alt)),
+                0 if all(c in req_codes for c in alt) else 1,
+                -sum(c in done for c in alt),
+            )
+
+        best = min(alternatives, key=_cost)
+        for code in sorted(_untaken(best)):
+            report.required_left.append(code)
+            report.required_credits_left += req_codes.get(code, 0.0)
 
     # Core elective -----------------------------------------------------------
     core_codes = _load_in_slice_codes(prog_dir / SECTION_FILES["core_elective"])

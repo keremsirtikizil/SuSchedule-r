@@ -120,6 +120,33 @@ def parse_minor_detail(html: str) -> dict[str, list[str]]:
     return sections
 
 
+def parse_minor_choice_groups(html: str, listed_codes: set[str]) -> list[dict]:
+    """Extract either/or choice groups from a minor detail page's footnotes.
+
+    Uses the same footnote parser as the degree extractor
+    (``scraper.extract_choice_groups``). A group is kept only if anchored to a
+    course actually listed in this minor, which filters out unrelated "X or Y"
+    prose. Returns groups in the config form consumed by ``scheduler.minors``;
+    an empty list when none are found or parsing fails.
+    """
+    try:
+        from scraper.extract_choice_groups import (
+            canonical,
+            emit_group,
+            groups_from_html,
+        )
+
+        listed = {c.upper().strip() for c in listed_codes}
+        deduped: dict = {}
+        for alts in groups_from_html(html):
+            all_codes = {c for alt in alts for c in alt}
+            if all_codes & listed:
+                deduped[canonical(alts)] = alts
+        return [emit_group(a) for a in deduped.values()]
+    except Exception:
+        return []
+
+
 def build(term: str = DEFAULT_TERM, verbose: bool = True) -> dict:
     names = fetch_minor_list()
     if verbose:
@@ -138,6 +165,8 @@ def build(term: str = DEFAULT_TERM, verbose: bool = True) -> dict:
             if verbose:
                 print(f"  - {code}: no courses (skipped)")
             continue
+        listed_codes = {c for codes in sections.values() for c in codes}
+        choice_groups = parse_minor_choice_groups(html, listed_codes)
         minors[code] = {
             "code": code,
             "name": name,
@@ -145,9 +174,12 @@ def build(term: str = DEFAULT_TERM, verbose: bool = True) -> dict:
             "sections": sections,
             "course_count": total,
         }
+        if choice_groups:
+            minors[code]["choice_groups"] = choice_groups
         if verbose:
             secsum = ", ".join(f"{k}:{len(v)}" for k, v in sections.items())
-            print(f"  {code:14s} {total:>3} courses  ({secsum})")
+            extra = f"  [+{len(choice_groups)} choice group(s)]" if choice_groups else ""
+            print(f"  {code:14s} {total:>3} courses  ({secsum}){extra}")
 
     payload = {
         "scraped_at": datetime.now(timezone.utc).isoformat(),

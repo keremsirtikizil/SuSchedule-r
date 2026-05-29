@@ -216,6 +216,12 @@ def build_all(
             print(f"  {program:<10} {term}  {section:<18} -> {len(courses):>4} courses, "
                   f"{G.number_of_nodes()} nodes, {G.number_of_edges()} edges")
 
+    # Derive the Required-section either/or choice groups from the degree-page
+    # footnotes now that the Required.json slices exist (the extractor validates
+    # each group against them). Keeps requirement_choice_groups.json in sync.
+    from scraper.extract_choice_groups import build_choice_groups
+    build_choice_groups(verbose=verbose)
+
     # Summary
     if verbose:
         per_program: Counter = Counter()
