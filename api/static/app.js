@@ -23,7 +23,7 @@ function resetUI() {
   planCredits.classList.add('hidden');
   studentInfo.classList.add('hidden');
   dropZone.classList.remove('hidden');
-  dropLabel.innerHTML = 'Optional: drop transcript<br/><small>JSON or PDF for exact eligibility</small>';
+  dropLabel.innerHTML = 'Optional: drop transcript<br/><small>JSON, PDF, or degree-evaluation HTML for exact eligibility</small>';
   dropZone.style.pointerEvents = '';
   statsBody.textContent = '-';
   traceBody.textContent = 'No trace yet.';
