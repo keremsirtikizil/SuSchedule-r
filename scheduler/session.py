@@ -47,6 +47,10 @@ class PlannerSession:
     history: list[dict] = field(default_factory=list)
     planning_allowed: bool = False
     last_trace: list[dict] = field(default_factory=list)
+    # Schedule the student is assembling in the UI builder (list of picks:
+    # {code, crn, section, title, su_credit, meetings:[...]}). Set via the
+    # /schedule and /check_schedule API endpoints; read by get_current_schedule.
+    user_schedule: list[dict] = field(default_factory=list, repr=False)
 
     @classmethod
     def from_request(cls, request: PlannerRequest) -> "PlannerSession":

@@ -51,6 +51,7 @@ Available tools
 - get_science_engineering_progress(): Engineering & Basic-Science ECTS gap toward graduation
 - find_courses_by_credit_type(): courses that actually carry Basic-Science / Engineering ECTS
 - build_timetable(courses)     : conflict-free weekly schedule from real section meeting times
+- get_current_schedule()       : the courses/times the student assembled in the UI builder
 
 Workflow heuristics
 -------------------
@@ -123,6 +124,14 @@ Workflow heuristics
     shift. If a course is in 'missing' (not offered) or 'no_meetings' (TBA), say
     so plainly. If ok is false, state no conflict-free combination exists and
     name the clashing courses from 'reason'.
+13. When the user asks you to check/review "my schedule" or "my current
+    schedule" (e.g. via the Check Schedule button), call get_current_schedule.
+    Comment on: time conflicts (from has_conflicts/conflicts), total SU credit
+    load vs the min/max range, and — if a transcript is loaded — how the picked
+    courses fit remaining degree requirements (cross-reference get_requirement_state
+    / required-left). Be concise and concrete; do not invent meeting times beyond
+    what the tool returns. If has_schedule is false, tell the user to add courses
+    to the builder on the right first.
 
 Answer style
 ------------
@@ -226,6 +235,7 @@ TOOLS: list[dict] = [
     _tool("build_timetable", "Build a conflict-free weekly timetable (or report clashes) for a set of courses, using real per-section meeting times. Pass the course codes to schedule. Returns chosen sections (CRN, day/time, location, instructor) when a clash-free combination exists, or the conflicting pairs when none does. Also flags courses not offered or with no scheduled meeting time. Use this for any 'do these courses clash', 'build/show my schedule', or 'what time is course X' request.", {
         "courses": {"type": "array", "items": {"type": "string"}},
     }, ["courses"]),
+    _tool("get_current_schedule", "Return the schedule the student has assembled in the UI schedule builder: the picked courses, their meeting times, total SU credits, and any time conflicts between them. Use this whenever the user asks to review, check, or comment on 'my schedule' / 'my current schedule'.", {}),
 ]
 
 
@@ -1160,10 +1170,9 @@ class Toolbox:
             build_timetable as _bt,
             format_timetable as _fmt,
             load_offerings as _load_off,
-            _fmt_clock,
-            DAY_LABELS as _DAY_LABELS,
+            resolve_schedule_term,
+            annotate_meeting,
         )
-        from scheduler.offerings import terms_of_season, season_of
 
         codes = [c.upper().strip() for c in (courses or []) if c and c.strip()]
         if not codes:
@@ -1173,18 +1182,12 @@ class Toolbox:
         target_term = self.session.base_request.target_term
 
         # Pick the term whose meeting times we actually schedule against.
-        schedule_term = target_term
-        is_proxy = False
-        if target_term not in offerings:
-            same_season = terms_of_season(offerings, season_of(target_term))
-            if same_season:
-                schedule_term = same_season[0]  # newest same-season term
-                is_proxy = True
-            else:
-                return {
-                    "error": "no offerings available to build a timetable",
-                    "target_term": target_term,
-                }
+        schedule_term, is_proxy = resolve_schedule_term(offerings, target_term)
+        if not schedule_term:
+            return {
+                "error": "no offerings available to build a timetable",
+                "target_term": target_term,
+            }
 
         result = _bt(codes, schedule_term, offerings=offerings)
         payload = result.to_dict()
@@ -1205,9 +1208,7 @@ class Toolbox:
         # the frontend can draw a weekly grid without re-deriving anything.
         for p in payload["picks"]:
             for m in p.get("meetings", []):
-                m["start_label"] = _fmt_clock(m["start"])
-                m["end_label"] = _fmt_clock(m["end"])
-                m["day_labels"] = [_DAY_LABELS[d] for d in m.get("days", []) if 0 <= d < 7]
+                annotate_meeting(m)
             p["when"] = "; ".join(
                 f"{'/'.join(m.get('day_labels', []))} {m['start_label']}-{m['end_label']}"
                 for m in p.get("meetings", [])
@@ -1244,6 +1245,65 @@ class Toolbox:
             "no_meetings": result.no_meetings,
         })
         return payload
+
+    def get_current_schedule(self) -> dict:
+        """Return the schedule the student is assembling in the UI builder.
+
+        Includes each picked course's meeting times, total SU credits, and a
+        server-computed list of time conflicts between the chosen sections.
+        Use this whenever the user asks to review/check "my schedule".
+        """
+        from scheduler.timetable import conflict_report
+
+        picks = self.session.user_schedule or []
+        if not picks:
+            return {
+                "has_schedule": False,
+                "note": "The student has not added any courses to the builder yet.",
+            }
+
+        total_credits = round(sum(float(p.get("su_credit") or 0) for p in picks), 1)
+        # conflict_report needs each section to carry a 'label' + 'meetings'.
+        for p in picks:
+            p.setdefault("label", f"{p.get('code', '?')} ({p.get('section', '?')})")
+        clashes = conflict_report(picks)
+        conflicts = [
+            {
+                "between": [a, b],
+                "day": ma.get("days_raw") or "/".join(ma.get("day_labels", [])),
+                "times": f"{ma.get('start_label','')}-{ma.get('end_label','')} vs "
+                         f"{mb.get('start_label','')}-{mb.get('end_label','')}",
+            }
+            for (a, b, ma, mb) in clashes
+        ]
+        return {
+            "has_schedule": True,
+            "target_term": self.session.base_request.target_term,
+            "course_count": len(picks),
+            "total_su_credits": total_credits,
+            "courses": [
+                {
+                    "code": p.get("code"),
+                    "title": p.get("title", ""),
+                    "section": p.get("section"),
+                    "su_credit": p.get("su_credit"),
+                    "when": p.get("when", ""),
+                }
+                for p in picks
+            ],
+            "has_conflicts": bool(conflicts),
+            "conflicts": conflicts,
+            "credit_range": {
+                "min": self.session.base_request.min_credits,
+                "max": self.session.base_request.max_credits,
+            },
+            "note": (
+                "This is the student's own assembled schedule. Meeting times come "
+                "from offerings data (a same-season proxy term if the target term "
+                "isn't published yet), so days/times are indicative and CRNs may "
+                "differ for the actual term."
+            ),
+        }
 
     def dispatch(self, name: str, arguments: dict) -> Any:
         method = getattr(self, name, None)

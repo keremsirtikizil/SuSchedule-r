@@ -1,41 +1,38 @@
-/* SuSchedule-r frontend */
+/* SuSchedule-r frontend — chat (left) + schedule builder (right) */
 
 let sessionId = null;
 let isLoading = false;
 let courseNames = {};
 const currentMode = 'react';
 
-const dropZone = document.getElementById('drop-zone');
-const dropLabel = document.getElementById('drop-label');
+// Client-side schedule the student is assembling in the builder. Each pick:
+// { code, title, su_credit, crn, section, meetings:[...], when, sections:[...], offered }
+let schedule = [];
+
+// ── Chat-pane elements ──────────────────────────────────────────
+const uploadBtn = document.getElementById('upload-btn');
 const fileInput = document.getElementById('file-input');
+const uploadStatus = document.getElementById('upload-status');
 const studentInfo = document.getElementById('student-info');
-const planList = document.getElementById('plan-list');
-const planCredits = document.getElementById('plan-credits');
-const timetablePanel = document.getElementById('timetable-panel');
-const timetableNote = document.getElementById('timetable-note');
-const timetableGrid = document.getElementById('timetable-grid');
-const timetableExtra = document.getElementById('timetable-extra');
+const chatMsgs = document.getElementById('chat-messages');
 const msgInput = document.getElementById('msg-input');
 const sendBtn = document.getElementById('send-btn');
-const chatMsgs = document.getElementById('chat-messages');
+const planList = document.getElementById('plan-list');
+const planCredits = document.getElementById('plan-credits');
 const statsBody = document.getElementById('stats-body');
 const traceBody = document.getElementById('trace-body');
 
-function resetUI() {
-  chatMsgs.innerHTML = '';
-  planList.innerHTML = '<div class="plan-empty">No plan yet - chat to get started.</div>';
-  planCredits.classList.add('hidden');
-  timetablePanel.classList.add('hidden');
-  timetableGrid.innerHTML = '';
-  studentInfo.classList.add('hidden');
-  dropZone.classList.remove('hidden');
-  dropLabel.innerHTML = 'Optional: drop transcript<br/><small>JSON, PDF, or degree-evaluation HTML for exact eligibility</small>';
-  dropZone.style.pointerEvents = '';
-  statsBody.textContent = '-';
-  traceBody.textContent = 'No trace yet.';
-  courseNames = {};
-}
+// ── Builder-pane elements ───────────────────────────────────────
+const builderTerm = document.getElementById('builder-term');
+const courseInput = document.getElementById('course-input');
+const addCourseBtn = document.getElementById('add-course-btn');
+const builderNote = document.getElementById('builder-note');
+const scheduleGrid = document.getElementById('schedule-grid');
+const courseList = document.getElementById('course-list');
+const builderSummary = document.getElementById('builder-summary');
+const checkScheduleBtn = document.getElementById('check-schedule-btn');
 
+// ════════════════════════ Session ════════════════════════
 async function initSession() {
   const res = await fetch('/session', {
     method: 'POST',
@@ -48,36 +45,25 @@ async function initSession() {
       mode: currentMode,
     }),
   });
-
-  if (!res.ok) {
-    throw new Error('Could not create session');
-  }
+  if (!res.ok) throw new Error('Could not create session');
 
   const data = await res.json();
   sessionId = data.session_id;
+  if (builderTerm) builderTerm.textContent = data.term_label || '';
   updateStats({ target_term: data.term, term_label: data.term_label });
 }
 
-dropZone.addEventListener('click', () => fileInput.click());
-dropZone.addEventListener('dragover', e => {
-  e.preventDefault();
-  dropZone.classList.add('drag-over');
-});
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-dropZone.addEventListener('drop', e => {
-  e.preventDefault();
-  dropZone.classList.remove('drag-over');
-  const file = e.dataTransfer.files[0];
-  if (file) uploadTranscript(file);
-});
+// ════════════════════════ Transcript upload ════════════════════════
+uploadBtn.addEventListener('click', () => fileInput.click());
 fileInput.addEventListener('change', () => {
   if (fileInput.files[0]) uploadTranscript(fileInput.files[0]);
 });
 
 async function uploadTranscript(file) {
   if (!sessionId) await initSession();
-  dropLabel.textContent = 'Uploading...';
-  dropZone.style.pointerEvents = 'none';
+  uploadStatus.classList.remove('hidden', 'err');
+  uploadStatus.textContent = `Uploading ${file.name}…`;
+  uploadBtn.disabled = true;
 
   const form = new FormData();
   form.append('file', file);
@@ -85,20 +71,24 @@ async function uploadTranscript(file) {
   try {
     const res = await fetch(`/session/${sessionId}/transcript`, { method: 'POST', body: form });
     if (!res.ok) {
-      const err = await res.json();
+      const err = await res.json().catch(() => ({}));
       throw new Error(err.detail || 'Upload failed');
     }
 
     const data = await res.json();
+    uploadStatus.classList.add('hidden');
     showStudentInfo(data);
 
     const requiredLeft = Array.isArray(data.required_left) ? data.required_left : [];
     addSystemMsg(`Transcript loaded for **${escapeHtml(data.name)}** (${escapeHtml(data.program)}).
-Required courses still needed: ${requiredLeft.length > 0 ? requiredLeft.map(escapeHtml).join(', ') : 'none - almost done'}.
+Required courses still needed: ${requiredLeft.length ? requiredLeft.map(escapeHtml).join(', ') : 'none — almost done'}.
 What would you like to take this semester?`);
   } catch (err) {
-    dropLabel.innerHTML = `${escapeHtml(err.message)}<br/><small>Drop to retry</small>`;
-    dropZone.style.pointerEvents = '';
+    uploadStatus.classList.remove('hidden');
+    uploadStatus.classList.add('err');
+    uploadStatus.textContent = err.message;
+  } finally {
+    uploadBtn.disabled = false;
   }
 }
 
@@ -106,24 +96,23 @@ function showStudentInfo(data) {
   const inProgress = Array.isArray(data.in_progress) ? data.in_progress : [];
   const requiredLeft = Array.isArray(data.required_left) ? data.required_left : [];
 
-  dropZone.classList.add('hidden');
   studentInfo.classList.remove('hidden');
   studentInfo.innerHTML = `
     <div class="name">${escapeHtml(data.name)} <span class="tag">${escapeHtml(data.program)}</span></div>
-    Semester ${escapeHtml(data.semester ?? 0)} &nbsp;-&nbsp; CGPA ${Number(data.cgpa || 0).toFixed(2)}<br/>
-    ${escapeHtml(data.completed_count ?? 0)} completed &nbsp;-&nbsp;
-    ${inProgress.length} in progress<br/>
+    Semester ${escapeHtml(data.semester ?? 0)} · CGPA ${Number(data.cgpa || 0).toFixed(2)}<br/>
+    ${escapeHtml(data.completed_count ?? 0)} completed · ${inProgress.length} in progress<br/>
     <span style="color:var(--accent2)">Required left: ${requiredLeft.length} courses</span>
   `;
+  uploadBtn.textContent = 'Replace transcript';
 }
 
+// ════════════════════════ Chat ════════════════════════
 msgInput.addEventListener('keydown', e => {
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
     sendMessage();
   }
 });
-
 msgInput.addEventListener('input', () => {
   msgInput.style.height = 'auto';
   msgInput.style.height = Math.min(msgInput.scrollHeight, 140) + 'px';
@@ -154,7 +143,7 @@ async function sendMessage() {
       body: JSON.stringify({ message: text }),
     });
     if (!res.ok) {
-      const err = await res.json();
+      const err = await res.json().catch(() => ({}));
       throw new Error(err.detail || 'Server error');
     }
 
@@ -163,7 +152,6 @@ async function sendMessage() {
     addAgentMsg(data.response, data.intent);
     renderTrace(data.trace || []);
     if (data.plan) updatePlan(data.plan, data.total_credits, data.validation_ok, data.warnings);
-    renderTimetable(data.timetable);
     refreshStats(data.token_usage);
   } catch (err) {
     typingEl.remove();
@@ -213,7 +201,7 @@ function addTypingIndicator() {
 
 function updatePlan(plan, credits, validationOk, warnings) {
   if (!plan || plan.length === 0) {
-    planList.innerHTML = '<div class="plan-empty">No plan yet.</div>';
+    planList.innerHTML = '<div class="plan-empty">No committed plan yet.</div>';
     planCredits.classList.add('hidden');
     return;
   }
@@ -234,88 +222,304 @@ function updatePlan(plan, credits, validationOk, warnings) {
   }
 }
 
-const TT_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-const TT_PALETTE = ['#5b8def', '#e0729b', '#3fae8f', '#d99a3f', '#9b6fe0', '#46b6c9', '#d2645a'];
+// ════════════════════════ Schedule builder ════════════════════════
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+const PX_PER_MIN = 0.78;
+const PALETTE = ['#5b8def', '#e0729b', '#3fae8f', '#d99a3f', '#9b6fe0', '#46b6c9', '#d2645a', '#7d8ce0'];
 
-function ttColor(code) {
+function courseColor(code) {
   let h = 0;
   for (let i = 0; i < code.length; i++) h = (h * 31 + code.charCodeAt(i)) >>> 0;
-  return TT_PALETTE[h % TT_PALETTE.length];
+  return PALETTE[h % PALETTE.length];
 }
 
-function renderTimetable(tt) {
-  if (!tt) {
-    timetablePanel.classList.add('hidden');
+// "cs412" / "cs 412" / "CS412" → "CS 412"
+function normalizeCode(raw) {
+  let s = (raw || '').toUpperCase().trim().replace(/\s+/g, ' ');
+  const m = s.match(/^([A-Z]+)\s?(\d+[A-Z]*)$/);
+  return m ? `${m[1]} ${m[2]}` : s;
+}
+
+function fmtHour(mins) {
+  return `${String(Math.floor(mins / 60)).padStart(2, '0')}:00`;
+}
+
+addCourseBtn.addEventListener('click', addCourse);
+courseInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    addCourse();
+  }
+});
+
+async function addCourse() {
+  const code = normalizeCode(courseInput.value);
+  if (!code) return;
+  if (!sessionId) await initSession();
+
+  if (schedule.some(p => p.code === code)) {
+    showBuilderNote(`${code} is already in your schedule.`, true);
     return;
   }
-  timetablePanel.classList.remove('hidden');
 
-  // Proxy / info note.
-  if (tt.note) {
-    timetableNote.classList.remove('hidden');
-    timetableNote.textContent = tt.note;
-  } else {
-    timetableNote.classList.add('hidden');
-    timetableNote.textContent = '';
-  }
+  addCourseBtn.disabled = true;
+  addCourseBtn.textContent = '…';
+  try {
+    const res = await fetch(`/session/${sessionId}/course_sections?code=${encodeURIComponent(code)}`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Lookup failed');
+    }
+    const data = await res.json();
 
-  // No feasible schedule: show the reason instead of an empty grid.
-  if (!tt.ok) {
-    timetableGrid.innerHTML =
-      `<div class="tt-empty">No conflict-free schedule: ${escapeHtml(tt.reason || 'unknown')}.</div>`;
-  } else {
-    // Group meeting blocks by weekday (Mon-Fri).
-    const byDay = {};
-    TT_DAYS.forEach((_, d) => { byDay[d] = []; });
-    (tt.picks || []).forEach(p => {
-      const color = ttColor(p.course || '');
-      (p.meetings || []).forEach(m => {
-        (m.days || []).forEach(d => {
-          if (d >= 0 && d <= 4) {
-            byDay[d].push({
-              start: m.start,
-              label: `${m.start_label || ''}-${m.end_label || ''}`,
-              course: p.course,
-              where: m.where || '',
-              color,
-            });
-          }
-        });
-      });
+    if (!data.sections || !data.sections.length) {
+      const label = data.title ? `${code} — ${data.title}` : code;
+      showBuilderNote(`${label} isn't offered in the schedule term, so it has no time slots to place. ${data.note || ''}`.trim(), true);
+      return;
+    }
+
+    const first = data.sections[0];
+    schedule.push({
+      code: data.code,
+      title: data.title || first.title || '',
+      su_credit: data.su_credit,
+      crn: first.crn,
+      section: first.section,
+      meetings: first.meetings || [],
+      when: first.when || '',
+      sections: data.sections,
+      offered: true,
     });
+    courseNames[data.code] = data.title || '';
+    courseInput.value = '';
 
-    const dayRows = TT_DAYS.map((dayName, d) => {
-      const blocks = byDay[d].sort((a, b) => a.start - b.start);
-      if (!blocks.length) return '';
-      const items = blocks.map(b => `
-        <div class="tt-block" style="border-left-color:${b.color}">
-          <span class="tt-time">${escapeHtml(b.label)}</span>
-          <span class="tt-course">${escapeHtml(b.course)}</span>
-          ${b.where ? `<span class="tt-where">${escapeHtml(b.where)}</span>` : ''}
-        </div>`).join('');
-      return `<div class="tt-day"><div class="tt-day-name">${dayName}</div>${items}</div>`;
-    }).join('');
+    if (data.proxy_term_used && data.note) showBuilderNote(data.note, false);
+    else hideBuilderNote();
 
-    timetableGrid.innerHTML = dayRows || '<div class="tt-empty">No timed meetings to display.</div>';
-  }
-
-  // Courses that couldn't be placed on the grid.
-  const extra = [];
-  if (tt.missing && tt.missing.length) {
-    extra.push(`Not offered: ${tt.missing.map(escapeHtml).join(', ')}`);
-  }
-  if (tt.no_meetings && tt.no_meetings.length) {
-    extra.push(`No set time (TBA): ${tt.no_meetings.map(escapeHtml).join(', ')}`);
-  }
-  if (extra.length) {
-    timetableExtra.classList.remove('hidden');
-    timetableExtra.innerHTML = extra.map(e => `<div>${e}</div>`).join('');
-  } else {
-    timetableExtra.classList.add('hidden');
-    timetableExtra.innerHTML = '';
+    renderBuilder();
+    persistSchedule();
+  } catch (err) {
+    showBuilderNote(err.message, true);
+  } finally {
+    addCourseBtn.disabled = false;
+    addCourseBtn.textContent = 'Add';
   }
 }
 
+function changeSection(idx, crn) {
+  const p = schedule[idx];
+  if (!p) return;
+  const sec = (p.sections || []).find(s => String(s.crn) === String(crn));
+  if (!sec) return;
+  p.crn = sec.crn;
+  p.section = sec.section;
+  p.meetings = sec.meetings || [];
+  p.when = sec.when || '';
+  renderBuilder();
+  persistSchedule();
+}
+
+function removeCourse(idx) {
+  schedule.splice(idx, 1);
+  renderBuilder();
+  persistSchedule();
+}
+
+// Detect overlapping meetings across different courses (Mon–Fri).
+function computeConflicts() {
+  const conflictRows = new Set();
+  const conflictKeys = new Set(); // `${idx}|${day}|${start}`
+  const intervals = [];
+  schedule.forEach((p, idx) => {
+    (p.meetings || []).forEach(m => {
+      if (m.start == null || m.end == null) return;
+      (m.days || []).forEach(d => {
+        if (d >= 0 && d <= 4) intervals.push({ idx, day: d, start: m.start, end: m.end });
+      });
+    });
+  });
+  for (let i = 0; i < intervals.length; i++) {
+    for (let j = i + 1; j < intervals.length; j++) {
+      const a = intervals[i], b = intervals[j];
+      if (a.idx === b.idx || a.day !== b.day) continue;
+      if (a.start < b.end && b.start < a.end) {
+        conflictRows.add(a.idx);
+        conflictRows.add(b.idx);
+        conflictKeys.add(`${a.idx}|${a.day}|${a.start}`);
+        conflictKeys.add(`${b.idx}|${b.day}|${b.start}`);
+      }
+    }
+  }
+  return { conflictRows, conflictKeys };
+}
+
+function renderGrid(conflictKeys) {
+  let minStart = 9 * 60, maxEnd = 17 * 60;
+  schedule.forEach(p => (p.meetings || []).forEach(m => {
+    if (m.start != null) minStart = Math.min(minStart, m.start);
+    if (m.end != null) maxEnd = Math.max(maxEnd, m.end);
+  }));
+  const rangeStart = Math.floor(minStart / 60) * 60;
+  const rangeEnd = Math.ceil(maxEnd / 60) * 60;
+  const height = (rangeEnd - rangeStart) * PX_PER_MIN;
+
+  let html = '<div class="grid-col-head corner"></div>';
+  DAYS.forEach(d => { html += `<div class="grid-col-head">${d}</div>`; });
+
+  // Hour axis.
+  html += `<div class="grid-axis" style="height:${height}px">`;
+  for (let h = rangeStart; h <= rangeEnd; h += 60) {
+    html += `<div class="hour-label" style="top:${(h - rangeStart) * PX_PER_MIN}px">${fmtHour(h)}</div>`;
+  }
+  html += '</div>';
+
+  // Day columns.
+  DAYS.forEach((dname, d) => {
+    let col = `<div class="grid-day" style="height:${height}px">`;
+    for (let h = rangeStart + 60; h < rangeEnd; h += 60) {
+      col += `<div class="hour-line" style="top:${(h - rangeStart) * PX_PER_MIN}px"></div>`;
+    }
+    schedule.forEach((p, idx) => {
+      const color = courseColor(p.code);
+      (p.meetings || []).forEach(m => {
+        if (m.start == null || m.end == null || !(m.days || []).includes(d)) return;
+        const top = (m.start - rangeStart) * PX_PER_MIN;
+        const bh = Math.max((m.end - m.start) * PX_PER_MIN, 15);
+        const bad = conflictKeys.has(`${idx}|${d}|${m.start}`);
+        col += `<div class="grid-block${bad ? ' conflict' : ''}" style="top:${top}px;height:${bh}px;background:${color}" title="${escapeHtml(p.code)} ${escapeHtml(m.start_label || '')}-${escapeHtml(m.end_label || '')}${m.where ? ' · ' + escapeHtml(m.where) : ''}">
+          <span class="blk-code">${escapeHtml(p.code)}</span>
+          <span class="blk-time">${escapeHtml(m.start_label || '')}-${escapeHtml(m.end_label || '')}</span>
+        </div>`;
+      });
+    });
+    col += '</div>';
+    html += col;
+  });
+
+  scheduleGrid.innerHTML = html;
+}
+
+function renderCourseList(conflictRows) {
+  if (!schedule.length) {
+    courseList.innerHTML = '<div class="course-list-empty">No courses yet — add one above to build your weekly schedule.</div>';
+    return;
+  }
+  courseList.innerHTML = schedule.map((p, idx) => {
+    const color = courseColor(p.code);
+    const conflicted = conflictRows.has(idx);
+
+    let sectionEl = '';
+    if (p.sections && p.sections.length > 1) {
+      const opts = p.sections.map(s =>
+        `<option value="${escapeHtml(s.crn)}"${String(s.crn) === String(p.crn) ? ' selected' : ''}>§${escapeHtml(s.section || '?')}${s.when ? ' · ' + escapeHtml(s.when) : ''}</option>`
+      ).join('');
+      sectionEl = `<select class="cr-section" onchange="changeSection(${idx}, this.value)">${opts}</select>`;
+    } else if (p.section) {
+      sectionEl = `<span class="cr-credit">§${escapeHtml(p.section)}</span>`;
+    }
+
+    const credit = p.su_credit != null ? `${Number(p.su_credit).toFixed(1)} cr` : '';
+    const when = p.when
+      ? `<div class="cr-when">${escapeHtml(p.when)}</div>`
+      : '<div class="cr-warn">No set meeting time (TBA)</div>';
+
+    return `
+      <div class="course-row${conflicted ? ' conflict' : ''}" style="border-left-color:${color}">
+        <span class="cr-code">${escapeHtml(p.code)}</span>
+        <div class="cr-mid">
+          <div class="cr-title">${escapeHtml(p.title || '')}</div>
+          ${when}
+          ${conflicted ? '<div class="cr-warn">⚠ time conflict</div>' : ''}
+        </div>
+        ${sectionEl}
+        <span class="cr-credit">${escapeHtml(credit)}</span>
+        <button class="cr-remove" onclick="removeCourse(${idx})" title="Remove">×</button>
+      </div>`;
+  }).join('');
+}
+
+function renderSummary(conflictRows) {
+  const totalCredits = schedule.reduce((s, p) => s + (Number(p.su_credit) || 0), 0);
+  let txt = `${schedule.length} course${schedule.length === 1 ? '' : 's'} · ${totalCredits.toFixed(1)} SU credits`;
+  if (conflictRows.size) {
+    txt += ` · <span class="warn">${conflictRows.size} with conflicts</span>`;
+  }
+  builderSummary.innerHTML = txt;
+  checkScheduleBtn.disabled = schedule.length === 0 || isLoading;
+}
+
+function renderBuilder() {
+  const { conflictRows, conflictKeys } = computeConflicts();
+  if (!schedule.length) {
+    scheduleGrid.innerHTML = '<div class="grid-empty">Your weekly grid is empty. Add a course to see its time slots.</div>';
+  } else {
+    renderGrid(conflictKeys);
+  }
+  renderCourseList(conflictRows);
+  renderSummary(conflictRows);
+}
+
+function showBuilderNote(msg, isErr) {
+  builderNote.textContent = msg;
+  builderNote.classList.remove('hidden');
+  builderNote.classList.toggle('err', !!isErr);
+}
+function hideBuilderNote() {
+  builderNote.classList.add('hidden');
+}
+
+// Keep the server's copy of the schedule in sync (best-effort, no LLM call).
+async function persistSchedule() {
+  if (!sessionId) return;
+  try {
+    await fetch(`/session/${sessionId}/schedule`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ picks: schedule.map(p => ({ code: p.code, crn: p.crn })) }),
+    });
+  } catch (_) {
+    // Sync is supplemental; check_schedule re-sends the picks anyway.
+  }
+}
+
+async function checkSchedule() {
+  if (isLoading) return;
+  if (!schedule.length) {
+    showBuilderNote('Add at least one course before checking.', true);
+    return;
+  }
+  if (!sessionId) await initSession();
+
+  addUserMsg('Check my schedule');
+  const typingEl = addTypingIndicator();
+  setLoading(true);
+
+  try {
+    const res = await fetch(`/session/${sessionId}/check_schedule`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ picks: schedule.map(p => ({ code: p.code, crn: p.crn })) }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Server error');
+    }
+
+    const data = await res.json();
+    typingEl.remove();
+    addAgentMsg(data.response, data.intent);
+    renderTrace(data.trace || []);
+    if (data.plan) updatePlan(data.plan, data.total_credits, data.validation_ok, data.warnings);
+    refreshStats(data.token_usage);
+  } catch (err) {
+    typingEl.remove();
+    addAgentMsg(`Error: ${escapeHtml(err.message)}`, 'error');
+  } finally {
+    setLoading(false);
+  }
+}
+
+// ════════════════════════ Session stats + trace ════════════════════════
 function updateStats(data) {
   const rows = [];
   if (data.term_label) rows.push(['Term', data.term_label]);
@@ -326,7 +530,7 @@ function updateStats(data) {
   if (data.this_turn != null) rows.push(['This turn', Number(data.this_turn).toLocaleString()]);
 
   if (rows.length === 0) {
-    statsBody.textContent = '-';
+    statsBody.textContent = '—';
     return;
   }
   statsBody.innerHTML = rows.map(([k, v]) =>
@@ -348,7 +552,7 @@ async function refreshStats(tokenUsage) {
     });
     if (data.last_trace) renderTrace(data.last_trace);
     if (data.reasoning) {
-      Object.keys(data.reasoning).forEach(code => { courseNames[code] = ''; });
+      Object.keys(data.reasoning).forEach(code => { courseNames[code] = courseNames[code] || ''; });
     }
   } catch (_) {
     // Session stats are supplemental; keep chat usable if this refresh fails.
@@ -375,6 +579,16 @@ function renderTrace(trace) {
     } else if (ev.type === 'tool_result' && ev.name === 'rewrite_retrieval_queries') {
       const queries = ev.result?.queries || [];
       rows.push(`<div class="trace-item"><div class="trace-title">Rewritten retrieval queries</div><div class="trace-meta">${queries.map(escapeHtml).join(' | ')}</div></div>`);
+    } else if (ev.type === 'tool_result' && ev.name === 'get_current_schedule') {
+      const r = ev.result || {};
+      const conflicts = (r.conflicts || []).map(c => `${escapeHtml((c.between || []).join(' vs '))} (${escapeHtml(c.day || '')} ${escapeHtml(c.times || '')})`).join('<br/>');
+      rows.push(`
+        <div class="trace-item">
+          <div class="trace-title">Current builder schedule</div>
+          <div class="trace-meta">${escapeHtml(r.course_count ?? 0)} courses · ${escapeHtml(r.total_su_credits ?? 0)} SU credits · conflicts: ${escapeHtml(r.has_conflicts ? 'yes' : 'no')}</div>
+          ${conflicts ? `<div class="trace-meta">${conflicts}</div>` : ''}
+        </div>
+      `);
     } else if (ev.type === 'selected_graphs') {
       const counts = ev.section_counts || {};
       const countText = Object.entries(counts).map(([section, count]) => `${escapeHtml(section)}: ${escapeHtml(count)}`).join(' | ');
@@ -449,7 +663,8 @@ function renderTrace(trace) {
 function setLoading(val) {
   isLoading = val;
   sendBtn.disabled = val;
-  sendBtn.textContent = val ? '...' : 'Send';
+  sendBtn.textContent = val ? '…' : 'Send';
+  checkScheduleBtn.disabled = val || schedule.length === 0;
 }
 
 function scrollBottom() {
@@ -457,14 +672,15 @@ function scrollBottom() {
 }
 
 function escapeHtml(str) {
-  str = String(str ?? '');
-  return str
+  return String(str ?? '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
 }
 
+// ════════════════════════ Boot ════════════════════════
 (async () => {
+  renderBuilder();
   try {
     await initSession();
   } catch (err) {

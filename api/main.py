@@ -81,6 +81,15 @@ class TurnRequest(BaseModel):
     message: str
 
 
+class SchedulePick(BaseModel):
+    code: str
+    crn: Optional[str] = None
+
+
+class ScheduleRequest(BaseModel):
+    picks: list[SchedulePick] = []
+
+
 class TurnResponse(BaseModel):
     response: str
     plan: Optional[list[str]]
@@ -289,6 +298,175 @@ async def handle_turn(session_id: str, req: TurnRequest):
             **usage,
             "this_turn": usage["total_tokens"] - usage_before,
         },
+        trace=session.last_trace,
+        timetable=_latest_timetable(session.last_trace),
+    )
+
+
+def _meeting_when(meetings: list[dict]) -> str:
+    return "; ".join(
+        f"{'/'.join(m.get('day_labels', []))} {m.get('start_label','')}-{m.get('end_label','')}"
+        for m in meetings
+    )
+
+
+def _resolve_schedule(session, picks: list) -> tuple[list[dict], str, bool]:
+    """Resolve [{code, crn}] picks into full section records for the schedule term.
+
+    Returns ``(resolved, schedule_term, is_proxy)``. Each resolved entry carries
+    meeting times (with display labels), SU credit, and whether it was found.
+    """
+    from scheduler.timetable import (
+        load_offerings, resolve_schedule_term, sections_for, annotate_meeting,
+    )
+
+    session._ensure_heavy_state()
+    offerings = session._offerings or load_offerings()
+    target = session.base_request.target_term
+    schedule_term, is_proxy = resolve_schedule_term(offerings, target)
+    catalog = session.catalog
+
+    resolved: list[dict] = []
+    for pick in picks:
+        code = (getattr(pick, "code", None) or "").upper().strip()
+        crn = str(getattr(pick, "crn", None) or "").strip()
+        if not code:
+            continue
+        sects = sections_for(offerings, schedule_term, code) if schedule_term else []
+        sec = None
+        if crn:
+            sec = next((s for s in sects if str(s.get("crn")) == crn), None)
+        if sec is None and sects:
+            sec = sects[0]
+        course = catalog.get(code) if catalog else None
+        meetings = [annotate_meeting(dict(m)) for m in (sec.get("meetings", []) if sec else [])]
+        resolved.append({
+            "code": code,
+            "crn": str(sec.get("crn")) if sec else None,
+            "section": sec.get("section") if sec else None,
+            "title": (course.title if course else (sec.get("title") if sec else "")),
+            "su_credit": (course.su_credit if course else None),
+            "meetings": meetings,
+            "when": _meeting_when(meetings),
+            "offered": sec is not None,
+        })
+    return resolved, schedule_term, is_proxy
+
+
+@app.get("/session/{session_id}/course_sections")
+async def course_sections(session_id: str, code: str):
+    """Return all sections of a course in the (proxy-aware) schedule term so the
+    UI builder can render selectable time slots."""
+    if session_id not in _sessions:
+        raise HTTPException(404, f"Session {session_id} not found.")
+    session = _sessions[session_id].get("session")
+    if session is None:
+        raise HTTPException(400, "Session is not initialized.")
+
+    from scheduler.timetable import (
+        load_offerings, resolve_schedule_term, sections_for, annotate_meeting,
+    )
+    from scheduler.prompts import term_label
+
+    session._ensure_heavy_state()
+    offerings = session._offerings or load_offerings()
+    target = session.base_request.target_term
+    schedule_term, is_proxy = resolve_schedule_term(offerings, target)
+    code_u = code.upper().strip()
+    catalog = session.catalog
+    course = catalog.get(code_u) if catalog else None
+
+    sects_raw = sections_for(offerings, schedule_term, code_u) if schedule_term else []
+    sections = []
+    for s in sects_raw:
+        meetings = [annotate_meeting(dict(m)) for m in s.get("meetings", [])]
+        sections.append({
+            "crn": str(s.get("crn")),
+            "section": s.get("section"),
+            "title": s.get("title") or (course.title if course else ""),
+            "instructors": s.get("instructors", []),
+            "meetings": meetings,
+            "when": _meeting_when(meetings),
+        })
+
+    note = ""
+    if is_proxy and schedule_term:
+        note = (
+            f"{term_label(target)} times aren't published yet — showing "
+            f"{term_label(schedule_term)} as a proxy; days/times are indicative "
+            "and section/CRN numbers will differ."
+        )
+    return {
+        "code": code_u,
+        "title": course.title if course else "",
+        "su_credit": course.su_credit if course else None,
+        "target_term": target,
+        "schedule_term": schedule_term,
+        "proxy_term_used": is_proxy,
+        "offered": bool(sections),
+        "note": note,
+        "sections": sections,
+    }
+
+
+@app.post("/session/{session_id}/schedule")
+async def store_schedule(session_id: str, req: ScheduleRequest):
+    """Persist the student's assembled schedule on the session (no LLM call)."""
+    if session_id not in _sessions:
+        raise HTTPException(404, f"Session {session_id} not found.")
+    session = _sessions[session_id].get("session")
+    if session is None:
+        raise HTTPException(400, "Session is not initialized.")
+
+    resolved, schedule_term, is_proxy = _resolve_schedule(session, req.picks)
+    session.user_schedule = resolved
+    total = round(sum(float(p.get("su_credit") or 0) for p in resolved), 1)
+    return {
+        "ok": True,
+        "course_count": len(resolved),
+        "total_su_credits": total,
+        "schedule_term": schedule_term,
+        "proxy_term_used": is_proxy,
+    }
+
+
+@app.post("/session/{session_id}/check_schedule", response_model=TurnResponse)
+async def check_schedule(session_id: str, req: ScheduleRequest):
+    """Store the schedule, then ask the agent to review it (conflicts, credit
+    load, requirement fit). Returns the same shape as /turn."""
+    if session_id not in _sessions:
+        raise HTTPException(404, f"Session {session_id} not found.")
+    session = _sessions[session_id].get("session")
+    if session is None:
+        raise HTTPException(400, "Session is not initialized.")
+
+    resolved, _, _ = _resolve_schedule(session, req.picks)
+    session.user_schedule = resolved
+
+    from scheduler import llm_client
+    usage_before = llm_client.get_session_usage()["total_tokens"]
+
+    message = (
+        "Please review my current schedule — the courses I added in the builder. "
+        "Call get_current_schedule, then comment on any time conflicts, the total "
+        "credit load, and (if you know my degree) how it fits my remaining "
+        "requirements. Suggest fixes if something is off."
+    )
+    try:
+        response_text = session.handle_turn(message)
+    except Exception as exc:
+        raise HTTPException(500, f"Planner error: {exc}")
+
+    usage = llm_client.get_session_usage()
+    plan = session.current_plan
+    return TurnResponse(
+        response=response_text,
+        plan=plan.plan if plan else None,
+        total_credits=plan.total_credits if plan else None,
+        validation_ok=plan.validation_ok if plan else None,
+        warnings=plan.warnings if plan else [],
+        intent="react",
+        token_usage={**usage, "this_turn": usage["total_tokens"] - usage_before},
         trace=session.last_trace,
         timetable=_latest_timetable(session.last_trace),
     )
