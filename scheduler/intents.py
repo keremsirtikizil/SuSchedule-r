@@ -3,7 +3,7 @@ Intent classification and per-intent handlers for the conversational planner.
 
 Flow
 ----
-1. ``classify_intent(message, history, model)`` — cheap gpt-4o-mini call that
+1. ``classify_intent(message, history, model)`` — small model call that
    returns an ``IntentClassification`` with the intent type and its arguments.
 2. Per-intent handler functions (``handle_plan``, ``handle_swap``, etc.) are
    called by ``PlannerSession.handle_turn`` with the session as context.
@@ -122,7 +122,7 @@ Rules
 def classify_intent(
     message: str,
     history: list[dict],
-    model: str = "gpt-4o-mini",
+    model: str = "gpt-4o",
 ) -> IntentClassification:
     """Classify the user's message into an intent + its args.
 

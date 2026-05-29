@@ -137,7 +137,7 @@ def _build_candidate_pool(
 
 
 def _parse_intents(user_request: str, model: str) -> list[str]:
-    """Stage 4a: Use gpt-4o-mini to split request into retrieval queries."""
+    """Stage 4a: Use the configured model to split request into retrieval queries."""
     if not user_request.strip():
         return ["required courses for graduation"]
 
@@ -438,7 +438,7 @@ def main() -> None:
     ap.add_argument("--max-credits", type=float, default=21.0)
     ap.add_argument("--target-credits", type=float, default=17.0)
     ap.add_argument("--planner-model", default="gpt-4o")
-    ap.add_argument("--intent-model", default="gpt-4o-mini")
+    ap.add_argument("--intent-model", default="gpt-4o")
     ap.add_argument("--no-required", action="store_true",
                     help="Don't auto-inject required courses.")
     ap.add_argument("--json", action="store_true",

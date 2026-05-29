@@ -17,6 +17,7 @@ from scheduler.schemas import PlannerRequest, TermPlan
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
+MAX_HISTORY_TURNS = 25
 
 
 @dataclass
@@ -47,6 +48,9 @@ class PlannerSession:
     history: list[dict] = field(default_factory=list)
     planning_allowed: bool = False
     last_trace: list[dict] = field(default_factory=list)
+    last_raw_trace: list[dict] = field(default_factory=list, repr=False)
+    trace_callback: Any | None = field(default=None, repr=False)
+    trace_raw_callback: Any | None = field(default=None, repr=False)
     # Schedule the student is assembling in the UI builder (list of picks:
     # {code, crn, section, title, su_credit, meetings:[...]}). Set via the
     # /schedule and /check_schedule API endpoints; read by get_current_schedule.
@@ -237,9 +241,37 @@ class PlannerSession:
 
         self.history.append({"role": "user", "content": user_message})
         self.history.append({"role": "assistant", "content": response})
-        if len(self.history) > 100:
-            self.history = self.history[-100:]
+        self.history = self.recent_history_turns(MAX_HISTORY_TURNS)
         return response
+
+    def recent_history_turns(self, max_turns: int = MAX_HISTORY_TURNS) -> list[dict]:
+        """Return the latest complete user/assistant turns, not raw messages."""
+        if max_turns <= 0:
+            return []
+
+        turns: list[list[dict]] = []
+        current: list[dict] = []
+        for msg in self.history:
+            role = msg.get("role")
+            if role == "user":
+                if current:
+                    turns.append(current)
+                current = [msg]
+            elif current:
+                current.append(msg)
+            else:
+                # Keep pre-user context attached to the first turn if it exists.
+                current = [msg]
+        if current:
+            turns.append(current)
+
+        recent: list[dict] = []
+        for turn in turns[-max_turns:]:
+            recent.extend(turn)
+        return recent
+
+    def history_turn_count(self) -> int:
+        return sum(1 for msg in self.history if msg.get("role") == "user")
 
     def state_summary(self) -> dict:
         return {
@@ -250,7 +282,7 @@ class PlannerSession:
             "target_term": self.base_request.target_term,
             "eligible_pool_size": len(self._eligible_pool),
             "current_plan": self.current_plan.plan if self.current_plan else None,
-            "history_turns": len(self.history) // 2,
+            "history_turns": self.history_turn_count(),
             "retriever_error": self._retriever_error,
             "last_trace": self.last_trace,
         }

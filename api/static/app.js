@@ -6,7 +6,8 @@ let courseNames = {};
 const currentMode = 'react';
 
 // Client-side schedule the student is assembling in the builder. Each pick:
-// { code, title, su_credit, crn, section, meetings:[...], when, sections:[...], offered }
+// { code, title, su_credit, crn, section, meetings:[...], when, sections:[...],
+//   offered, is_corequisite?, corequisite_for? }
 let schedule = [];
 
 // ── Chat-pane elements ──────────────────────────────────────────
@@ -291,9 +292,37 @@ async function addCourse() {
       offered: true,
     });
     courseNames[data.code] = data.title || '';
+
+    const addedCoreqs = [];
+    (data.corequisites || []).forEach(coreq => {
+      if (!coreq.code || schedule.some(p => p.code === coreq.code)) return;
+      const coreqFirst = (coreq.sections || [])[0];
+      if (!coreqFirst) {
+        addedCoreqs.push(`${coreq.code} (not offered / no time slot)`);
+        return;
+      }
+      schedule.push({
+        code: coreq.code,
+        title: coreq.title || coreqFirst.title || '',
+        su_credit: coreq.su_credit || 0,
+        crn: coreqFirst.crn,
+        section: coreqFirst.section,
+        meetings: coreqFirst.meetings || [],
+        when: coreqFirst.when || '',
+        sections: coreq.sections || [],
+        offered: true,
+        is_corequisite: true,
+        corequisite_for: data.code,
+      });
+      courseNames[coreq.code] = coreq.title || coreqFirst.title || '';
+      addedCoreqs.push(coreq.code);
+    });
     courseInput.value = '';
 
-    if (data.proxy_term_used && data.note) showBuilderNote(data.note, false);
+    const notes = [];
+    if (addedCoreqs.length) notes.push(`Also added required recitation/lab: ${addedCoreqs.join(', ')}.`);
+    if (data.proxy_term_used && data.note) notes.push(data.note);
+    if (notes.length) showBuilderNote(notes.join(' '), false);
     else hideBuilderNote();
 
     renderBuilder();
@@ -320,7 +349,13 @@ function changeSection(idx, crn) {
 }
 
 function removeCourse(idx) {
-  schedule.splice(idx, 1);
+  const removed = schedule[idx];
+  if (!removed) return;
+  if (removed.is_corequisite && schedule.some(p => p.code === removed.corequisite_for)) {
+    showBuilderNote(`${removed.code} is a required recitation/lab for ${removed.corequisite_for}. Remove ${removed.corequisite_for} first.`, true);
+    return;
+  }
+  schedule = schedule.filter((p, i) => i !== idx && p.corequisite_for !== removed.code);
   renderBuilder();
   persistSchedule();
 }
@@ -419,6 +454,9 @@ function renderCourseList(conflictRows) {
     }
 
     const credit = p.su_credit != null ? `${Number(p.su_credit).toFixed(1)} cr` : '';
+    const coreqNote = p.is_corequisite
+      ? `<div class="cr-warn">required recitation/lab for ${escapeHtml(p.corequisite_for || '')}</div>`
+      : '';
     const when = p.when
       ? `<div class="cr-when">${escapeHtml(p.when)}</div>`
       : '<div class="cr-warn">No set meeting time (TBA)</div>';
@@ -428,6 +466,7 @@ function renderCourseList(conflictRows) {
         <span class="cr-code">${escapeHtml(p.code)}</span>
         <div class="cr-mid">
           <div class="cr-title">${escapeHtml(p.title || '')}</div>
+          ${coreqNote}
           ${when}
           ${conflicted ? '<div class="cr-warn">⚠ time conflict</div>' : ''}
         </div>
@@ -569,6 +608,30 @@ function renderTrace(trace) {
   trace.forEach(ev => {
     if (ev.type === 'turn_start') {
       rows.push(`<div class="trace-item"><div class="trace-title">Turn start</div><div class="trace-meta">${escapeHtml(ev.user_message || '')}</div></div>`);
+    } else if (ev.type === 'prefetched_recommendation_context') {
+      rows.push(`
+        <div class="trace-item">
+          <div class="trace-title">Prefetched recommendation context</div>
+          <pre>${escapeHtml(ev.content || '')}</pre>
+        </div>
+      `);
+    } else if (ev.type === 'profile_reask_repair') {
+      rows.push(`
+        <div class="trace-item trace-error">
+          <div class="trace-title">Profile re-ask repaired</div>
+          <div class="trace-meta">${escapeHtml(ev.message || '')}</div>
+        </div>
+      `);
+    } else if (ev.type === 'catalog_title_repair') {
+      const fixes = (ev.mismatches || []).map(m =>
+        `<li><span>${escapeHtml(m.code || '')}</span> ${escapeHtml(m.stated || '')} -> ${escapeHtml(m.expected || '')}</li>`
+      ).join('');
+      rows.push(`
+        <div class="trace-item trace-error">
+          <div class="trace-title">Catalog title repair</div>
+          <ol>${fixes}</ol>
+        </div>
+      `);
     } else if (ev.type === 'assistant_step') {
       const calls = (ev.tool_calls || []).map(tc => {
         let args = tc.arguments || '{}';
@@ -587,6 +650,20 @@ function renderTrace(trace) {
           <div class="trace-title">Current builder schedule</div>
           <div class="trace-meta">${escapeHtml(r.course_count ?? 0)} courses · ${escapeHtml(r.total_su_credits ?? 0)} SU credits · conflicts: ${escapeHtml(r.has_conflicts ? 'yes' : 'no')}</div>
           ${conflicts ? `<div class="trace-meta">${conflicts}</div>` : ''}
+        </div>
+      `);
+    } else if (ev.type === 'tool_result' && ev.name === 'check_courses_against_current_schedule') {
+      const r = ev.result || {};
+      const checked = (r.candidate_codes_checked || []).join(', ') || (r.requested_codes || []).join(', ');
+      const blockers = (r.blocking_conflicts || []).slice(0, 6).map(c =>
+        `${escapeHtml(c.candidate || '')}: ${escapeHtml((c.between || []).join(' vs '))} (${escapeHtml(c.day || '')} ${escapeHtml(c.times || '')})`
+      ).join('<br/>');
+      rows.push(`
+        <div class="trace-item">
+          <div class="trace-title">Candidate schedule check</div>
+          <div class="trace-meta">checked: ${escapeHtml(checked || '-')} | fits: ${escapeHtml(r.candidate_fits_current_schedule)} | overall clean: ${escapeHtml(r.overall_schedule_conflict_free)}</div>
+          ${r.auto_added_coreqs?.length ? `<div class="trace-meta">auto-added coreqs: ${escapeHtml(r.auto_added_coreqs.join(', '))}</div>` : ''}
+          ${blockers ? `<div class="trace-meta">${blockers}</div>` : ''}
         </div>
       `);
     } else if (ev.type === 'selected_graphs') {
@@ -612,7 +689,7 @@ function renderTrace(trace) {
     } else if (ev.type === 'retrieval') {
       const filters = ev.filters || {};
       const hits = (ev.merged_results || []).slice(0, 10).map(h =>
-        `<li><span>${escapeHtml(h.code || '')}</span> ${escapeHtml(h.title || '')}<small>${h.rerank_score != null ? `rerank ${escapeHtml(h.rerank_score)}` : `score ${Number(h.score || 0).toFixed(2)}`}</small></li>`
+        `<li><span>${escapeHtml(h.code || '')}</span> ${escapeHtml(h.title || '')}<small>${h.rerank_score != null ? `rerank ${escapeHtml(h.rerank_score)}` : `score ${Number(h.score || 0).toFixed(2)}`} | eligible ${escapeHtml(h.eligible)} | offered ${escapeHtml(h.likely_offered)}</small></li>`
       ).join('');
       rows.push(`
         <div class="trace-item trace-retrieval">

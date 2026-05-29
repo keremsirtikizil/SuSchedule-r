@@ -87,7 +87,7 @@ PlannerSession.handle_turn()
    │
    ├── mode="pipeline" ──────────────────────────────────────────────────────┐
    │       │                                                                  │
-   │   classify_intent()  (gpt-4o-mini)                                       │
+   │   classify_intent()  (gpt-4o)                                            │
    │       │                                                                  │
    │   ┌──────────────┐                                                       │
    │   │ plan intent  │──▶ agent.plan() ──────────────────────────────────────┤
@@ -329,7 +329,7 @@ Fixed 8-stage execution:
 1. Load student profile from transcript
 2. Compute graduation requirements remaining
 3. Build eligible + offered candidate pool
-4. Parse user intent into retrieval queries (gpt-4o-mini) → retrieve + re-rank
+4. Parse user intent into retrieval queries (gpt-4o) → retrieve + re-rank
 5. GPT-4o proposes a plan (structured output — guaranteed JSON schema)
 6. Validate plan against hard rules (`eligibility.validate_plan`)
 7. Repair loop if violations (up to 3 iterations)
@@ -339,13 +339,13 @@ For subsequent turns (swap / drop / add / explain), a lightweight intent classif
 
 ### `mode="react"` (tool-using ReAct loop)
 
-The model receives the same 8 tools at every turn and decides what to call and in what order. It can:
+The model receives the same tool suite at every turn and decides what to call and in what order. It can:
 - Search for courses across multiple queries before deciding
 - Look up prereqs for specific codes before committing
 - Check offering history to verify a course will actually run
 - Validate a plan, get the violation list, and fix it without being explicitly told to retry
 
-The loop runs up to **12 steps** per turn. On the final step with no tool calls the model's text is returned to the user.
+The loop runs up to **8 steps** per turn. On the final step with no tool calls the model's text is returned to the user.
 
 `set_plan()` includes a re-validation guardrail — it will not commit a plan that `validate_plan()` would reject, even if the model skips the explicit validation step.
 
@@ -356,22 +356,30 @@ The loop runs up to **12 steps** per turn. On the final step with no tool calls 
 ```bash
 source .venv/bin/activate
 
-# Interactive REPL (pipeline mode, default)
+# Interactive REPL (ReAct mode, default)
 python -m scheduler.cli \
     --transcript data/transcript_cagan.json \
     --term 202601
 
-# Interactive REPL (ReAct mode)
+# Live debug trace for demos: every tool call, arguments, result, repair, final answer
 python -m scheduler.cli \
     --transcript data/transcript_cagan.json \
     --term 202601 \
-    --mode react
+    --debug-trace
 
 # With an automatic first message (useful for demos)
 python -m scheduler.cli \
     --transcript data/transcript_cagan.json \
-    --mode react \
+    --debug-trace \
     --first-message "Plan my fall semester. I want ML and a databases course."
+
+# Full untruncated raw JSON trace, then exit after the first message
+python -m scheduler.cli \
+    --transcript data/transcript_cagan.json \
+    --debug-trace \
+    --raw-trace \
+    --one-shot \
+    --first-message "Suggest CS-coded Core Electives about security."
 ```
 
 ### Slash commands inside the REPL
@@ -380,6 +388,8 @@ python -m scheduler.cli \
 |---|---|
 | `/plan` | Re-run planning (same as typing a plan request) |
 | `/state` | Print current plan + session summary |
+| `/trace` | Pretty-print the last agent/tool trace |
+| `/raw-trace` | Print the last full trace as raw JSON |
 | `/json` | Print the current plan as raw JSON |
 | `/usage` | Print token usage for the session |
 | `/help` | List commands |

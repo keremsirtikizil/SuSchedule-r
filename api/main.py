@@ -52,8 +52,8 @@ class CreateSessionRequest(BaseModel):
     min_credits: float = 12.0
     max_credits: float = 21.0
     target_credits: float = 17.0
-    planner_model: str = "o4-mini"
-    intent_model: str = "gpt-4o-mini"
+    planner_model: str = "gpt-4o"
+    intent_model: str = "gpt-4o"
     include_required: bool = True
     # "pipeline" = legacy 8-stage agent; "react" = tool-using loop
     mode: str = "react"
@@ -268,7 +268,7 @@ async def handle_turn(session_id: str, req: TurnRequest):
 
     # In pipeline mode, classify intent up-front so we can return it in the
     # response badge. In react mode the model handles its own reasoning —
-    # skip the extra gpt-4o-mini call.
+    # skip the extra intent-classification call.
     if session.base_request.mode == "react":
         intent_label = "react"
     else:
@@ -310,12 +310,44 @@ def _meeting_when(meetings: list[dict]) -> str:
     )
 
 
+def _pick_value(pick, field: str):
+    if isinstance(pick, dict):
+        return pick.get(field)
+    return getattr(pick, field, None)
+
+
+def _sections_payload(offerings: dict, schedule_term: str, catalog, code: str) -> dict:
+    from scheduler.timetable import sections_for, annotate_meeting
+
+    course = catalog.get(code) if catalog else None
+    sects_raw = sections_for(offerings, schedule_term, code) if schedule_term else []
+    sections = []
+    for s in sects_raw:
+        meetings = [annotate_meeting(dict(m)) for m in s.get("meetings", [])]
+        sections.append({
+            "crn": str(s.get("crn")),
+            "section": s.get("section"),
+            "title": s.get("title") or (course.title if course else ""),
+            "instructors": s.get("instructors", []),
+            "meetings": meetings,
+            "when": _meeting_when(meetings),
+        })
+    return {
+        "code": code,
+        "title": (course.title if course else (sections[0]["title"] if sections else "")),
+        "su_credit": course.su_credit if course else None,
+        "offered": bool(sections),
+        "sections": sections,
+    }
+
+
 def _resolve_schedule(session, picks: list) -> tuple[list[dict], str, bool]:
     """Resolve [{code, crn}] picks into full section records for the schedule term.
 
     Returns ``(resolved, schedule_term, is_proxy)``. Each resolved entry carries
     meeting times (with display labels), SU credit, and whether it was found.
     """
+    from scheduler.catalog import corequisite_codes
     from scheduler.timetable import (
         load_offerings, resolve_schedule_term, sections_for, annotate_meeting,
     )
@@ -326,10 +358,33 @@ def _resolve_schedule(session, picks: list) -> tuple[list[dict], str, bool]:
     schedule_term, is_proxy = resolve_schedule_term(offerings, target)
     catalog = session.catalog
 
-    resolved: list[dict] = []
+    provided_crns: dict[str, str] = {}
+    requested_order: list[str] = []
     for pick in picks:
-        code = (getattr(pick, "code", None) or "").upper().strip()
-        crn = str(getattr(pick, "crn", None) or "").strip()
+        code = (_pick_value(pick, "code") or "").upper().strip()
+        crn = str(_pick_value(pick, "crn") or "").strip()
+        if not code:
+            continue
+        if code not in provided_crns:
+            requested_order.append(code)
+        if crn or code not in provided_crns:
+            provided_crns[code] = crn
+
+    expanded: list[tuple[str, str, bool, str | None]] = []
+    seen: set[str] = set()
+    for code in requested_order:
+        crn = provided_crns.get(code, "")
+        if code in seen:
+            continue
+        expanded.append((code, crn, False, None))
+        seen.add(code)
+        for coreq in corequisite_codes(catalog, code):
+            if coreq not in seen:
+                expanded.append((coreq, provided_crns.get(coreq, ""), True, code))
+                seen.add(coreq)
+
+    resolved: list[dict] = []
+    for code, crn, is_coreq, parent_code in expanded:
         if not code:
             continue
         sects = sections_for(offerings, schedule_term, code) if schedule_term else []
@@ -349,6 +404,8 @@ def _resolve_schedule(session, picks: list) -> tuple[list[dict], str, bool]:
             "meetings": meetings,
             "when": _meeting_when(meetings),
             "offered": sec is not None,
+            "is_corequisite": is_coreq,
+            "corequisite_for": parent_code,
         })
     return resolved, schedule_term, is_proxy
 
@@ -363,8 +420,9 @@ async def course_sections(session_id: str, code: str):
     if session is None:
         raise HTTPException(400, "Session is not initialized.")
 
+    from scheduler.catalog import corequisite_codes
     from scheduler.timetable import (
-        load_offerings, resolve_schedule_term, sections_for, annotate_meeting,
+        load_offerings, resolve_schedule_term,
     )
     from scheduler.prompts import term_label
 
@@ -374,20 +432,11 @@ async def course_sections(session_id: str, code: str):
     schedule_term, is_proxy = resolve_schedule_term(offerings, target)
     code_u = code.upper().strip()
     catalog = session.catalog
-    course = catalog.get(code_u) if catalog else None
-
-    sects_raw = sections_for(offerings, schedule_term, code_u) if schedule_term else []
-    sections = []
-    for s in sects_raw:
-        meetings = [annotate_meeting(dict(m)) for m in s.get("meetings", [])]
-        sections.append({
-            "crn": str(s.get("crn")),
-            "section": s.get("section"),
-            "title": s.get("title") or (course.title if course else ""),
-            "instructors": s.get("instructors", []),
-            "meetings": meetings,
-            "when": _meeting_when(meetings),
-        })
+    payload = _sections_payload(offerings, schedule_term, catalog, code_u)
+    corequisites = [
+        _sections_payload(offerings, schedule_term, catalog, coreq)
+        for coreq in corequisite_codes(catalog, code_u)
+    ]
 
     note = ""
     if is_proxy and schedule_term:
@@ -398,14 +447,15 @@ async def course_sections(session_id: str, code: str):
         )
     return {
         "code": code_u,
-        "title": course.title if course else "",
-        "su_credit": course.su_credit if course else None,
+        "title": payload["title"],
+        "su_credit": payload["su_credit"],
         "target_term": target,
         "schedule_term": schedule_term,
         "proxy_term_used": is_proxy,
-        "offered": bool(sections),
+        "offered": payload["offered"],
         "note": note,
-        "sections": sections,
+        "sections": payload["sections"],
+        "corequisites": corequisites,
     }
 
 

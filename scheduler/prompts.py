@@ -29,7 +29,7 @@ def term_label(term_code: str) -> str:
 
 
 # --------------------------------------------------------------------------- #
-# INTENT PARSER  (gpt-4o-mini, ~50 tokens in/out)
+# INTENT PARSER  (configured model, ~50 tokens in/out)
 # --------------------------------------------------------------------------- #
 
 INTENT_PARSE_SYSTEM = """\

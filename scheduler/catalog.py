@@ -8,6 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_CATALOG_PATH = ROOT / "data" / "SU_full_catalog.json"
+COURSE_CODE_RE = re.compile(r"\b([A-Z]{2,5})\s*(\d{2,5}[A-Z]?)\b")
 
 
 @dataclass
@@ -107,6 +108,27 @@ class Catalog:
                 scored.append((total, course))
         scored.sort(key=lambda x: (-x[0], x[1].code))
         return [course.to_result(i + 1, score) for i, (score, course) in enumerate(scored[:k])]
+
+
+def extract_course_codes(text: str) -> list[str]:
+    """Extract normalized course codes from a catalog prereq/coreq string."""
+    if not text or text.strip() in {"__", "-"}:
+        return []
+    codes: list[str] = []
+    for match in COURSE_CODE_RE.finditer(text.upper()):
+        code = f"{match.group(1)} {match.group(2)}"
+        if code not in codes:
+            codes.append(code)
+    return codes
+
+
+def corequisite_codes(catalog: Catalog, code: str) -> list[str]:
+    """Return direct catalog corequisites for a course code."""
+    normalized = code.upper().strip()
+    course = catalog.get(normalized)
+    if course is None:
+        return []
+    return [c for c in extract_course_codes(course.coreq_text) if c != normalized]
 
 
 def _tokens(text: str) -> list[str]:

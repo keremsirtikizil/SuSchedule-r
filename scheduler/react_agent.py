@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import re
 from datetime import date
+from difflib import SequenceMatcher
 from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field
@@ -52,6 +53,7 @@ Available tools
 - find_courses_by_credit_type(): courses that actually carry Basic-Science / Engineering ECTS
 - build_timetable(courses)     : conflict-free weekly schedule from real section meeting times
 - get_current_schedule()       : the courses/times the student assembled in the UI builder
+- check_courses_against_current_schedule(codes): test candidate courses against the builder schedule
 
 Workflow heuristics
 -------------------
@@ -81,9 +83,15 @@ Workflow heuristics
 7. Do not create, validate, or commit a semester plan unless the user explicitly
    asks for planning/checking or provides courses to validate.
 8. Never call set_plan unless validate_plan returned ok=true.
-9. If degree/admit/transcript is missing, say exactly what is missing. You may
+9. Treat messages labeled [runtime environment], [student context loaded], and
+   [retrieved recommendation context] as authoritative runtime context. If
+   get_student_profile or [student context loaded] says transcript_loaded=true,
+   use that parsed academic profile as authoritative and do not ask again for
+   degree/program, admit term, completed courses, in-progress courses, transcript,
+   or degree evaluation.
+10. If degree/admit/transcript is missing, say exactly what is missing. You may
    still answer general RAG questions, but do not claim exact takeability.
-10. For minor questions ("can I minor in X", "what does the finance minor need",
+11. For minor questions ("can I minor in X", "what does the finance minor need",
     "how close am I to a math minor", "how many more courses/credits do I need"),
     call get_minor_requirements (or list_minors to show options). Answer counts
     from the returned fields: per section use min_courses / min_su_credits and
@@ -97,7 +105,7 @@ Workflow heuristics
     The only ECTS value available is total_ects_whole_minor (the whole minor's
     grand total); if asked about ECTS, state that number as-is and say the
     per-course ECTS breakdown isn't tracked, so completed ECTS can't be given.
-11. For science/engineering credit questions ("do I have enough engineering
+12. For science/engineering credit questions ("do I have enough engineering
     credits", "how many basic science ECTS do I still need"), call
     get_science_engineering_progress. When recommending or validating a plan for
     an engineering degree, check this: if Engineering or Basic-Science ECTS are
@@ -110,7 +118,7 @@ Workflow heuristics
     courses the tool returns, and report each course's basic_sci_ects / eng_ects
     (a course can have 0 science ECTS even though it has SU credits). If a
     subject has few or no such courses, say so honestly.
-12. For scheduling/time questions ("what time is CS 412", "do these courses
+13. For scheduling/time questions ("what time is CS 412", "do these courses
     clash", "build/show me a weekly schedule", "is this plan conflict-free"),
     call build_timetable with the course codes and answer ONLY from its result.
     NEVER invent or recall meeting days, times, classrooms, or CRNs from memory.
@@ -124,7 +132,7 @@ Workflow heuristics
     shift. If a course is in 'missing' (not offered) or 'no_meetings' (TBA), say
     so plainly. If ok is false, state no conflict-free combination exists and
     name the clashing courses from 'reason'.
-13. When the user asks you to check/review "my schedule" or "my current
+14. When the user asks you to check/review "my schedule" or "my current
     schedule" (e.g. via the Check Schedule button), call get_current_schedule.
     Comment on: time conflicts (from has_conflicts/conflicts), total SU credit
     load vs the min/max range, and — if a transcript is loaded — how the picked
@@ -132,6 +140,14 @@ Workflow heuristics
     / required-left). Be concise and concrete; do not invent meeting times beyond
     what the tool returns. If has_schedule is false, tell the user to add courses
     to the builder on the right first.
+    Recitation/lab codes returned by the schedule tool (for example CS 412R or
+    CS 308L) are valid offering rows even if they are absent from the catalog;
+    use the returned title and never label them UNKNOWN_COURSE_CODE.
+15. When the user asks whether "this/these course(s)" conflict with their current
+    schedule, call check_courses_against_current_schedule with the explicit
+    candidate course codes from the latest recommendation or user message. Do
+    not use build_timetable for this case because the current builder selections
+    must stay fixed.
 
 Answer style
 ------------
@@ -232,10 +248,13 @@ TOOLS: list[dict] = [
         "subject": {"type": "string"},
         "limit": {"type": "integer"},
     }, ["credit_type"]),
-    _tool("build_timetable", "Build a conflict-free weekly timetable (or report clashes) for a set of courses, using real per-section meeting times. Pass the course codes to schedule. Returns chosen sections (CRN, day/time, location, instructor) when a clash-free combination exists, or the conflicting pairs when none does. Also flags courses not offered or with no scheduled meeting time. Use this for any 'do these courses clash', 'build/show my schedule', or 'what time is course X' request.", {
+    _tool("build_timetable", "Build a conflict-free weekly timetable (or report clashes) for a set of courses, using real per-section meeting times. The tool auto-adds direct catalog corequisites such as recitations/labs and returns auto_added_coreqs. Pass the lecture course codes to schedule. Returns chosen sections (CRN, day/time, location, instructor) when a clash-free combination exists, or the conflicting pairs when none does. Also flags courses not offered or with no scheduled meeting time. Use this for any 'do these courses clash', 'build/show my schedule', or 'what time is course X' request.", {
         "courses": {"type": "array", "items": {"type": "string"}},
     }, ["courses"]),
-    _tool("get_current_schedule", "Return the schedule the student has assembled in the UI schedule builder: the picked courses, their meeting times, total SU credits, and any time conflicts between them. Use this whenever the user asks to review, check, or comment on 'my schedule' / 'my current schedule'.", {}),
+    _tool("get_current_schedule", "Return the schedule the student has assembled in the UI schedule builder: the picked courses, their meeting times, total SU credits, and any time conflicts between them. Recitation/lab rows such as CS 412R or CS 308L may not exist in the catalog; use the title returned by this tool and never call them UNKNOWN_COURSE_CODE. Use this whenever the user asks to review, check, or comment on 'my schedule' / 'my current schedule'.", {}),
+    _tool("check_courses_against_current_schedule", "Deterministically test candidate courses against the student's current UI builder schedule. Keeps existing selected sections fixed, auto-adds direct catalog recitations/labs for the candidate courses, searches candidate section choices, and returns whether the candidates can be added without introducing new time conflicts. Use this for questions like 'do these courses conflict with my current schedule?', 'can I add CS 405?', or 'check this course against my schedule'.", {
+        "codes": {"type": "array", "items": {"type": "string"}},
+    }, ["codes"]),
 ]
 
 
@@ -271,6 +290,162 @@ def _fallback_queries(text: str) -> list[str]:
 
 def _planning_requested(text: str) -> bool:
     return bool(re.search(r"\b(plan|schedule|semester plan|term plan|two terms|next term|next semester)\b", text.lower()))
+
+
+def _exclude_current_schedule_requested(text: str) -> bool:
+    return bool(re.search(
+        r"\b(other|another|alternative|instead|swap|replace|resolve|avoid|not in my schedule)\b",
+        text.lower(),
+    ))
+
+
+def _course_recommendation_requested(text: str) -> bool:
+    low = text.lower()
+    asks_for_courses = re.search(
+        r"\b(suggest|recommend|recommendation|which courses|what courses|"
+        r"what should i take|should i take|courses? should i take|"
+        r"learn|knowledge|focus|interested|interests?|about)\b",
+        low,
+    )
+    scoped_by_topic_or_term = re.search(
+        r"\b(networks?|networking|security|cybersecurity|systems?|"
+        r"ai|artificial intelligence|machine learning|ml|deep learning|"
+        r"llm|nlp|theory|theoretical|algorithms?|database|data science|"
+        r"optimization|operations?|supply chain|logistics|core|area|"
+        r"electives?|next semester|next term|fall\s*20\d{2}|"
+        r"spring\s*20\d{2}|summer\s*20\d{2}|graduation|graduate)\b",
+        low,
+    )
+    return bool(asks_for_courses and scoped_by_topic_or_term)
+
+
+def _reasks_for_known_profile(text: str) -> bool:
+    low = text.lower()
+    asks = re.search(r"\b(need|provide|confirm|tell me|let me know|could you)\b", low)
+    profile_fields = re.search(
+        r"\b(program|degree|major|admit term|admission|cohort|started|completed courses|in-progress|in progress|transcript|degree evaluation)\b",
+        low,
+    )
+    return bool(asks and profile_fields)
+
+
+_ANSWER_COURSE_LINE_RE = re.compile(
+    r"(?m)(?P<code>[A-Z]{2,5}\s*\d{3,5}[A-Z]?)\s*(?:[-:–—])\s*(?P<title>[^\n\r*`#]+)"
+)
+
+
+def _norm_title(text: str) -> str:
+    text = re.sub(r"<[^>]+>", " ", text or "")
+    text = re.sub(r"[*_`~]", "", text)
+    text = re.sub(r"\s+", " ", text).strip().lower()
+    text = re.split(r"\s+(?:is|covers|examines|explores|focuses|will|would|can)\b", text, maxsplit=1)[0]
+    return re.sub(r"[^a-z0-9 ]+", "", text).strip()
+
+
+def _runtime_course_title(session: "PlannerSession", code: str) -> str | None:
+    """Return a title for non-catalog schedule rows such as recitations/labs."""
+    normalized = code.upper().strip()
+    for pick in session.user_schedule or []:
+        if str(pick.get("code", "")).upper().strip() == normalized and pick.get("title"):
+            return str(pick["title"])
+
+    offerings = session._offerings or {}
+    for term in sorted(offerings.keys(), reverse=True):
+        sections = offerings.get(term, {}).get(normalized, [])
+        for section in sections:
+            title = section.get("title")
+            if title:
+                return str(title)
+    return None
+
+
+def _catalog_title_mismatches(session: "PlannerSession", text: str) -> list[dict[str, str]]:
+    mismatches: list[dict[str, str]] = []
+    if not text.strip():
+        return mismatches
+    catalog = session.catalog
+    seen: set[tuple[str, str]] = set()
+    for match in _ANSWER_COURSE_LINE_RE.finditer(text):
+        code = re.sub(r"\s+", " ", match.group("code").upper().strip())
+        stated = match.group("title").strip(" .:-")
+        key = (code, stated)
+        if key in seen:
+            continue
+        seen.add(key)
+        course = catalog.get(code)
+        if course is None:
+            expected = _runtime_course_title(session, code)
+            if expected:
+                stated_norm = _norm_title(stated)
+                expected_norm = _norm_title(expected)
+                ratio = SequenceMatcher(None, stated_norm, expected_norm).ratio() if expected_norm else 0.0
+                if stated_norm and expected_norm and expected_norm not in stated_norm and ratio < 0.72:
+                    mismatches.append({"code": code, "stated": stated, "expected": expected})
+            elif not code.endswith(("R", "L")):
+                mismatches.append({"code": code, "stated": stated, "expected": ""})
+            continue
+        stated_norm = _norm_title(stated)
+        expected_norm = _norm_title(course.title)
+        if not stated_norm:
+            continue
+        if expected_norm and expected_norm in stated_norm:
+            continue
+        ratio = SequenceMatcher(None, stated_norm, expected_norm).ratio() if expected_norm else 0.0
+        if ratio < 0.72:
+            mismatches.append({"code": code, "stated": stated, "expected": course.title})
+    return mismatches
+
+
+def _catalog_mismatch_message(mismatches: list[dict[str, str]]) -> str:
+    lines = [
+        "Revise the previous answer. It contained course-code/title mismatches.",
+        "Use these exact titles and remove any unsupported course names:",
+    ]
+    for item in mismatches[:12]:
+        if item.get("expected"):
+            lines.append(f"- {item['code']}: stated `{item['stated']}`, exact title `{item['expected']}`")
+        else:
+            lines.append(f"- {item['code']}: stated `{item['stated']}`, but this code is not present in catalog or current schedule context. Remove it unless a tool result supports it.")
+    lines.append("Do not invent course titles. If a relevant course is blocked, completed, currently in progress, or only adjacent to the topic, say so explicitly.")
+    return "\n".join(lines)
+
+
+def _compact_codes(codes: set[str] | list[str] | tuple[str, ...], limit: int = 24) -> str:
+    ordered = sorted(str(c).upper().strip() for c in codes if str(c).strip())
+    if not ordered:
+        return "none"
+    shown = ordered[:limit]
+    suffix = f", ... (+{len(ordered) - limit} more)" if len(ordered) > limit else ""
+    return ", ".join(shown) + suffix
+
+
+def _current_schedule_codes(session: "PlannerSession") -> set[str]:
+    return {
+        str(p.get("code", "")).upper().strip()
+        for p in session.user_schedule or []
+        if str(p.get("code", "")).strip()
+    }
+
+
+def _meeting_time_label(meeting: dict) -> str:
+    start = meeting.get("start_label")
+    end = meeting.get("end_label")
+    if start and end:
+        return f"{start}-{end}"
+    if "start" in meeting and "end" in meeting:
+        return f"{meeting['start']}-{meeting['end']}"
+    return ""
+
+
+def _conflict_dicts(conflicts: list[tuple[str, str, dict, dict]]) -> list[dict]:
+    rows = []
+    for a, b, ma, mb in conflicts:
+        rows.append({
+            "between": [a, b],
+            "day": ma.get("days_raw") or "/".join(ma.get("day_labels", [])),
+            "times": f"{_meeting_time_label(ma)} vs {_meeting_time_label(mb)}",
+        })
+    return rows
 
 
 # NOTE: convenience pre-pass only; the LLM's set_student_context tool is the
@@ -385,6 +560,19 @@ def _title_topic_boost(query: str, title: str) -> float:
     low_q = query.lower()
     low_t = title.lower()
     boost = 0.0
+    phrase_boosts = {
+        "deep learning": 3.0,
+        "machine learning": 2.2,
+        "natural language": 1.8,
+        "large language": 1.8,
+        "computer vision": 1.6,
+        "artificial intelligence": 1.4,
+        "neural": 1.2,
+        "data science": 1.0,
+    }
+    for phrase, value in phrase_boosts.items():
+        if phrase in low_q and phrase in low_t:
+            boost += value
     if "supply chain" in low_q and "supply chain" in low_t:
         boost += 1.5
     if "logistics" in low_q and "logistics" in low_t:
@@ -400,6 +588,54 @@ def _title_topic_boost(query: str, title: str) -> float:
     if "operations research" in low_q and "operations research" in low_t:
         boost += 1.0
     return boost
+
+
+def _focus_terms_for_queries(queries: list[str]) -> list[str]:
+    joined = " ".join(queries).lower()
+    groups = [
+        (
+            ("deep learning", "neural", "machine learning", "artificial intelligence", " ai ", "nlp", "natural language", "computer vision", "large language"),
+            ["deep learning", "neural", "machine learning", "artificial intelligence", " ai ", "natural language", "computer vision", "large language", "nlp"],
+        ),
+        (
+            ("network", "networking", "security", "cybersecurity", "cryptography"),
+            ["network", "networking", "security", "cybersecurity", "cryptography", "tcp/ip", "firewall"],
+        ),
+        (
+            ("optimization", "operations research", "linear programming", "integer programming"),
+            ["optimization", "operations research", "linear programming", "integer programming", "decision analysis"],
+        ),
+        (
+            ("supply chain", "logistics", "production", "inventory", "operations management"),
+            ["supply chain", "logistics", "production", "inventory", "operations management", "quality"],
+        ),
+    ]
+    padded = f" {joined} "
+    for triggers, terms in groups:
+        if any(trigger in padded for trigger in triggers):
+            return terms
+    return []
+
+
+def _subject_filter_from_text(text: str) -> list[str] | None:
+    matches = re.findall(r"\b([A-Z]{2,5})[-\s]*(?:CODED|COURSES?|SUBJECT)\b", text.upper())
+    subjects = []
+    for subj in matches:
+        if subj not in {"THE", "FOR", "AND", "CORE", "AREA", "FREE"} and subj not in subjects:
+            subjects.append(subj)
+    return subjects or None
+
+
+def _filter_rows_by_focus(rows: list[dict], queries: list[str]) -> list[dict]:
+    terms = _focus_terms_for_queries(queries)
+    if not terms:
+        return rows
+    filtered = []
+    for row in rows:
+        haystack = f" {row.get('code', '')} {row.get('title', '')} {row.get('description', '')} ".lower()
+        if any(term in haystack for term in terms):
+            filtered.append(row)
+    return filtered or rows
 
 
 def _apply_topic_boosts(rows: list[dict], query: str) -> list[dict]:
@@ -431,9 +667,145 @@ def _compact_for_trace(value: Any, max_items: int = 25, max_string: int = 700) -
 
 
 def _trace(session: "PlannerSession", event: dict) -> None:
-    session.last_trace.append(_compact_for_trace(event))
+    compacted = _compact_for_trace(event)
+    session.last_trace.append(compacted)
     if len(session.last_trace) > 120:
         session.last_trace = session.last_trace[-120:]
+    session.last_raw_trace.append(event)
+    if len(session.last_raw_trace) > 120:
+        session.last_raw_trace = session.last_raw_trace[-120:]
+    raw_callback = getattr(session, "trace_raw_callback", None)
+    if raw_callback:
+        try:
+            raw_callback(event)
+        except Exception:
+            pass
+    callback = getattr(session, "trace_callback", None)
+    if callback:
+        try:
+            callback(compacted)
+        except Exception:
+            pass
+
+
+def _prefetch_recommendation_context(
+    session: "PlannerSession",
+    toolbox: "Toolbox",
+    user_message: str,
+) -> str | None:
+    if not _course_recommendation_requested(user_message):
+        return None
+
+    rewrite = toolbox.rewrite_retrieval_queries(user_message)
+    queries = rewrite.get("queries") or _fallback_queries(user_message)
+    _trace(session, {
+        "type": "tool_result",
+        "step": 0,
+        "name": "rewrite_retrieval_queries",
+        "arguments": {"original_message": user_message},
+        "result": rewrite,
+    })
+
+    if session.student is not None:
+        selected = toolbox.select_degree_graphs()
+        _trace(session, {
+            "type": "tool_result",
+            "step": 0,
+            "name": "select_degree_graphs",
+            "arguments": {},
+            "result": selected,
+        })
+
+    needs_requirements = bool(re.search(
+        r"\b(graduat|requirement|core|area|free|elective|help my graduation|count toward)\b",
+        user_message.lower(),
+    ))
+    requirement_state: dict | None = None
+    if needs_requirements and session.student is not None:
+        requirement_state = toolbox.get_requirement_state()
+        _trace(session, {
+            "type": "tool_result",
+            "step": 0,
+            "name": "get_requirement_state",
+            "arguments": {},
+            "result": requirement_state,
+        })
+
+    section = _infer_section_from_text(user_message)
+    eligible_results = toolbox.retrieve_catalog_courses(
+        queries=queries,
+        k=15,
+        degree_filter=session.student is not None,
+        section=section,
+        eligible_only=session.has_course_context(),
+    )
+    scoped_results: list[dict] = []
+    if session.has_course_context():
+        scoped_results = toolbox.retrieve_catalog_courses(
+            queries=queries,
+            k=15,
+            degree_filter=session.student is not None,
+            section=section,
+            eligible_only=False,
+        )
+
+    lines = [
+        "Prefetched RAG context for this recommendation turn:",
+        f"- rewritten_retrieval_queries: {', '.join(queries)}",
+        f"- degree_filter: {session.student is not None}",
+        f"- eligible_only: {session.has_course_context()}",
+        f"- section_filter: {section or 'auto/all relevant requirement sections'}",
+    ]
+    scheduled_codes = _current_schedule_codes(session)
+    if scheduled_codes:
+        lines.append(f"- current_schedule_codes: {_compact_codes(scheduled_codes)}")
+        if _exclude_current_schedule_requested(user_message):
+            lines.append("- recommendation_instruction: user asked for other/alternative courses; do not recommend courses already in current_schedule_codes.")
+
+    if requirement_state and not requirement_state.get("error"):
+        lines.extend([
+            f"- requirement_scope: {requirement_state.get('program')} / {requirement_state.get('cohort_term')}",
+            f"- required_left: {_compact_codes(requirement_state.get('required_left', []), limit=12)}",
+            f"- core_elective_left_count: {len(requirement_state.get('core_elective_left', []) or [])}",
+            f"- area_elective_left_count: {len(requirement_state.get('area_elective_left', []) or [])}",
+            f"- free_elective_left_count: {len(requirement_state.get('free_elective_left', []) or [])}",
+            f"- authoritative_section_credit_status: {json.dumps(requirement_state.get('section_credit_status', {}), ensure_ascii=False)}",
+        ])
+
+    def append_rows(label: str, rows: list[dict]) -> None:
+        lines.append(f"- {label}:")
+        if not rows or (len(rows) == 1 and rows[0].get("error")):
+            lines.append(f"  - retrieval_error: {rows[0].get('error') if rows else 'no results'}")
+            return
+        focused_rows = _filter_rows_by_focus(rows, queries)
+        for row in focused_rows[:8]:
+            code = row.get("code", "")
+            title = row.get("title", "")
+            credits = row.get("credits")
+            eligible = row.get("in_eligible_pool")
+            completed = row.get("already_completed")
+            taking = row.get("currently_taking")
+            scheduled = row.get("in_current_schedule")
+            likely = row.get("likely_offered_target_term")
+            desc = str(row.get("description") or "").strip().replace("\n", " ")
+            if len(desc) > 260:
+                desc = desc[:257].rstrip() + "..."
+            lines.append(
+                f"  - {code} - {title}"
+                f"{f' ({credits:g} SU)' if isinstance(credits, (int, float)) else ''}"
+                f"; eligible_for_target_term={eligible}"
+                f"; already_completed={completed}"
+                f"; currently_taking={taking}"
+                f"; in_current_schedule={scheduled}"
+                f"; likely_offered_target_term={likely}; {desc}"
+            )
+
+    append_rows("eligible_retrieved_courses", eligible_results)
+    if scoped_results:
+        append_rows("relevant_degree_courses_even_if_blocked_completed_or_in_progress", scoped_results)
+
+    lines.append("Use this context to answer the original user message. Do not expose rewritten query mechanics.")
+    return "\n".join(lines)
 
 
 # Normalized degree-section name -> the matching key in a parsed degree
@@ -751,7 +1123,7 @@ class Toolbox:
                 model=self.session.base_request.intent_model,
                 messages=[
                     {"role": "system", "content": "Rewrite a Sabancı course-advising message into 1-5 concise semantic retrieval queries. Do not answer."},
-                    *self.session.history[-10:],
+                    *self.session.recent_history_turns(5),
                     {"role": "user", "content": original_message},
                 ],
                 schema=QueryRewrite,
@@ -774,12 +1146,32 @@ class Toolbox:
         queries: list[str] | None = None,
     ) -> set[str] | None:
         self.session._ensure_heavy_state()
-        if eligible_only:
-            return set(self.session._eligible_pool)
         sg = self.session._selected_graphs
         joined = " ".join(queries or [])
         if section is None:
             section = _infer_section_from_text(joined)
+        if eligible_only:
+            pool = set(self.session._eligible_pool)
+            if degree_filter and sg is not None:
+                if (
+                    self.session._student
+                    and self.session._student.program == "BSIE-DM"
+                    and not section
+                    and _is_ie_operations_query(joined)
+                ):
+                    scoped = sg.candidate_courses("Required") | sg.candidate_courses("Core Elective")
+                elif section:
+                    scoped = sg.candidate_courses(section)
+                elif re.search(r"\bfree\s+elective|free\s+electives\b", joined, re.I):
+                    scoped = sg.candidate_courses("Free Elective")
+                else:
+                    scoped = (
+                        sg.candidate_courses("Required")
+                        | sg.candidate_courses("Core Elective")
+                        | sg.candidate_courses("Area Elective")
+                    )
+                pool &= scoped
+            return pool
         # degree_filter=True (default): scope to the student's degree graph.
         # degree_filter=False: search the full catalog (open exploration).
         if degree_filter and sg is not None:
@@ -862,6 +1254,8 @@ class Toolbox:
         pool = self._candidate_pool(degree_filter, section, eligible_only, queries)
         if eligible_only and not self.session.has_course_context():
             return [{"error": "eligible_only requires transcript or completed-course context", "needed": ["transcript or completed/in-progress courses"]}]
+        if subj is None:
+            subj = _subject_filter_from_text(joined_queries)
         if (
             subj is None
             and self.session._student is not None
@@ -869,11 +1263,38 @@ class Toolbox:
             and _is_ie_operations_query(joined_queries)
         ):
             subj = ["IE", "OPIM"] if section in ("Area Elective", "Free Elective") else ["IE"]
+        elif (
+            subj is None
+            and self.session._student is not None
+            and self.session._student.program == "BSCS-DM"
+            and _focus_terms_for_queries(queries)
+        ):
+            subj = ["CS", "DSA", "EE", "MATH"]
 
-        results = self._retrieve_rows(queries, k=k, pool=pool, subj=subj)
+        exclude_scheduled = _exclude_current_schedule_requested(joined_queries)
+        scheduled_codes = _current_schedule_codes(self.session)
+        fetch_k = min(30, k * 2) if exclude_scheduled and scheduled_codes else k
+        results = self._retrieve_rows(queries, k=fetch_k, pool=pool, subj=subj)
+        if exclude_scheduled and scheduled_codes:
+            results = [row for row in results if row.get("code") not in scheduled_codes][:k]
+        likely_set = (
+            likely_offered_in(
+                self.session._offerings,
+                self.session.base_request.target_term,
+                same_season_only=True,
+            )
+            if self.session._offerings is not None
+            else set()
+        )
         for row in results:
-            row["is_required_left"] = row.get("code") in self.session._required_injected
-            row["in_eligible_pool"] = row.get("code") in self.session._eligible_pool if self.session.has_course_context() else None
+            code = row.get("code")
+            row["is_required_left"] = code in self.session._required_injected
+            row["in_eligible_pool"] = code in self.session._eligible_pool if self.session.has_course_context() else None
+            if self.session._student is not None:
+                row["already_completed"] = code in self.session._student.completed
+                row["currently_taking"] = code in self.session._student.in_progress
+            row["in_current_schedule"] = code in scheduled_codes
+            row["likely_offered_target_term"] = code in likely_set if self.session._offerings is not None else None
         self.session.last_retrieved = results
         _trace(self.session, {
             "type": "retrieval",
@@ -892,6 +1313,11 @@ class Toolbox:
                     "score": r.get("score"),
                     "rerank_score": r.get("rerank_score"),
                     "source": r.get("source", "lexical"),
+                    "eligible": r.get("in_eligible_pool"),
+                    "completed": r.get("already_completed"),
+                    "currently_taking": r.get("currently_taking"),
+                    "in_current_schedule": r.get("in_current_schedule"),
+                    "likely_offered": r.get("likely_offered_target_term"),
                 }
                 for r in results
             ],
@@ -1178,6 +1604,19 @@ class Toolbox:
         if not codes:
             return {"error": "no courses given to schedule"}
 
+        from scheduler.catalog import corequisite_codes
+
+        expanded_codes: list[str] = []
+        auto_added_coreqs: list[str] = []
+        for code in codes:
+            if code not in expanded_codes:
+                expanded_codes.append(code)
+            for coreq in corequisite_codes(self.session.catalog, code):
+                if coreq not in expanded_codes:
+                    expanded_codes.append(coreq)
+                    auto_added_coreqs.append(coreq)
+        codes = expanded_codes
+
         offerings = self.session._offerings or _load_off()
         target_term = self.session.base_request.target_term
 
@@ -1194,6 +1633,7 @@ class Toolbox:
         payload["target_term"] = target_term
         payload["schedule_term"] = schedule_term
         payload["proxy_term_used"] = is_proxy
+        payload["auto_added_coreqs"] = auto_added_coreqs
 
         # When scheduling against a proxy (past) term, the CRNs and section
         # numbers are NOT valid for the future target term — drop them so neither
@@ -1237,6 +1677,7 @@ class Toolbox:
         _trace(self.session, {
             "type": "build_timetable",
             "courses": codes,
+            "auto_added_coreqs": auto_added_coreqs,
             "target_term": target_term,
             "schedule_term": schedule_term,
             "proxy_term_used": is_proxy,
@@ -1288,6 +1729,8 @@ class Toolbox:
                     "section": p.get("section"),
                     "su_credit": p.get("su_credit"),
                     "when": p.get("when", ""),
+                    "is_corequisite": bool(p.get("is_corequisite")),
+                    "corequisite_for": p.get("corequisite_for"),
                 }
                 for p in picks
             ],
@@ -1305,6 +1748,215 @@ class Toolbox:
             ),
         }
 
+    def check_courses_against_current_schedule(self, codes: list[str]) -> dict:
+        """Try candidate courses against the fixed UI-builder schedule.
+
+        Unlike build_timetable(), this does not reshuffle the student's current
+        picked sections. It searches only the candidate courses' available
+        sections, including direct catalog recitations/labs.
+        """
+        from scheduler.catalog import corequisite_codes
+        from scheduler.timetable import (
+            annotate_meeting,
+            conflict_report,
+            load_offerings as _load_off,
+            resolve_schedule_term,
+            sections_conflict,
+            sections_for,
+        )
+
+        requested = []
+        for code in codes or []:
+            normalized = code.upper().strip()
+            if normalized and normalized not in requested:
+                requested.append(normalized)
+        if not requested:
+            return {"error": "no candidate courses given", "needed": ["course codes"]}
+
+        current_raw = self.session.user_schedule or []
+        if not current_raw:
+            return {
+                "error": "no current schedule in builder",
+                "needed": ["add courses to the schedule builder first"],
+            }
+
+        offerings = self.session._offerings or _load_off()
+        target_term = self.session.base_request.target_term
+        schedule_term, is_proxy = resolve_schedule_term(offerings, target_term)
+        if not schedule_term:
+            return {
+                "error": "no offerings available to check schedule conflicts",
+                "target_term": target_term,
+            }
+
+        fixed: list[dict] = []
+        current_codes: set[str] = set()
+        for item in current_raw:
+            pick = dict(item)
+            code = str(pick.get("code", "")).upper().strip()
+            if not code:
+                continue
+            current_codes.add(code)
+            pick["code"] = code
+            pick.setdefault("label", f"{code} ({pick.get('section') or '?'})")
+            pick["meetings"] = [annotate_meeting(dict(m)) for m in pick.get("meetings", [])]
+            fixed.append(pick)
+
+        existing_conflicts = _conflict_dicts(conflict_report(fixed))
+
+        candidate_codes: list[str] = []
+        auto_added_coreqs: list[str] = []
+        already_in_schedule: list[str] = []
+        for code in requested:
+            if code in current_codes:
+                already_in_schedule.append(code)
+                continue
+            if code not in candidate_codes:
+                candidate_codes.append(code)
+            for coreq in corequisite_codes(self.session.catalog, code):
+                if coreq in current_codes or coreq in candidate_codes:
+                    continue
+                candidate_codes.append(coreq)
+                auto_added_coreqs.append(coreq)
+
+        if not candidate_codes:
+            return {
+                "ok": True,
+                "candidate_fits_current_schedule": True,
+                "overall_schedule_conflict_free": not bool(existing_conflicts),
+                "requested_codes": requested,
+                "already_in_schedule": already_in_schedule,
+                "candidate_codes_checked": [],
+                "auto_added_coreqs": [],
+                "existing_conflicts": existing_conflicts,
+                "note": "All requested courses are already in the current schedule.",
+            }
+
+        missing: list[str] = []
+        no_meetings: list[str] = []
+        candidates: list[tuple[str, list[dict]]] = []
+        for code in candidate_codes:
+            sections = sections_for(offerings, schedule_term, code)
+            if not sections:
+                missing.append(code)
+                continue
+            with_times = [s for s in sections if s.get("meetings")]
+            if not with_times:
+                no_meetings.append(code)
+                continue
+            normalized_sections = []
+            for section in with_times:
+                sec = dict(section)
+                sec["code"] = code
+                sec["meetings"] = [annotate_meeting(dict(m)) for m in section.get("meetings", [])]
+                sec.setdefault("label", f"{code} ({sec.get('section') or '?'})")
+                normalized_sections.append(sec)
+            candidates.append((code, normalized_sections))
+
+        candidates.sort(key=lambda item: len(item[1]))
+        chosen: list[dict] = []
+
+        def backtrack(index: int) -> bool:
+            if index == len(candidates):
+                return True
+            _, sections = candidates[index]
+            for section in sections:
+                if any(sections_conflict(section, pick) for pick in fixed):
+                    continue
+                if any(sections_conflict(section, pick) for pick in chosen):
+                    continue
+                chosen.append(section)
+                if backtrack(index + 1):
+                    return True
+                chosen.pop()
+            return False
+
+        fits = (backtrack(0) if candidates else True) and not bool(missing)
+        blocking_conflicts = []
+        if not fits:
+            seen_conflicts: set[tuple[str, str, str]] = set()
+            for code, sections in candidates:
+                for section in sections[:8]:
+                    rows = _conflict_dicts(conflict_report([*fixed, section]))
+                    for row in rows:
+                        pair = tuple(row["between"])
+                        if section.get("label") not in pair:
+                            continue
+                        key = (pair[0], pair[1], row["times"])
+                        if key in seen_conflicts:
+                            continue
+                        seen_conflicts.add(key)
+                        blocking_conflicts.append({
+                            "candidate": code,
+                            **row,
+                        })
+                    if len(blocking_conflicts) >= 12:
+                        break
+                if len(blocking_conflicts) >= 12:
+                    break
+
+        def pick_payload(pick: dict) -> dict:
+            meetings = pick.get("meetings", [])
+            return {
+                "code": pick.get("code"),
+                "title": pick.get("title", ""),
+                "section": pick.get("section"),
+                "crn": None if is_proxy else str(pick.get("crn")) if pick.get("crn") is not None else None,
+                "reference_crn_past_term": str(pick.get("crn")) if is_proxy and pick.get("crn") is not None else None,
+                "when": "; ".join(
+                    f"{'/'.join(m.get('day_labels', []))} {_meeting_time_label(m)}"
+                    for m in meetings
+                ),
+                "meetings": meetings,
+            }
+
+        candidate_credits = 0.0
+        for code in candidate_codes:
+            course = self.session.catalog.get(code)
+            if course and course.su_credit:
+                candidate_credits += float(course.su_credit)
+
+        total_current = round(sum(float(p.get("su_credit") or 0) for p in current_raw), 1)
+        payload = {
+            "ok": fits,
+            "candidate_fits_current_schedule": fits,
+            "overall_schedule_conflict_free": fits and not bool(existing_conflicts),
+            "requested_codes": requested,
+            "already_in_schedule": already_in_schedule,
+            "candidate_codes_checked": candidate_codes,
+            "auto_added_coreqs": auto_added_coreqs,
+            "target_term": target_term,
+            "schedule_term": schedule_term,
+            "proxy_term_used": is_proxy,
+            "missing": missing,
+            "no_meetings": no_meetings,
+            "existing_conflicts": existing_conflicts,
+            "blocking_conflicts": blocking_conflicts,
+            "chosen_candidate_sections": [pick_payload(p) for p in chosen] if fits else [],
+            "current_total_su_credits": total_current,
+            "candidate_su_credits": round(candidate_credits, 1),
+            "total_su_credits_if_added": round(total_current + candidate_credits, 1),
+            "note": (
+                "Existing builder selections were kept fixed. "
+                "Candidate recitations/labs were auto-added from catalog corequisites. "
+                + (
+                    "Target-term times are not published, so the check uses the latest same-season proxy term."
+                    if is_proxy else
+                    "The check uses published target-term meeting times."
+                )
+            ),
+        }
+        _trace(self.session, {
+            "type": "check_courses_against_current_schedule",
+            "requested_codes": requested,
+            "candidate_codes_checked": candidate_codes,
+            "auto_added_coreqs": auto_added_coreqs,
+            "ok": fits,
+            "existing_conflict_count": len(existing_conflicts),
+            "blocking_conflict_count": len(blocking_conflicts),
+        })
+        return payload
+
     def dispatch(self, name: str, arguments: dict) -> Any:
         method = getattr(self, name, None)
         if method is None or name.startswith("_"):
@@ -1317,11 +1969,12 @@ class Toolbox:
             return {"error": f"{name} raised {type(exc).__name__}: {exc}"}
 
 
-MAX_ITERATIONS = 12
+MAX_ITERATIONS = 8
 
 
 def handle_turn(session: "PlannerSession", user_message: str) -> str:
     session.last_trace = []
+    session.last_raw_trace = []
     _infer_context_from_message(session, user_message)
     session.planning_allowed = _planning_requested(user_message)
     toolbox = Toolbox(session)
@@ -1334,8 +1987,8 @@ def handle_turn(session: "PlannerSession", user_message: str) -> str:
         "state": session.state_summary(),
     })
 
-    # Always inject the real-world clock and the session's planning term so the
-    # agent never guesses today's date or "next semester" from training memory.
+    # Keep the system prompt stable for provider-side prompt caching. Runtime
+    # values are injected as labeled context messages below.
     from scheduler.prompts import term_label as _term_label
 
     target_term = session.base_request.target_term
@@ -1343,32 +1996,58 @@ def handle_turn(session: "PlannerSession", user_message: str) -> str:
         target_label = _term_label(target_term)
     except Exception:
         target_label = target_term
-    system_content = REACT_SYSTEM + (
-        "\n\n--- Current environment (authoritative) ---\n"
-        f"Today's date: {date.today().isoformat()}.\n"
-        f"Planning / target semester (this is what \"next semester\" means here): "
-        f"{target_label} (term code {target_term}).\n"
-        "Answer any date or 'which/next semester' question from these values, "
-        "never from prior knowledge.\n"
-        "--- end environment ---"
-    )
-
-    # When student context is already loaded (transcript or manual), inject a
-    # compact profile snapshot so the LLM starts informed without needing a
-    # get_student_profile() tool call on every turn.
-    if session.has_course_context():
-        profile = toolbox.get_student_profile()
-        system_content += (
-            "\n\n--- Student context (already loaded) ---\n"
-            + json.dumps(profile, ensure_ascii=False)
-            + "\n--- Use this; do not ask the student to repeat it. ---"
-        )
+    system_content = REACT_SYSTEM
 
     messages: list[dict] = [{"role": "system", "content": system_content}]
-    messages.extend(session.history[-100:])
+    messages.append({
+        "role": "user",
+        "content": "[runtime environment; authoritative]",
+    })
+    messages.append({
+        "role": "assistant",
+        "content": json.dumps({
+            "today": date.today().isoformat(),
+            "target_term": target_term,
+            "target_label": target_label,
+            "instruction": (
+                "Answer any date or 'which/next semester' question from these "
+                "values, never from prior knowledge."
+            ),
+        }, ensure_ascii=False),
+    })
+
+    # When student context is already loaded (transcript, degree evaluation, or
+    # manual state), inject a compact profile snapshot before history without
+    # changing the stable system prompt.
+    if session.has_course_context():
+        profile = toolbox.get_student_profile()
+        messages.append({
+            "role": "user",
+            "content": "[student context loaded; authoritative; do not ask the student to repeat it]",
+        })
+        messages.append({
+            "role": "assistant",
+            "content": json.dumps(profile, ensure_ascii=False),
+        })
+
+    recommendation_context = _prefetch_recommendation_context(session, toolbox, user_message)
+    if recommendation_context:
+        _trace(session, {"type": "prefetched_recommendation_context", "content": recommendation_context})
+        messages.append({
+            "role": "user",
+            "content": "[retrieved recommendation context for this turn; authoritative]",
+        })
+        messages.append({
+            "role": "assistant",
+            "content": recommendation_context,
+        })
+
+    messages.extend(session.recent_history_turns(25))
     messages.append({"role": "user", "content": user_message})
 
     final_text = ""
+    profile_reask_repaired = False
+    catalog_mismatch_repaired = False
     for step in range(MAX_ITERATIONS):
         assistant_msg = llm_client.call_with_tools(
             model=model,
@@ -1397,6 +2076,37 @@ def handle_turn(session: "PlannerSession", user_message: str) -> str:
         })
         if not tool_calls:
             final_text = assistant_msg.content or ""
+            if (
+                session.transcript_loaded
+                and not profile_reask_repaired
+                and _reasks_for_known_profile(final_text)
+            ):
+                profile_reask_repaired = True
+                _trace(session, {
+                    "type": "profile_reask_repair",
+                    "message": "Model asked for profile fields already available from the uploaded academic profile; forcing a revised answer.",
+                })
+                messages.append({
+                    "role": "system",
+                    "content": (
+                        "Revise the previous answer. The student's academic profile is already loaded and authoritative. "
+                        "Use the current student context and prefetched RAG context; do not ask for program, admit term, "
+                        "completed courses, in-progress courses, transcript, or degree evaluation again."
+                    ),
+                })
+                continue
+            mismatches = _catalog_title_mismatches(session, final_text)
+            if mismatches and not catalog_mismatch_repaired:
+                catalog_mismatch_repaired = True
+                _trace(session, {
+                    "type": "catalog_title_repair",
+                    "mismatches": mismatches,
+                })
+                messages.append({
+                    "role": "system",
+                    "content": _catalog_mismatch_message(mismatches),
+                })
+                continue
             break
         for tc in tool_calls:
             args: dict = {}

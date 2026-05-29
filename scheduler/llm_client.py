@@ -128,7 +128,7 @@ def call_structured(
 
     Parameters
     ----------
-    model:    e.g. ``"gpt-4o"`` or ``"gpt-4o-mini"``
+    model:    e.g. ``"gpt-4o"``
     messages: standard OpenAI message list
     schema:   a Pydantic ``BaseModel`` subclass
     label:    short string for the usage log line

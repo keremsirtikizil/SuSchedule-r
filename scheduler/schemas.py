@@ -128,8 +128,8 @@ class PlannerRequest:
     max_repair_iters:    int  = 3
 
     # -- Models --
-    planner_model:    str = "o4-mini"
-    intent_model:     str = "gpt-4o-mini"
+    planner_model:    str = "gpt-4o"
+    intent_model:     str = "gpt-4o"
 
     # -- Agent style --
     # "pipeline" → fixed 8-stage scheduler.agent.plan (Phase A/B path).
