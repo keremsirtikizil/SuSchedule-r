@@ -52,7 +52,7 @@ class CreateSessionRequest(BaseModel):
     min_credits: float = 12.0
     max_credits: float = 21.0
     target_credits: float = 17.0
-    planner_model: str = "gpt-4o"
+    planner_model: str = "o4-mini"
     intent_model: str = "gpt-4o-mini"
     include_required: bool = True
     # "pipeline" = legacy 8-stage agent; "react" = tool-using loop

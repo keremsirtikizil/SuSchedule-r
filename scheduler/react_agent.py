@@ -50,6 +50,7 @@ Available tools
 - get_minor_requirements(minor): a minor's courses + the student's progress
 - get_science_engineering_progress(): Engineering & Basic-Science ECTS gap toward graduation
 - find_courses_by_credit_type(): courses that actually carry Basic-Science / Engineering ECTS
+- build_timetable(courses)     : conflict-free weekly schedule from real section meeting times
 
 Workflow heuristics
 -------------------
@@ -108,6 +109,14 @@ Workflow heuristics
     courses the tool returns, and report each course's basic_sci_ects / eng_ects
     (a course can have 0 science ECTS even though it has SU credits). If a
     subject has few or no such courses, say so honestly.
+12. For scheduling/time questions ("what time is CS 412", "do these courses
+    clash", "build/show me a weekly schedule", "is this plan conflict-free"),
+    call build_timetable with the course codes. Report the result from the tool
+    only: the chosen sections' days/times and any conflicting pairs. NEVER invent
+    or recall meeting days, times, classrooms, or CRNs from memory. If the tool
+    reports proxy_term_used, tell the user the times come from the most recent
+    same-season term because the target term isn't published yet. If a course is
+    in 'missing' (not offered) or 'no_meetings' (TBA), say so plainly.
 
 Answer style
 ------------
@@ -208,6 +217,9 @@ TOOLS: list[dict] = [
         "subject": {"type": "string"},
         "limit": {"type": "integer"},
     }, ["credit_type"]),
+    _tool("build_timetable", "Build a conflict-free weekly timetable (or report clashes) for a set of courses, using real per-section meeting times. Pass the course codes to schedule. Returns chosen sections (CRN, day/time, location, instructor) when a clash-free combination exists, or the conflicting pairs when none does. Also flags courses not offered or with no scheduled meeting time. Use this for any 'do these courses clash', 'build/show my schedule', or 'what time is course X' request.", {
+        "courses": {"type": "array", "items": {"type": "string"}},
+    }, ["courses"]),
 ]
 
 
@@ -971,6 +983,16 @@ class Toolbox:
         report = elig_validate_plan(self.session._graph, self.session._student, plan, opts)
         if not report.ok:
             return {"committed": False, "reason": "validate_plan failed; not committing", "violations": [v.to_dict() for v in report.violations]}
+        # Attach a best-effort weekly timetable (uses a same-season proxy term
+        # when the target term has no published offerings yet).
+        committed_courses = plan + [c for c in report.auto_added_coreqs if c not in plan]
+        timetable_payload = None
+        try:
+            tt = self.build_timetable(committed_courses)
+            if "error" not in tt:
+                timetable_payload = {tt.get("schedule_term", "schedule"): tt}
+        except Exception:
+            timetable_payload = None
         self.session.current_plan = TermPlan(
             plan=plan,
             reasoning={str(k).upper().strip(): str(v) for k, v in (reasoning or {}).items()},
@@ -979,7 +1001,7 @@ class Toolbox:
             validation_ok=True,
             violations=[],
             auto_added_coreqs=report.auto_added_coreqs,
-            timetable=None,
+            timetable=timetable_payload,
             iterations=0,
             alternatives=[],
             candidate_pool_size=len(self.session._eligible_pool),
@@ -1118,6 +1140,75 @@ class Toolbox:
                 f"{label} ECTS."
             ),
         }
+
+    def build_timetable(self, courses: list[str]) -> dict:
+        """Build a conflict-free weekly timetable from real section meeting times.
+
+        The target planning term often has no published offerings yet (it is a
+        future term). When that happens we fall back to the most recent term of
+        the *same season* that we do have data for (e.g. plan for Fall 2026-2027
+        using Fall 2025-2026 sections) and clearly flag that the times are a
+        proxy, since exact meeting times for the future term are not yet known.
+        """
+        from scheduler.timetable import (
+            build_timetable as _bt,
+            format_timetable as _fmt,
+            load_offerings as _load_off,
+        )
+        from scheduler.offerings import terms_of_season, season_of
+
+        codes = [c.upper().strip() for c in (courses or []) if c and c.strip()]
+        if not codes:
+            return {"error": "no courses given to schedule"}
+
+        offerings = self.session._offerings or _load_off()
+        target_term = self.session.base_request.target_term
+
+        # Pick the term whose meeting times we actually schedule against.
+        schedule_term = target_term
+        is_proxy = False
+        if target_term not in offerings:
+            same_season = terms_of_season(offerings, season_of(target_term))
+            if same_season:
+                schedule_term = same_season[0]  # newest same-season term
+                is_proxy = True
+            else:
+                return {
+                    "error": "no offerings available to build a timetable",
+                    "target_term": target_term,
+                }
+
+        result = _bt(codes, schedule_term, offerings=offerings)
+        payload = result.to_dict()
+        payload["text"] = _fmt(result)
+        payload["target_term"] = target_term
+        payload["schedule_term"] = schedule_term
+        if is_proxy:
+            from scheduler.prompts import term_label as _term_label
+            try:
+                tgt_lbl = _term_label(target_term)
+                proxy_lbl = _term_label(schedule_term)
+            except Exception:
+                tgt_lbl, proxy_lbl = target_term, schedule_term
+            payload["proxy_term_used"] = True
+            payload["note"] = (
+                f"Exact meeting times for {tgt_lbl} (term {target_term}) are not "
+                f"published yet, so this timetable uses the most recent same-season "
+                f"term, {proxy_lbl} (term {schedule_term}), as a proxy. Days/times "
+                "are typical for the course but may shift; CRNs are from the proxy "
+                "term and will differ for the actual term."
+            )
+        _trace(self.session, {
+            "type": "build_timetable",
+            "courses": codes,
+            "target_term": target_term,
+            "schedule_term": schedule_term,
+            "proxy_term_used": is_proxy,
+            "ok": result.ok,
+            "missing": result.missing,
+            "no_meetings": result.no_meetings,
+        })
+        return payload
 
     def dispatch(self, name: str, arguments: dict) -> Any:
         method = getattr(self, name, None)

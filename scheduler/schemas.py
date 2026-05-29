@@ -128,7 +128,7 @@ class PlannerRequest:
     max_repair_iters:    int  = 3
 
     # -- Models --
-    planner_model:    str = "gpt-4o"
+    planner_model:    str = "o4-mini"
     intent_model:     str = "gpt-4o-mini"
 
     # -- Agent style --
