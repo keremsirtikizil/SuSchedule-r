@@ -273,6 +273,62 @@ body {
 .plan-credits .ok   { color: var(--green); font-weight: 600; }
 .plan-credits .warn { color: var(--red); }
 
+/* ── Weekly timetable panel ───────────────────────────────────── */
+.timetable-note {
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--text-dim);
+  background: rgba(167,139,250,0.10);
+  border: 1px solid rgba(167,139,250,0.25);
+  border-radius: 6px;
+  padding: 6px 8px;
+  margin-bottom: 8px;
+}
+
+.timetable-grid { display: flex; flex-direction: column; gap: 8px; }
+
+.tt-day { display: flex; flex-direction: column; gap: 3px; }
+
+.tt-day-name {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.tt-block {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  background: var(--surface2);
+  border-left: 3px solid var(--accent);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+.tt-block .tt-time { font-family: var(--mono); color: var(--text); flex-shrink: 0; }
+.tt-block .tt-course { color: var(--accent); font-weight: 600; flex-shrink: 0; }
+.tt-block .tt-where {
+  color: var(--text-faint);
+  font-size: 10px;
+  margin-left: auto;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tt-empty { color: var(--text-faint); font-size: 11px; font-style: italic; }
+
+.timetable-extra {
+  margin-top: 8px;
+  font-size: 10px;
+  color: var(--text-faint);
+  line-height: 1.6;
+}
+
 /* ── Stats panel ──────────────────────────────────────────────── */
 .stats-body {
   font-size: 11px;

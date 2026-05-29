@@ -111,12 +111,18 @@ Workflow heuristics
     subject has few or no such courses, say so honestly.
 12. For scheduling/time questions ("what time is CS 412", "do these courses
     clash", "build/show me a weekly schedule", "is this plan conflict-free"),
-    call build_timetable with the course codes. Report the result from the tool
-    only: the chosen sections' days/times and any conflicting pairs. NEVER invent
-    or recall meeting days, times, classrooms, or CRNs from memory. If the tool
-    reports proxy_term_used, tell the user the times come from the most recent
-    same-season term because the target term isn't published yet. If a course is
-    in 'missing' (not offered) or 'no_meetings' (TBA), say so plainly.
+    call build_timetable with the course codes and answer ONLY from its result.
+    NEVER invent or recall meeting days, times, classrooms, or CRNs from memory.
+    A weekly grid is rendered for the user in the UI, so keep your text SHORT: a
+    one-line verdict (conflict-free or which pairs clash) plus each course's day/
+    time using the per-pick 'when' field — do not paste a full ASCII grid.
+    Report only the days/times the tool returns; if 'crn' is null, do NOT state a
+    CRN or section number (they apply only to a past proxy term). If the tool
+    reports proxy_term_used, add one sentence that the times come from the most
+    recent same-season term because the target term isn't published yet and may
+    shift. If a course is in 'missing' (not offered) or 'no_meetings' (TBA), say
+    so plainly. If ok is false, state no conflict-free combination exists and
+    name the clashing courses from 'reason'.
 
 Answer style
 ------------
@@ -1154,6 +1160,8 @@ class Toolbox:
             build_timetable as _bt,
             format_timetable as _fmt,
             load_offerings as _load_off,
+            _fmt_clock,
+            DAY_LABELS as _DAY_LABELS,
         )
         from scheduler.offerings import terms_of_season, season_of
 
@@ -1180,9 +1188,37 @@ class Toolbox:
 
         result = _bt(codes, schedule_term, offerings=offerings)
         payload = result.to_dict()
-        payload["text"] = _fmt(result)
         payload["target_term"] = target_term
         payload["schedule_term"] = schedule_term
+        payload["proxy_term_used"] = is_proxy
+
+        # When scheduling against a proxy (past) term, the CRNs and section
+        # numbers are NOT valid for the future target term — drop them so neither
+        # the model nor the UI presents them as registerable identifiers.
+        if is_proxy:
+            for p in payload["picks"]:
+                p["reference_crn_past_term"] = p.pop("crn", None)
+                p["crn"] = None
+                p["crn_note"] = "CRN/section apply to the proxy term only; will differ for the target term."
+
+        # Add ready-to-render, human-readable meeting strings to every pick so
+        # the frontend can draw a weekly grid without re-deriving anything.
+        for p in payload["picks"]:
+            for m in p.get("meetings", []):
+                m["start_label"] = _fmt_clock(m["start"])
+                m["end_label"] = _fmt_clock(m["end"])
+                m["day_labels"] = [_DAY_LABELS[d] for d in m.get("days", []) if 0 <= d < 7]
+            p["when"] = "; ".join(
+                f"{'/'.join(m.get('day_labels', []))} {m['start_label']}-{m['end_label']}"
+                for m in p.get("meetings", [])
+            )
+
+        # Build the LLM-facing text from the (CRN-scrubbed) payload, not the raw
+        # engine output, so the model never quotes a stale CRN.
+        payload["text"] = _fmt(result)
+        if is_proxy:
+            payload["text"] = re.sub(r",\s*CRN\s*\d+", "", payload["text"])
+
         if is_proxy:
             from scheduler.prompts import term_label as _term_label
             try:
@@ -1190,13 +1226,12 @@ class Toolbox:
                 proxy_lbl = _term_label(schedule_term)
             except Exception:
                 tgt_lbl, proxy_lbl = target_term, schedule_term
-            payload["proxy_term_used"] = True
             payload["note"] = (
                 f"Exact meeting times for {tgt_lbl} (term {target_term}) are not "
                 f"published yet, so this timetable uses the most recent same-season "
                 f"term, {proxy_lbl} (term {schedule_term}), as a proxy. Days/times "
-                "are typical for the course but may shift; CRNs are from the proxy "
-                "term and will differ for the actual term."
+                "are typical for the course but may shift, and CRNs/section numbers "
+                "are NOT shown because they will differ for the target term."
             )
         _trace(self.session, {
             "type": "build_timetable",

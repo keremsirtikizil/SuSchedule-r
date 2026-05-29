@@ -11,6 +11,10 @@ const fileInput = document.getElementById('file-input');
 const studentInfo = document.getElementById('student-info');
 const planList = document.getElementById('plan-list');
 const planCredits = document.getElementById('plan-credits');
+const timetablePanel = document.getElementById('timetable-panel');
+const timetableNote = document.getElementById('timetable-note');
+const timetableGrid = document.getElementById('timetable-grid');
+const timetableExtra = document.getElementById('timetable-extra');
 const msgInput = document.getElementById('msg-input');
 const sendBtn = document.getElementById('send-btn');
 const chatMsgs = document.getElementById('chat-messages');
@@ -21,6 +25,8 @@ function resetUI() {
   chatMsgs.innerHTML = '';
   planList.innerHTML = '<div class="plan-empty">No plan yet - chat to get started.</div>';
   planCredits.classList.add('hidden');
+  timetablePanel.classList.add('hidden');
+  timetableGrid.innerHTML = '';
   studentInfo.classList.add('hidden');
   dropZone.classList.remove('hidden');
   dropLabel.innerHTML = 'Optional: drop transcript<br/><small>JSON, PDF, or degree-evaluation HTML for exact eligibility</small>';
@@ -157,6 +163,7 @@ async function sendMessage() {
     addAgentMsg(data.response, data.intent);
     renderTrace(data.trace || []);
     if (data.plan) updatePlan(data.plan, data.total_credits, data.validation_ok, data.warnings);
+    renderTimetable(data.timetable);
     refreshStats(data.token_usage);
   } catch (err) {
     typingEl.remove();
@@ -224,6 +231,88 @@ function updatePlan(plan, credits, validationOk, warnings) {
   planCredits.innerHTML = `<span class="${statusClass}">${statusIcon} ${Number(credits || 0).toFixed(1)} credits</span>`;
   if (warnings && warnings.length) {
     planCredits.innerHTML += `<br/><small style="color:var(--text-faint)">${escapeHtml(warnings[0])}</small>`;
+  }
+}
+
+const TT_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+const TT_PALETTE = ['#5b8def', '#e0729b', '#3fae8f', '#d99a3f', '#9b6fe0', '#46b6c9', '#d2645a'];
+
+function ttColor(code) {
+  let h = 0;
+  for (let i = 0; i < code.length; i++) h = (h * 31 + code.charCodeAt(i)) >>> 0;
+  return TT_PALETTE[h % TT_PALETTE.length];
+}
+
+function renderTimetable(tt) {
+  if (!tt) {
+    timetablePanel.classList.add('hidden');
+    return;
+  }
+  timetablePanel.classList.remove('hidden');
+
+  // Proxy / info note.
+  if (tt.note) {
+    timetableNote.classList.remove('hidden');
+    timetableNote.textContent = tt.note;
+  } else {
+    timetableNote.classList.add('hidden');
+    timetableNote.textContent = '';
+  }
+
+  // No feasible schedule: show the reason instead of an empty grid.
+  if (!tt.ok) {
+    timetableGrid.innerHTML =
+      `<div class="tt-empty">No conflict-free schedule: ${escapeHtml(tt.reason || 'unknown')}.</div>`;
+  } else {
+    // Group meeting blocks by weekday (Mon-Fri).
+    const byDay = {};
+    TT_DAYS.forEach((_, d) => { byDay[d] = []; });
+    (tt.picks || []).forEach(p => {
+      const color = ttColor(p.course || '');
+      (p.meetings || []).forEach(m => {
+        (m.days || []).forEach(d => {
+          if (d >= 0 && d <= 4) {
+            byDay[d].push({
+              start: m.start,
+              label: `${m.start_label || ''}-${m.end_label || ''}`,
+              course: p.course,
+              where: m.where || '',
+              color,
+            });
+          }
+        });
+      });
+    });
+
+    const dayRows = TT_DAYS.map((dayName, d) => {
+      const blocks = byDay[d].sort((a, b) => a.start - b.start);
+      if (!blocks.length) return '';
+      const items = blocks.map(b => `
+        <div class="tt-block" style="border-left-color:${b.color}">
+          <span class="tt-time">${escapeHtml(b.label)}</span>
+          <span class="tt-course">${escapeHtml(b.course)}</span>
+          ${b.where ? `<span class="tt-where">${escapeHtml(b.where)}</span>` : ''}
+        </div>`).join('');
+      return `<div class="tt-day"><div class="tt-day-name">${dayName}</div>${items}</div>`;
+    }).join('');
+
+    timetableGrid.innerHTML = dayRows || '<div class="tt-empty">No timed meetings to display.</div>';
+  }
+
+  // Courses that couldn't be placed on the grid.
+  const extra = [];
+  if (tt.missing && tt.missing.length) {
+    extra.push(`Not offered: ${tt.missing.map(escapeHtml).join(', ')}`);
+  }
+  if (tt.no_meetings && tt.no_meetings.length) {
+    extra.push(`No set time (TBA): ${tt.no_meetings.map(escapeHtml).join(', ')}`);
+  }
+  if (extra.length) {
+    timetableExtra.classList.remove('hidden');
+    timetableExtra.innerHTML = extra.map(e => `<div>${e}</div>`).join('');
+  } else {
+    timetableExtra.classList.add('hidden');
+    timetableExtra.innerHTML = '';
   }
 }
 

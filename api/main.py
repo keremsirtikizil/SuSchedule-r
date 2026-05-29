@@ -90,6 +90,21 @@ class TurnResponse(BaseModel):
     intent: str
     token_usage: dict
     trace: list[dict] = []
+    timetable: Optional[dict] = None
+
+
+def _latest_timetable(trace: list[dict]) -> Optional[dict]:
+    """Return the most recent successful build_timetable result from the trace.
+
+    Lets the UI render a weekly grid whenever the agent built a timetable this
+    turn — whether or not a full plan was committed.
+    """
+    for ev in reversed(trace or []):
+        if ev.get("type") == "tool_result" and ev.get("name") == "build_timetable":
+            result = ev.get("result") or {}
+            if isinstance(result, dict) and "error" not in result:
+                return result
+    return None
 
 
 class StateResponse(BaseModel):
@@ -275,6 +290,7 @@ async def handle_turn(session_id: str, req: TurnRequest):
             "this_turn": usage["total_tokens"] - usage_before,
         },
         trace=session.last_trace,
+        timetable=_latest_timetable(session.last_trace),
     )
 
 
