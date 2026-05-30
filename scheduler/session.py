@@ -59,7 +59,7 @@ class PlannerSession:
     @classmethod
     def from_request(cls, request: PlannerRequest) -> "PlannerSession":
         session = cls(base_request=request)
-        if request.transcript_json or request.transcript_pdf:
+        if request.transcript_html or request.transcript_json or request.transcript_pdf:
             session._load_student()
         return session
 

@@ -13,9 +13,9 @@ env/
 *.env
 !.env.example
 
-# Generated local RAG artifacts
-embeddings/*.npy
-embeddings/*.index
+# Generated evaluation outputs
+eval/reports/
+eval/runs/
 
 # OS
 .DS_Store

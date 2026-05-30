@@ -135,6 +135,7 @@ def build_index(
     model_name: str = MODEL_NAME,
     batch_size: int = 32,
     device: str = "cpu",
+    local_files_only: bool = True,
 ) -> None:
     if catalog_path and catalog_path.exists():
         df = _build_dataframe_from_catalog(catalog_path)
@@ -147,7 +148,11 @@ def build_index(
     from sentence_transformers import SentenceTransformer  # type: ignore
 
     print(f"[FAISS] Loading bi-encoder: {model_name} ({device})")
-    model = SentenceTransformer(model_name, device=device)
+    model = SentenceTransformer(
+        model_name,
+        device=device,
+        local_files_only=local_files_only,
+    )
     passages = df["embedding_text"].fillna("").astype(str).tolist()
     print(f"[FAISS] Encoding {len(passages)} course passages")
     embeddings = model.encode(
@@ -185,6 +190,11 @@ def main() -> None:
     parser.add_argument("--model", default=MODEL_NAME)
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--device", default="cpu")
+    parser.add_argument(
+        "--allow-download",
+        action="store_true",
+        help="Allow Hugging Face downloads. By default the builder uses the local model cache only.",
+    )
     args = parser.parse_args()
 
     build_index(
@@ -196,6 +206,7 @@ def main() -> None:
         model_name=args.model,
         batch_size=args.batch_size,
         device=args.device,
+        local_files_only=not args.allow_download,
     )
 
 

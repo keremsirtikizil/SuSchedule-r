@@ -13,7 +13,8 @@ Stage 2 — Cross-encoder re-ranker (optional, recommended)
     ``BAAI/bge-reranker-base`` reads the full (query, passage) pair and
     produces a single calibrated relevance logit — far more accurate than
     bi-encoder cosine, at the cost of O(candidates) forward passes.
-    At 688 courses the extra latency is ~0.5 s on CPU; negligible on GPU.
+    At the current 817-course scale the extra CPU latency is acceptable for
+    interactive advising and negligible on a GPU.
     Natural pair: bge-reranker-base ↔ bge-base-en-v1.5 (same BAAI family).
 
 Typical call
@@ -255,6 +256,15 @@ class Retriever:
         # id map {int-key str → course code} ---------------------------------
         raw_map = json.loads(Path(id_map_path).read_text(encoding="utf-8"))
         id_map: dict[int, str] = {int(k): v for k, v in raw_map.items()}
+        expected_codes = df["code"].astype(str).tolist()
+        mapped_codes = [id_map.get(i) for i in range(len(expected_codes))]
+        if embeddings.ndim != 2 or len(df) != embeddings.shape[0] or mapped_codes != expected_codes:
+            raise ValueError(
+                "RAG artifacts are stale or misaligned: "
+                f"metadata_rows={len(df)}, embedding_rows={embeddings.shape[0] if embeddings.ndim else 0}, "
+                f"id_map_rows={len(id_map)}. "
+                "Rebuild them with: python -m scheduler.build_faiss_index"
+            )
 
         # ⚠️  Import order matters on macOS (Apple Silicon + faiss-cpu):
         # sentence-transformers (PyTorch / Accelerate) must be imported BEFORE
@@ -304,6 +314,12 @@ class Retriever:
         try:
             import faiss  # type: ignore
             index = faiss.read_index(str(Path(index_path)))
+            if index.ntotal != len(df):
+                raise ValueError(
+                    "FAISS index is stale: "
+                    f"index_vectors={index.ntotal}, metadata_rows={len(df)}. "
+                    "Rebuild it with: python -m scheduler.build_faiss_index"
+                )
         except ImportError:
             print(
                 "[Retriever] faiss not installed — falling back to numpy dot product. "
