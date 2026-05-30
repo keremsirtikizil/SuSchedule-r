@@ -225,8 +225,9 @@ function updatePlan(plan, credits, validationOk, warnings) {
 
 // ════════════════════════ Schedule builder ════════════════════════
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-const PX_PER_MIN = 0.78;
-const PALETTE = ['#5b8def', '#e0729b', '#3fae8f', '#d99a3f', '#9b6fe0', '#46b6c9', '#d2645a', '#7d8ce0'];
+const PX_PER_MIN = 0.82;
+const TOP_PAD = 10; // px of breathing room above/below the timeline
+const PALETTE = ['#1c47a8', '#2f7fb8', '#1f8f6a', '#6a5cb0', '#b8588c', '#c08a3a', '#3aa0a0', '#5a6bd0'];
 
 function courseColor(code) {
   let h = 0;
@@ -396,37 +397,72 @@ function renderGrid(conflictKeys) {
   }));
   const rangeStart = Math.floor(minStart / 60) * 60;
   const rangeEnd = Math.ceil(maxEnd / 60) * 60;
-  const height = (rangeEnd - rangeStart) * PX_PER_MIN;
+  const height = (rangeEnd - rangeStart) * PX_PER_MIN + TOP_PAD * 2;
+  const yOf = mins => TOP_PAD + (mins - rangeStart) * PX_PER_MIN;
 
   let html = '<div class="grid-col-head corner"></div>';
   DAYS.forEach(d => { html += `<div class="grid-col-head">${d}</div>`; });
 
-  // Hour axis.
+  // Hour axis (labels aligned to each hour line).
   html += `<div class="grid-axis" style="height:${height}px">`;
   for (let h = rangeStart; h <= rangeEnd; h += 60) {
-    html += `<div class="hour-label" style="top:${(h - rangeStart) * PX_PER_MIN}px">${fmtHour(h)}</div>`;
+    html += `<div class="hour-label" style="top:${yOf(h)}px">${fmtHour(h)}</div>`;
   }
   html += '</div>';
 
-  // Day columns.
   DAYS.forEach((dname, d) => {
     let col = `<div class="grid-day" style="height:${height}px">`;
-    for (let h = rangeStart + 60; h < rangeEnd; h += 60) {
-      col += `<div class="hour-line" style="top:${(h - rangeStart) * PX_PER_MIN}px"></div>`;
+    for (let h = rangeStart; h <= rangeEnd; h += 30) {
+      const cls = h % 60 === 0 ? 'hour-line' : 'hour-line half';
+      col += `<div class="${cls}" style="top:${yOf(h)}px"></div>`;
     }
+
+    // Collect this day's meeting instances.
+    const items = [];
     schedule.forEach((p, idx) => {
-      const color = courseColor(p.code);
       (p.meetings || []).forEach(m => {
         if (m.start == null || m.end == null || !(m.days || []).includes(d)) return;
-        const top = (m.start - rangeStart) * PX_PER_MIN;
-        const bh = Math.max((m.end - m.start) * PX_PER_MIN, 15);
-        const bad = conflictKeys.has(`${idx}|${d}|${m.start}`);
-        col += `<div class="grid-block${bad ? ' conflict' : ''}" style="top:${top}px;height:${bh}px;background:${color}" title="${escapeHtml(p.code)} ${escapeHtml(m.start_label || '')}-${escapeHtml(m.end_label || '')}${m.where ? ' · ' + escapeHtml(m.where) : ''}">
-          <span class="blk-code">${escapeHtml(p.code)}</span>
-          <span class="blk-time">${escapeHtml(m.start_label || '')}-${escapeHtml(m.end_label || '')}</span>
-        </div>`;
+        items.push({ p, m, start: m.start, end: m.end, bad: conflictKeys.has(`${idx}|${d}|${m.start}`) });
       });
     });
+    items.sort((a, b) => a.start - b.start || a.end - b.end);
+
+    // Calendar-style layout: split overlapping blocks into side-by-side lanes.
+    let i = 0;
+    while (i < items.length) {
+      let clusterEnd = items[i].end, j = i + 1;
+      while (j < items.length && items[j].start < clusterEnd) {
+        clusterEnd = Math.max(clusterEnd, items[j].end);
+        j++;
+      }
+      const cluster = items.slice(i, j);
+      const laneEnds = [];
+      cluster.forEach(it => {
+        let lane = laneEnds.findIndex(end => end <= it.start);
+        if (lane === -1) { lane = laneEnds.length; laneEnds.push(it.end); }
+        else laneEnds[lane] = it.end;
+        it.lane = lane;
+      });
+      cluster.forEach(it => { it.lanes = laneEnds.length; });
+      i = j;
+    }
+
+    items.forEach(it => {
+      const { p, m, bad, lane = 0, lanes = 1 } = it;
+      const color = courseColor(p.code);
+      const top = yOf(it.start);
+      const bh = Math.max((it.end - it.start) * PX_PER_MIN, 17);
+      const leftPct = (lane / lanes) * 100;
+      const widthPct = 100 / lanes;
+      const tip = `${p.code} · ${p.title || ''}\n${m.start_label || ''}–${m.end_label || ''}` +
+        (m.where ? `\n${m.where}` : '') + (m.instructor ? `\n${m.instructor}` : '');
+      col += `<div class="grid-block${bad ? ' conflict' : ''}" style="top:${top}px;height:${bh}px;left:calc(${leftPct}% + 3px);width:calc(${widthPct}% - 5px);--blk:${color}" title="${escapeHtml(tip)}">
+        <span class="blk-code">${escapeHtml(p.code)}</span>
+        <span class="blk-time">${escapeHtml(m.start_label || '')}–${escapeHtml(m.end_label || '')}</span>
+        ${bh >= 46 && m.where ? `<span class="blk-where">${escapeHtml(m.where)}</span>` : ''}
+      </div>`;
+    });
+
     col += '</div>';
     html += col;
   });
@@ -490,7 +526,7 @@ function renderSummary(conflictRows) {
 function renderBuilder() {
   const { conflictRows, conflictKeys } = computeConflicts();
   if (!schedule.length) {
-    scheduleGrid.innerHTML = '<div class="grid-empty">Your weekly grid is empty. Add a course to see its time slots.</div>';
+    scheduleGrid.innerHTML = '<div class="grid-empty"><span class="ge-icon">▦</span>Your weekly grid is empty.<br/>Add a course above to see its time slots.</div>';
   } else {
     renderGrid(conflictKeys);
   }
@@ -754,6 +790,27 @@ function escapeHtml(str) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
 }
+
+// ════════════════════════ Light / dark theme toggle ════════════════════════
+const ICON_MOON = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true"><path d="M13 2.5a8 8 0 1 0 8.5 11.2A6.5 6.5 0 0 1 13 2.5z"/></svg>';
+const ICON_SUN  = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor" stroke="none"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M18.8 5.2l-1.4 1.4M6.6 17.4l-1.4 1.4"/></svg>';
+function applyThemeLabel() {
+  const btn = document.getElementById('theme-toggle'); if (!btn) return;
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  btn.querySelector('.label').textContent = dark ? 'Light' : 'Dark';
+  btn.querySelector('.ico').innerHTML = dark ? ICON_SUN : ICON_MOON;
+}
+(function initTheme() {
+  try { const s = localStorage.getItem('suschedule-theme'); if (s) document.documentElement.setAttribute('data-theme', s); } catch (_) {}
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.addEventListener('click', () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('suschedule-theme', next); } catch (_) {}
+    applyThemeLabel();
+  });
+  applyThemeLabel();
+})();
 
 // ════════════════════════ Boot ════════════════════════
 (async () => {

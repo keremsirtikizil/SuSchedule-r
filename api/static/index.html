@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SuSchedule-r</title>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
@@ -12,10 +15,19 @@
 <!-- ──────────────────────────── LEFT: AI CHAT ──────────────────────────── -->
 <section id="chat-pane">
   <header id="chat-header">
-    <div class="logo">SuSchedule<span class="logo-r">-r</span></div>
-    <div class="logo-sub">Course Advisor - Sabancı University</div>
+    <div class="brandline">
+      <div class="brand-left">
+        <img class="su-logo" src="/static/sabanci-logo.png" alt="Sabancı Üniversitesi" />
+        <div class="brand-text">
+          <div class="logo">SuSchedule<span class="logo-r">-r</span></div>
+          <div class="logo-sub">Course Advisor</div>
+        </div>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" title="Toggle light / dark">
+        <span class="ico">☾</span><span class="label">Dark</span>
+      </button>
+    </div>
     <div class="header-row">
-      <span class="advisor-status"><span class="status-dot"></span> Agentic RAG advisor</span>
       <button id="upload-btn" class="mini-btn">Upload transcript</button>
       <input type="file" id="file-input" accept=".json,.pdf,.html,.htm" hidden />
     </div>
@@ -26,17 +38,13 @@
   <div id="chat-messages"></div>
 
   <div id="input-area">
-    <div id="suggestions">
-      <span class="chip" onclick="sendSuggestion(this)">Suggest theoretical CS courses</span>
-      <span class="chip" onclick="sendSuggestion(this)">What does CS 412 cover?</span>
-      <span class="chip" onclick="sendSuggestion(this)">Plan my next semester</span>
-    </div>
     <div id="input-row">
       <textarea id="msg-input"
                 placeholder="Ask about courses, focus areas, prerequisites, or planning..."
                 rows="1"></textarea>
-      <button id="send-btn" onclick="sendMessage()">Send</button>
+      <button id="send-btn" class="btn-primary" onclick="sendMessage()">Send</button>
     </div>
+    <div id="ai-disclaimer">SuSchedule-r is an AI model and can make mistakes — always double-check its results before relying on them.</div>
   </div>
 
   <details id="debug-drawer">
@@ -66,7 +74,7 @@
     </div>
     <div id="add-course-row">
       <input id="course-input" placeholder="Add a course, e.g. CS 412" autocomplete="off" />
-      <button id="add-course-btn">Add</button>
+      <button id="add-course-btn" class="btn-primary">Add</button>
     </div>
     <div id="builder-note" class="builder-note hidden"></div>
   </header>
@@ -80,7 +88,7 @@
 
   <footer id="builder-footer">
     <div id="builder-summary" class="builder-summary">0 courses · 0.0 SU credits</div>
-    <button id="check-schedule-btn" onclick="checkSchedule()">Check Schedule</button>
+    <button id="check-schedule-btn" class="btn-primary" onclick="checkSchedule()">Check Schedule</button>
   </footer>
 </section>
 
