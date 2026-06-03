@@ -1,0 +1,75 @@
+{
+  "official_sections": [
+    {
+      "section": "UNIVERSITY COURSES",
+      "min_su": 41.0,
+      "completed_su": 41.0,
+      "remaining_su": 0.0
+    },
+    {
+      "section": "CORE ELECTIVES",
+      "min_su": 31.0,
+      "completed_su": 31.0,
+      "remaining_su": 0.0
+    },
+    {
+      "section": "REQUIRED COURSES",
+      "min_su": 29.0,
+      "completed_su": 26.0,
+      "remaining_su": 3.0
+    },
+    {
+      "section": "AREA ELECTIVES",
+      "min_su": 9.0,
+      "completed_su": 9.0,
+      "remaining_su": 0.0
+    },
+    {
+      "section": "FREE ELECTIVES",
+      "min_su": 15.0,
+      "completed_su": 15.0,
+      "remaining_su": 0.0
+    },
+    {
+      "section": "FACULTY COURSES",
+      "min_su": 0.0,
+      "completed_su": 24.0,
+      "remaining_su": 0.0
+    },
+    {
+      "section": "ENGINEERING",
+      "min_su": 0.0,
+      "completed_su": 0.0,
+      "remaining_su": 0.0
+    },
+    {
+      "section": "BASIC SCIENCE",
+      "min_su": 0.0,
+      "completed_su": 0.0,
+      "remaining_su": 0.0
+    },
+    {
+      "section": "GENERAL",
+      "min_su": 125.0,
+      "completed_su": 122.0,
+      "remaining_su": 3.0
+    }
+  ],
+  "official_total": {
+    "min_su": 250.0,
+    "completed_su": 268.0,
+    "remaining_su": 0.0,
+    "completion_pct": 107.2
+  },
+  "engine": {
+    "required_left": [
+      "CS 395",
+      "ENS 492",
+      "MATH 212"
+    ],
+    "required_credits_left": 7.0,
+    "core_left_count": 27,
+    "area_left_count": 81
+  },
+  "required_bucket_discrepancy_su": 4.0
+}

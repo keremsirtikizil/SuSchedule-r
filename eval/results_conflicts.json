@@ -1,0 +1,79 @@
+{
+  "labeled_pairs": {
+    "n_pairs": 12,
+    "tp": 6,
+    "fp": 0,
+    "tn": 6,
+    "fn": 0,
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "wrong": []
+  },
+  "soundness": {
+    "schedule_term": "202501",
+    "is_proxy": true,
+    "n_bundles": 4,
+    "unsound_results": 0,
+    "bundles": [
+      {
+        "plan": [
+          "CS 201",
+          "MATH 101"
+        ],
+        "schedule_term": "202501",
+        "feasible": true,
+        "picks": [
+          "CS 201 (A, CRN 10190)",
+          "MATH 101 (B, CRN 10778)"
+        ],
+        "residual_conflicts": 0,
+        "missing": []
+      },
+      {
+        "plan": [
+          "CS 300",
+          "CS 301",
+          "MATH 201"
+        ],
+        "schedule_term": "202501",
+        "feasible": false,
+        "picks": [],
+        "residual_conflicts": 0,
+        "missing": []
+      },
+      {
+        "plan": [
+          "CS 201",
+          "CS 204",
+          "CS 412"
+        ],
+        "schedule_term": "202501",
+        "feasible": true,
+        "picks": [
+          "CS 204 (0, CRN 10218)",
+          "CS 412 (0, CRN 10188)",
+          "CS 201 (B, CRN 10192)"
+        ],
+        "residual_conflicts": 0,
+        "missing": []
+      },
+      {
+        "plan": [
+          "CS 306",
+          "CS 307",
+          "CS 308"
+        ],
+        "schedule_term": "202501",
+        "feasible": true,
+        "picks": [
+          "CS 306 (0, CRN 10141)",
+          "CS 307 (0, CRN 10135)",
+          "CS 308 (0, CRN 10150)"
+        ],
+        "residual_conflicts": 0,
+        "missing": []
+      }
+    ]
+  }
+}

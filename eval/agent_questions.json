@@ -1,0 +1,16 @@
+{
+  "_comment": "End-to-end agent questions for SuSchedule-r. Each item has a checkable assertion: `must_contain` = substrings (case-insensitive) the grounded answer should include (ALL required); `any_of` = at least one must appear. `must_not` = substrings that would indicate a hallucination. Ground truth taken from the SU catalog (credits, prereqs, topics). Run through scheduler.session.PlannerSession in react mode with transcript_cagan.json loaded.",
+  "transcript": "data/transcript_cagan.json",
+  "target_term": "202601",
+  "mode": "react",
+  "questions": [
+    {"id": "a01", "q": "How many SU credits is CS 412?", "must_contain": ["3"], "must_not": [], "kind": "fact-credit"},
+    {"id": "a02", "q": "What are the prerequisites for CS 301?", "must_contain": ["CS 300"], "any_of": ["MATH 204", "discrete"], "must_not": [], "kind": "fact-prereq"},
+    {"id": "a03", "q": "What is the prerequisite for CS 307?", "must_contain": ["CS 204"], "must_not": [], "kind": "fact-prereq"},
+    {"id": "a04", "q": "What does CS 445 cover?", "any_of": ["natural language", "nlp", "language processing"], "must_not": [], "kind": "fact-topic"},
+    {"id": "a05", "q": "Does CS 411 require a math prerequisite, and which one?", "must_contain": ["MATH 204"], "must_not": [], "kind": "fact-prereq"},
+    {"id": "a06", "q": "Is CS 412 a machine learning course?", "any_of": ["machine learning", "yes"], "must_not": [], "kind": "fact-topic"},
+    {"id": "a07", "q": "What is CS 307 about?", "any_of": ["operating system"], "must_not": [], "kind": "fact-topic"},
+    {"id": "a08", "q": "Recommend one theoretical computer science elective I could take.", "any_of": ["CS 302", "CS 400", "CS 407", "automata", "theory of computation", "logic"], "must_not": [], "kind": "recommendation"}
+  ]
+}

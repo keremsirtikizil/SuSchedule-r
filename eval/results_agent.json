@@ -1,0 +1,83 @@
+{
+  "n": 8,
+  "mode": "react",
+  "grounding_accuracy": 1.0,
+  "avg_latency_s": 6.7,
+  "avg_tokens": 6155.9,
+  "avg_tool_calls": 0.5,
+  "per_question": [
+    {
+      "id": "a01",
+      "kind": "fact-credit",
+      "q": "How many SU credits is CS 412?",
+      "grounded": true,
+      "latency_s": 2.66,
+      "tokens": 3611,
+      "tool_calls": 0
+    },
+    {
+      "id": "a02",
+      "kind": "fact-prereq",
+      "q": "What are the prerequisites for CS 301?",
+      "grounded": true,
+      "latency_s": 2.56,
+      "tokens": 7442,
+      "tool_calls": 1
+    },
+    {
+      "id": "a03",
+      "kind": "fact-prereq",
+      "q": "What is the prerequisite for CS 307?",
+      "grounded": true,
+      "latency_s": 2.35,
+      "tokens": 7557,
+      "tool_calls": 1
+    },
+    {
+      "id": "a04",
+      "kind": "fact-topic",
+      "q": "What does CS 445 cover?",
+      "grounded": true,
+      "latency_s": 3.05,
+      "tokens": 8291,
+      "tool_calls": 1
+    },
+    {
+      "id": "a05",
+      "kind": "fact-prereq",
+      "q": "Does CS 411 require a math prerequisite, and which one?",
+      "grounded": true,
+      "latency_s": 1.99,
+      "tokens": 7913,
+      "tool_calls": 1
+    },
+    {
+      "id": "a06",
+      "kind": "fact-topic",
+      "q": "Is CS 412 a machine learning course?",
+      "grounded": true,
+      "latency_s": 1.43,
+      "tokens": 4009,
+      "tool_calls": 0
+    },
+    {
+      "id": "a07",
+      "kind": "fact-topic",
+      "q": "What is CS 307 about?",
+      "grounded": true,
+      "latency_s": 13.53,
+      "tokens": 4095,
+      "tool_calls": 0
+    },
+    {
+      "id": "a08",
+      "kind": "recommendation",
+      "q": "Recommend one theoretical computer science elective I could take.",
+      "grounded": true,
+      "latency_s": 26.03,
+      "tokens": 6329,
+      "tool_calls": 0
+    }
+  ],
+  "total_session_tokens": 49247
+}

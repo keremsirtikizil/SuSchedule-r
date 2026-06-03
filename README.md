@@ -532,6 +532,22 @@ Then open [http://localhost:8000](http://localhost:8000).
 | Offerings smoke test | `python -m scheduler.offerings` |
 | Retriever smoke test | `python -m scheduler.retriever` |
 
+### Evaluation suite (`eval/`)
+
+Labeled, reproducible evaluation with metrics. See `eval/README.md` for details.
+
+| Runner | Measures | OpenAI? |
+|---|---|---|
+| `python -m eval.run_retrieval` | Retrieval Recall@k / MRR / nDCG + re-ranker ablation (34 queries) | no |
+| `python -m eval.run_conflicts` | Conflict-detector accuracy + scheduler soundness | no |
+| `python -m eval.run_requirements` | Degree-requirement engine vs official Degree Evaluation | no |
+| `python -m eval.run_agent` | End-to-end agent grounding, latency, token cost (8 questions) | **yes** |
+
+Headline results (regenerate with the runners above): retrieval Hit@5 = 1.00 /
+Recall@10 = 0.96; conflict detection 100% on labeled pairs, 0 unsound schedules;
+end-to-end grounding 8/8. Full write-up + honest error analysis in
+`report/CS455_SuSchedule-r_Final_Report.docx` (slides in `report/`).
+
 ---
 
 ## 13. Credits
