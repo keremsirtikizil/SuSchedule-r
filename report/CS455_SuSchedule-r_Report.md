@@ -3,6 +3,13 @@
 
 **CS 455 / CS 555 — Large Language Models · Final Project Report · Sabancı University**
 
+**Track:** CS 455 Project
+
+**Authors:**
+- Kerem Sirtikizil, 32298
+- Cagan Cakir, 32254
+- Eray Cagan Ozdemir, 32136
+
 ---
 
 ## Abstract
@@ -289,9 +296,16 @@ the top 5 with `ECON 494`, `ENT 201`, `EE 48009`, `OPIM 413` and **drops
 generically. On short topical queries against a small, well-separated catalogue,
 the bi-encoder already ranks the exact-match course first, and the cross-encoder
 occasionally rewards generic topical overlap. It also adds ~0.5 s of CPU latency.
-**Conclusion:** for this query distribution the re-ranker is not worth its cost;
-bi-encoder-only is the better default. It is retained behind a flag for longer,
-ambiguous queries where it may still help.
+**Conclusion:** on *this* query distribution the cross-encoder is not worth its
+cost — the bi-encoder alone is already at ceiling, so the ablation is a genuine
+negative result and we report it in full. We nevertheless keep the re-ranker
+**on by default** (`rerank=True`) as a deliberate product choice: it is the more
+robust option for the longer, more ambiguous questions we expect in real advising
+use (where bi-encoder cosine is weakest), the ~0.5 s overhead is acceptable in an
+interactive setting, and retrieval **transparently falls back to bi-encoder order
+whenever the re-ranker model is unavailable**, so the worst case is exactly the
+strong bi-encoder baseline. `eval/run_retrieval.py` prints both ON and OFF on
+every run so the trade-off stays visible rather than hidden behind the default.
 
 ### 6.2 The requirement engine over-counts required credits
 
@@ -342,7 +356,7 @@ fact, so grounding is not always auditable from the trace.
 
 | Limitation | Concrete next step |
 |---|---|
-| Re-ranker doesn't earn its cost | Make bi-encoder-only the default; A/B the re-ranker on long queries |
+| Re-ranker doesn't help on short queries | Kept on by default (robust on long/ambiguous queries, graceful bi-encoder fallback); A/B and tune a query-length trigger on a larger long-query set |
 | Requirement substitution gap | Add a course-equivalence table (MATH 212 ≡ MATH 201 + 202, etc.) |
 | Proxy-term scheduling | Ingest real offerings once the registrar publishes `202601` |
 | Untraceable grounding | Require a citation tool call per atomic fact; surface sources in the UI |
@@ -380,7 +394,35 @@ evaluation here used Python 3.12.)
 
 ---
 
-## 9. Conclusion
+## 9. Use of AI Assistants
+
+Per the course's academic-integrity policy, we disclose how large-language-model
+assistants were used in producing this project.
+
+- **Design and direction are ours.** The team planned the entire project: the
+  problem framing, the system architecture, the module breakdown, the evaluation
+  design, and the detailed step-by-step instructions that drove every build stage.
+  The LLM was given *our* specifications to implement against — it did not decide
+  what to build or how the system should be structured.
+- **The techniques are course material.** The methods we apply are drawn directly
+  from the CS 455 syllabus — retrieval-augmented generation (RAG), the **ReAct**
+  tool-using agent loop, prompting and structured outputs, and evaluation
+  methodology. We chose these deliberately to exercise what we learned in the
+  course, rather than adopting them from the assistant.
+- **The LLM implemented code to our spec.** Coding assistants (Claude, GPT) were
+  used mainly to write and refactor implementation code from our instructions —
+  retriever wiring, the evaluation harness in `eval/`, FastAPI/JS UI code, and
+  docstrings. Every artefact was read, tested, and verified by the team, and we
+  take full responsibility for the final submission. All numbers in §5 are
+  reproducible from the scripts in `eval/`; none were generated or estimated by
+  an LLM.
+- **As system components (not authoring aids).** SuSchedule-r itself calls
+  OpenAI GPT-4o (planner + ReAct agent) and GPT-4o-mini (intent classifier) at
+  run time; these are part of the system under study, documented in §3–§5.
+
+---
+
+## 10. Conclusion
 
 SuSchedule-r shows that a disciplined "ground everything" approach turns an LLM
 into a trustworthy course advisor: strong semantic retrieval (Hit@5 = 1.00), a
