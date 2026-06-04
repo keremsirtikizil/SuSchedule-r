@@ -69,7 +69,7 @@ Or just type naturally:
 WELCOME_BANNER = """
 ╔══════════════════════════════════════════════════════╗
 ║          SuSchedule-r  — Course Planner              ║
-║          Powered by GPT-4o + BAAI/bge reranker       ║
+║          Powered by GPT-4o + BAAI/bge retrieval      ║
 ╚══════════════════════════════════════════════════════╝
 Type your request in natural language, or /help for commands.
 """

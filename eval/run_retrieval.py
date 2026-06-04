@@ -72,6 +72,16 @@ def main() -> None:
     print(f"Loading retriever (bi-encoder + cross-encoder reranker)...")
     r = Retriever.load(device="cpu")
 
+    # Search-backend report. Stage 1 runs through the FAISS IndexFlatIP,
+    # restricted to the eligibility-filtered row ids via an IDSelector. Because a
+    # flat index is exact, this returns the same top-k as the numpy fallback
+    # (used only when faiss/the index is unavailable).
+    faiss_loaded = getattr(r, "_index", None) is not None
+    backend = getattr(r, "search_backend", "unknown")
+    print(f"  search backend (actually used): {backend}")
+    print(f"  faiss index loaded + queried  : {faiss_loaded}")
+    backend_info = {"search_backend": backend, "faiss_index_queried": faiss_loaded}
+
     # Validate gold codes exist in the catalog.
     all_codes = set(r.filter_only(RetrieverFilter(active_only=False)))
     missing = sorted({g for q in queries for g in q["gold"] if g not in all_codes})
@@ -124,7 +134,8 @@ def main() -> None:
         print(f"  {c:<16} {v:.3f}  (n={len(sub)})")
     summary["by_category_recall@10"] = by_cat
 
-    out = {"summary": summary, "per_query": per_query, "missing_gold": missing}
+    out = {"summary": summary, "backend": backend_info,
+           "per_query": per_query, "missing_gold": missing}
     (EVAL_DIR / "results_retrieval.json").write_text(json.dumps(out, indent=2))
     print(f"\nSaved -> eval/results_retrieval.json")
 

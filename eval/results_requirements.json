@@ -1,6 +1,18 @@
 {
   "official_sections": [
     {
+      "section": "FREE ELECTIVES",
+      "min_su": 15.0,
+      "completed_su": 15.0,
+      "remaining_su": 0.0
+    },
+    {
+      "section": "ENGINEERING",
+      "min_su": 0.0,
+      "completed_su": 0.0,
+      "remaining_su": 0.0
+    },
+    {
       "section": "UNIVERSITY COURSES",
       "min_su": 41.0,
       "completed_su": 41.0,
@@ -25,21 +37,9 @@
       "remaining_su": 0.0
     },
     {
-      "section": "FREE ELECTIVES",
-      "min_su": 15.0,
-      "completed_su": 15.0,
-      "remaining_su": 0.0
-    },
-    {
       "section": "FACULTY COURSES",
       "min_su": 0.0,
       "completed_su": 24.0,
-      "remaining_su": 0.0
-    },
-    {
-      "section": "ENGINEERING",
-      "min_su": 0.0,
-      "completed_su": 0.0,
       "remaining_su": 0.0
     },
     {

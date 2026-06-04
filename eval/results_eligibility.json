@@ -1,0 +1,115 @@
+{
+  "n_cases": 12,
+  "passed": 12,
+  "accuracy": 1.0,
+  "cases": [
+    {
+      "course": "CS 201",
+      "prereq": "IF 100",
+      "eligible_when_nothing_done": false,
+      "eligible_when_prereq_completed": true,
+      "eligible_when_prereq_in_progress": true,
+      "no_prereq_violation_when_in_progress": true,
+      "pass": true
+    },
+    {
+      "course": "CS 204",
+      "prereq": "CS 201",
+      "eligible_when_nothing_done": false,
+      "eligible_when_prereq_completed": true,
+      "eligible_when_prereq_in_progress": true,
+      "no_prereq_violation_when_in_progress": true,
+      "pass": true
+    },
+    {
+      "course": "CS 300",
+      "prereq": "CS 204",
+      "eligible_when_nothing_done": false,
+      "eligible_when_prereq_completed": true,
+      "eligible_when_prereq_in_progress": true,
+      "no_prereq_violation_when_in_progress": true,
+      "pass": true
+    },
+    {
+      "course": "CS 308",
+      "prereq": "CS 204",
+      "eligible_when_nothing_done": false,
+      "eligible_when_prereq_completed": true,
+      "eligible_when_prereq_in_progress": true,
+      "no_prereq_violation_when_in_progress": true,
+      "pass": true
+    },
+    {
+      "course": "MATH 203",
+      "prereq": "MATH 102",
+      "eligible_when_nothing_done": false,
+      "eligible_when_prereq_completed": true,
+      "eligible_when_prereq_in_progress": true,
+      "no_prereq_violation_when_in_progress": true,
+      "pass": true
+    },
+    {
+      "course": "MATH 212",
+      "prereq": "MATH 102",
+      "eligible_when_nothing_done": false,
+      "eligible_when_prereq_completed": true,
+      "eligible_when_prereq_in_progress": true,
+      "no_prereq_violation_when_in_progress": true,
+      "pass": true
+    },
+    {
+      "course": "CS 305",
+      "prereq": "CS 204",
+      "eligible_when_nothing_done": false,
+      "eligible_when_prereq_completed": true,
+      "eligible_when_prereq_in_progress": true,
+      "no_prereq_violation_when_in_progress": true,
+      "pass": true
+    },
+    {
+      "course": "CS 307",
+      "prereq": "CS 204",
+      "eligible_when_nothing_done": false,
+      "eligible_when_prereq_completed": true,
+      "eligible_when_prereq_in_progress": true,
+      "no_prereq_violation_when_in_progress": true,
+      "pass": true
+    },
+    {
+      "course": "CS 310",
+      "prereq": "CS 204",
+      "eligible_when_nothing_done": false,
+      "eligible_when_prereq_completed": true,
+      "eligible_when_prereq_in_progress": true,
+      "no_prereq_violation_when_in_progress": true,
+      "pass": true
+    },
+    {
+      "course": "CS 400",
+      "prereq": "MATH 204",
+      "eligible_when_nothing_done": false,
+      "eligible_when_prereq_completed": true,
+      "eligible_when_prereq_in_progress": true,
+      "no_prereq_violation_when_in_progress": true,
+      "pass": true
+    },
+    {
+      "course": "CS 401",
+      "prereq": "CS 303",
+      "eligible_when_nothing_done": false,
+      "eligible_when_prereq_completed": true,
+      "eligible_when_prereq_in_progress": true,
+      "no_prereq_violation_when_in_progress": true,
+      "pass": true
+    },
+    {
+      "course": "CS 403",
+      "prereq": "CS 307",
+      "eligible_when_nothing_done": false,
+      "eligible_when_prereq_completed": true,
+      "eligible_when_prereq_in_progress": true,
+      "no_prereq_violation_when_in_progress": true,
+      "pass": true
+    }
+  ]
+}

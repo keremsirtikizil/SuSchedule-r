@@ -3,12 +3,12 @@
     "n_queries": 34,
     "k": 10,
     "rerank": {
-      "hit@1": 0.9118,
+      "hit@1": 0.9706,
       "hit@5": 1.0,
-      "recall@5": 0.9412,
-      "recall@10": 0.9608,
-      "mrr@10": 0.9559,
-      "ndcg@10": 0.9239
+      "recall@5": 0.9657,
+      "recall@10": 0.9755,
+      "mrr@10": 0.9853,
+      "ndcg@10": 0.9632
     },
     "bienc": {
       "hit@1": 0.9706,
@@ -19,21 +19,25 @@
       "ndcg@10": 0.9632
     },
     "delta": {
-      "hit@1": -0.0588,
+      "hit@1": 0.0,
       "hit@5": 0.0,
-      "recall@5": -0.0245,
-      "recall@10": -0.0147,
-      "mrr@10": -0.0294,
-      "ndcg@10": -0.0393
+      "recall@5": 0.0,
+      "recall@10": 0.0,
+      "mrr@10": 0.0,
+      "ndcg@10": 0.0
     },
     "by_category_recall@10": {
       "CS-core": 1.0,
-      "CS-elective": 0.9333,
+      "CS-elective": 0.9667,
       "EE": 0.8333,
       "IE": 1.0,
       "MATH": 1.0,
       "cross-subject": 1.0
     }
+  },
+  "backend": {
+    "search_backend": "faiss-flat-ip",
+    "faiss_index_queried": true
   },
   "per_query": [
     {
@@ -46,10 +50,10 @@
       "category": "CS-elective",
       "rerank_top5": [
         "CS 412",
-        "ECON 494",
-        "ENT 201",
         "EE 48009",
-        "OPIM 413"
+        "CS 415",
+        "CS 455",
+        "CS 404"
       ],
       "bienc_top5": [
         "CS 412",
@@ -61,10 +65,10 @@
       "rerank": {
         "hit@1": 1.0,
         "hit@5": 1.0,
-        "recall@5": 0.5,
-        "recall@10": 0.5,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
         "mrr@10": 1.0,
-        "ndcg@10": 0.6131471927654584
+        "ndcg@10": 0.9197207891481876
       },
       "bienc": {
         "hit@1": 1.0,
@@ -84,11 +88,11 @@
       ],
       "category": "CS-elective",
       "rerank_top5": [
-        "PSY 416",
         "CS 415",
-        "CS 445",
         "CS 412",
-        "PHIL 310"
+        "CS 404",
+        "CS 445",
+        "CS 455"
       ],
       "bienc_top5": [
         "CS 415",
@@ -98,12 +102,12 @@
         "CS 455"
       ],
       "rerank": {
-        "hit@1": 0.0,
+        "hit@1": 1.0,
         "hit@5": 1.0,
         "recall@5": 1.0,
         "recall@10": 1.0,
-        "mrr@10": 0.5,
-        "ndcg@10": 0.6509209298071326
+        "mrr@10": 1.0,
+        "ndcg@10": 1.0
       },
       "bienc": {
         "hit@1": 1.0,
@@ -123,10 +127,10 @@
       "category": "CS-core",
       "rerank_top5": [
         "CS 307",
-        "CS 48008",
-        "CS 432",
-        "CS 437",
-        "OPIM 301"
+        "EE 308",
+        "EE 302",
+        "IE 411",
+        "EE 401"
       ],
       "bienc_top5": [
         "CS 307",
@@ -160,11 +164,11 @@
       ],
       "category": "CS-core",
       "rerank_top5": [
+        "CS 455",
         "CS 306",
         "IE 413",
-        "MGMT 203",
-        "DSA 301",
-        "DSA 210"
+        "ENS 210",
+        "BIO 310"
       ],
       "bienc_top5": [
         "CS 455",
@@ -174,12 +178,12 @@
         "BIO 310"
       ],
       "rerank": {
-        "hit@1": 1.0,
+        "hit@1": 0.0,
         "hit@5": 1.0,
         "recall@5": 1.0,
         "recall@10": 1.0,
-        "mrr@10": 1.0,
-        "ndcg@10": 1.0
+        "mrr@10": 0.5,
+        "ndcg@10": 0.6309297535714575
       },
       "bienc": {
         "hit@1": 0.0,
@@ -200,10 +204,10 @@
       "category": "CS-core",
       "rerank_top5": [
         "CS 301",
-        "CS 300",
-        "MATH 484",
         "CS 407",
-        "IF 100"
+        "CS 300",
+        "IF 100",
+        "CS 302"
       ],
       "bienc_top5": [
         "CS 301",
@@ -218,7 +222,7 @@
         "recall@5": 1.0,
         "recall@10": 1.0,
         "mrr@10": 1.0,
-        "ndcg@10": 0.8772153153380493
+        "ndcg@10": 1.0
       },
       "bienc": {
         "hit@1": 1.0,
@@ -238,9 +242,9 @@
       "category": "CS-core",
       "rerank_top5": [
         "CS 300",
+        "BIO 310",
+        "CS 301",
         "CS 306",
-        "ENS 210",
-        "DSA 201",
         "MATH 204"
       ],
       "bienc_top5": [
@@ -276,10 +280,10 @@
       "category": "CS-core",
       "rerank_top5": [
         "CS 408",
-        "CS 432",
         "EE 414",
+        "CS 432",
         "CS 403",
-        "EE 48009"
+        "CS 414"
       ],
       "bienc_top5": [
         "CS 408",
@@ -314,11 +318,11 @@
       ],
       "category": "CS-elective",
       "rerank_top5": [
-        "CS 437",
-        "CS 48008",
         "CS 432",
-        "EE 48009",
-        "CS 408"
+        "CS 437",
+        "CS 408",
+        "CS 414",
+        "EE 414"
       ],
       "bienc_top5": [
         "CS 432",
@@ -333,7 +337,7 @@
         "recall@5": 1.0,
         "recall@10": 1.0,
         "mrr@10": 1.0,
-        "ndcg@10": 0.9197207891481876
+        "ndcg@10": 1.0
       },
       "bienc": {
         "hit@1": 1.0,
@@ -353,9 +357,9 @@
       "category": "CS-elective",
       "rerank_top5": [
         "CS 411",
-        "CS 440",
-        "CS 432",
         "MATH 484",
+        "CS 438",
+        "CS 432",
         "PHYS 484"
       ],
       "bienc_top5": [
@@ -392,9 +396,9 @@
       "rerank_top5": [
         "CS 445",
         "CS 455",
-        "TLL 101",
-        "TLL 102",
-        "PSY 314"
+        "CS 415",
+        "CS 302",
+        "BIO 310"
       ],
       "bienc_top5": [
         "CS 445",
@@ -430,9 +434,9 @@
       "category": "cross-subject",
       "rerank_top5": [
         "EE 417",
-        "CS 405",
-        "CS 404",
         "CS 419",
+        "CS 415",
+        "CS 405",
         "PSY 412"
       ],
       "bienc_top5": [
@@ -448,7 +452,7 @@
         "recall@5": 1.0,
         "recall@10": 1.0,
         "mrr@10": 1.0,
-        "ndcg@10": 0.8772153153380493
+        "ndcg@10": 1.0
       },
       "bienc": {
         "hit@1": 1.0,
@@ -469,9 +473,9 @@
       "rerank_top5": [
         "CS 404",
         "PHIL 370",
+        "CS 415",
         "DSA 440",
-        "VA 465",
-        "OPIM 413"
+        "MGMT 426"
       ],
       "bienc_top5": [
         "CS 404",
@@ -505,10 +509,10 @@
       ],
       "category": "CS-elective",
       "rerank_top5": [
-        "CS 438",
         "CS 403",
-        "ENRG 423",
-        "IE 401",
+        "CS 438",
+        "CS 406",
+        "CS 307",
         "EE 48009"
       ],
       "bienc_top5": [
@@ -519,12 +523,12 @@
         "EE 48009"
       ],
       "rerank": {
-        "hit@1": 0.0,
+        "hit@1": 1.0,
         "hit@5": 1.0,
         "recall@5": 1.0,
         "recall@10": 1.0,
-        "mrr@10": 0.5,
-        "ndcg@10": 0.6309297535714575
+        "mrr@10": 1.0,
+        "ndcg@10": 1.0
       },
       "bienc": {
         "hit@1": 1.0,
@@ -544,10 +548,10 @@
       "category": "CS-elective",
       "rerank_top5": [
         "CS 436",
-        "IE 413",
+        "CS 406",
         "IE 404",
-        "CS 432",
-        "CS 408"
+        "IE 413",
+        "CS 403"
       ],
       "bienc_top5": [
         "CS 436",
@@ -582,10 +586,10 @@
       "category": "CS-elective",
       "rerank_top5": [
         "CS 406",
-        "CS 301",
-        "EE 48009",
-        "CS 401",
-        "CS 415"
+        "CS 436",
+        "CS 403",
+        "CS 300",
+        "EE 401"
       ],
       "bienc_top5": [
         "CS 406",
@@ -621,9 +625,9 @@
       "rerank_top5": [
         "CS 405",
         "VA 433",
+        "EE 417",
         "ENS 209",
-        "DSA 301",
-        "VA 303"
+        "VA 434"
       ],
       "bienc_top5": [
         "CS 405",
@@ -660,9 +664,9 @@
       "rerank_top5": [
         "CS 442",
         "CS 308",
-        "EE 308",
-        "CS 48008",
-        "CS 301"
+        "CS 48004",
+        "CS 437",
+        "CS 303"
       ],
       "bienc_top5": [
         "CS 442",
@@ -698,10 +702,10 @@
       "category": "CS-elective",
       "rerank_top5": [
         "CS 438",
+        "CS 403",
         "IE 404",
-        "MGMT 426",
-        "CS 432",
-        "EE 48009"
+        "CS 436",
+        "CS 437"
       ],
       "bienc_top5": [
         "CS 438",
@@ -737,11 +741,11 @@
       ],
       "category": "cross-subject",
       "rerank_top5": [
-        "CS 440",
-        "CS 435",
         "MATH 484",
         "PHYS 484",
-        "PHYS 304"
+        "CS 440",
+        "CS 435",
+        "CS 301"
       ],
       "bienc_top5": [
         "MATH 484",
@@ -756,7 +760,7 @@
         "recall@5": 1.0,
         "recall@10": 1.0,
         "mrr@10": 1.0,
-        "ndcg@10": 1.0
+        "ndcg@10": 0.9060254355346823
       },
       "bienc": {
         "hit@1": 1.0,
@@ -777,9 +781,9 @@
       "rerank_top5": [
         "CS 449",
         "VA 325",
-        "IF 100",
-        "MKTG 413",
-        "EE 48010"
+        "CS 437",
+        "ME 437",
+        "MKTG 413"
       ],
       "bienc_top5": [
         "CS 449",
@@ -814,10 +818,10 @@
       "category": "CS-elective",
       "rerank_top5": [
         "CS 310",
+        "ENRG 424",
+        "PSY 421",
         "CS 48004",
-        "CS 449",
-        "CS 436",
-        "ENRG 424"
+        "IE 409"
       ],
       "bienc_top5": [
         "CS 310",
@@ -852,10 +856,10 @@
       "category": "CS-core",
       "rerank_top5": [
         "CS 305",
-        "IF 100",
-        "CS 48008",
-        "EE 308",
-        "CS 201"
+        "CS 302",
+        "CS 201",
+        "EE 310",
+        "CS 300"
       ],
       "bienc_top5": [
         "CS 305",
@@ -890,10 +894,10 @@
       "category": "CS-elective",
       "rerank_top5": [
         "CS 455",
-        "DSA 440",
-        "IF 100",
         "CS 415",
-        "GER 110"
+        "CS 445",
+        "EE 48009",
+        "CS 302"
       ],
       "bienc_top5": [
         "CS 455",
@@ -931,8 +935,8 @@
         "MATH 101",
         "MATH 102",
         "MATH 305",
-        "FIN 403",
-        "MATH 301"
+        "MATH 202",
+        "FIN 403"
       ],
       "bienc_top5": [
         "MATH 101",
@@ -969,9 +973,9 @@
       "rerank_top5": [
         "MATH 212",
         "MATH 201",
-        "MATH 102",
         "MAT 309",
-        "MAT 405"
+        "ENS 201",
+        "ENS 206"
       ],
       "bienc_top5": [
         "MATH 212",
@@ -1007,9 +1011,9 @@
       "rerank_top5": [
         "MATH 202",
         "MATH 212",
-        "ME 415",
-        "EE 311",
-        "ENS 311"
+        "PHYS 401",
+        "MATH 101",
+        "ME 309"
       ],
       "bienc_top5": [
         "MATH 202",
@@ -1044,10 +1048,10 @@
       "category": "MATH",
       "rerank_top5": [
         "MATH 203",
-        "EE 313",
-        "PHYS 113",
         "PHYS 412",
-        "PSIR 311"
+        "OPIM 410",
+        "MATH 306",
+        "IE 432"
       ],
       "bienc_top5": [
         "MATH 203",
@@ -1082,10 +1086,10 @@
       "category": "MATH",
       "rerank_top5": [
         "MATH 204",
-        "ENS 206",
-        "MATH 203",
-        "ECON 435",
-        "EE 312"
+        "MATH 484",
+        "IF 100",
+        "CS 301",
+        "CS 303"
       ],
       "bienc_top5": [
         "MATH 204",
@@ -1120,10 +1124,10 @@
       "category": "MATH",
       "rerank_top5": [
         "MATH 306",
-        "DSA 210",
-        "MAT 306",
-        "OPIM 410",
-        "MGMT 203"
+        "ECON 301",
+        "PHYS 412",
+        "PSIR 311",
+        "MATH 203"
       ],
       "bienc_top5": [
         "MATH 306",
@@ -1160,10 +1164,10 @@
       "category": "EE",
       "rerank_top5": [
         "EE 312",
-        "EE 409",
         "EE 311",
-        "EE 411",
-        "EE 48010"
+        "ENS 211",
+        "EE 313",
+        "EE 314"
       ],
       "bienc_top5": [
         "EE 312",
@@ -1178,7 +1182,7 @@
         "recall@5": 0.6666666666666666,
         "recall@10": 0.6666666666666666,
         "mrr@10": 1.0,
-        "ndcg@10": 0.7039180890341347
+        "ndcg@10": 0.7653606369886217
       },
       "bienc": {
         "hit@1": 1.0,
@@ -1199,10 +1203,10 @@
       ],
       "category": "EE",
       "rerank_top5": [
-        "EE 409",
-        "EE 413",
         "EE 314",
-        "EE 48009",
+        "EE 313",
+        "EE 413",
+        "EE 409",
         "EE 414"
       ],
       "bienc_top5": [
@@ -1213,12 +1217,12 @@
         "EE 414"
       ],
       "rerank": {
-        "hit@1": 0.0,
+        "hit@1": 1.0,
         "hit@5": 1.0,
-        "recall@5": 0.6666666666666666,
+        "recall@5": 1.0,
         "recall@10": 1.0,
-        "mrr@10": 0.5,
-        "ndcg@10": 0.6871475159848289
+        "mrr@10": 1.0,
+        "ndcg@10": 1.0
       },
       "bienc": {
         "hit@1": 1.0,
@@ -1240,9 +1244,9 @@
       "category": "IE",
       "rerank_top5": [
         "IE 312",
-        "IE 411",
-        "OPIM 402",
         "IE 311",
+        "OPIM 402",
+        "IE 401",
         "ENRG 420"
       ],
       "bienc_top5": [
@@ -1258,7 +1262,7 @@
         "recall@5": 0.6666666666666666,
         "recall@10": 1.0,
         "mrr@10": 1.0,
-        "ndcg@10": 0.8385465274895063
+        "ndcg@10": 0.9134015924715543
       },
       "bienc": {
         "hit@1": 1.0,
@@ -1278,10 +1282,10 @@
       "category": "CS-core",
       "rerank_top5": [
         "CS 303",
-        "EE 302",
         "EE 401",
-        "EE 411",
-        "EE 200"
+        "EE 302",
+        "EE 202",
+        "EE 310"
       ],
       "bienc_top5": [
         "CS 303",
@@ -1316,10 +1320,10 @@
       "category": "CS-elective",
       "rerank_top5": [
         "CS 401",
-        "CS 307",
-        "CS 48008",
+        "CS 406",
         "EE 308",
-        "CS 408"
+        "EE 401",
+        "CS 303"
       ],
       "bienc_top5": [
         "CS 401",

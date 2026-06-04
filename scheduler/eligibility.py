@@ -160,6 +160,14 @@ def eligible_courses(
     options = options or EligibilityOptions()
     completed = set(student.completed)
     in_progress = set(student.in_progress)
+    # Eligibility is computed for a FUTURE target term, by which point the
+    # student's currently in-progress courses will be finished. So an in-progress
+    # course satisfies a *hard* (prior-term) prerequisite of a next-term course,
+    # not only a concurrent one. Treat completed ∪ in_progress as the set that
+    # satisfies prereqs. (Exclusion of courses the student already has below
+    # still keys off `completed` only, so a course can't be "eligible" on the
+    # strength of being in progress.)
+    prereq_done = completed | in_progress
 
     if candidate_pool is None:
         candidates = [n for n, d in graph.nodes(data=True) if d.get("in_catalog")]
@@ -170,10 +178,10 @@ def eligible_courses(
     for code in candidates:
         if code in completed:
             continue
-        # Concurrent-prereq satisfaction looks at the in-progress set only;
+        # Concurrent-prereq satisfaction also looks at the in-progress set;
         # for "plan-level" concurrency the caller uses validate_plan().
         concurrent_ok = in_progress if options.allow_concurrent_prereqs else set()
-        if prereqs_satisfied(graph, code, completed, concurrent_ok):
+        if prereqs_satisfied(graph, code, prereq_done, concurrent_ok):
             out.add(code)
     return out
 
@@ -262,7 +270,11 @@ def validate_plan(
                 auto_added.append(coreq)
 
     # Prerequisite check (allow concurrent within the extended plan) ---------
-    completed = set(student.completed)
+    # Hard prereqs may be satisfied by already-completed courses OR by courses
+    # currently in progress — those finish before this future target term. The
+    # concurrent set additionally covers same-term ("can be taken concurrently")
+    # prereqs drawn from the plan itself.
+    completed = set(student.completed) | set(student.in_progress)
     concurrent_ok = extended | student.in_progress
     for c in sorted(plan_set):
         if not graph.has_node(c):

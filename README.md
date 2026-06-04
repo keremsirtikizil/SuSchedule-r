@@ -290,9 +290,19 @@ Embedding text per course:
 
 Index type: `IndexFlatIP` (exact cosine search via L2-normalised inner product — fine for 688 vectors).
 
-At query time `scheduler/retriever.py` runs two stages:
-1. **Bi-encoder** — encode query with BGE query prefix, score against all eligible courses in the FAISS index.
-2. **Cross-encoder** — `BAAI/bge-reranker-base` re-ranks the top-k bi-encoder hits with full pair attention.
+At query time `scheduler/retriever.py` runs:
+1. **Bi-encoder (FAISS)** — encode query with the BGE query prefix, then search
+   the FAISS `IndexFlatIP` **restricted to the eligibility-filtered courses** via
+   a faiss `IDSelector` (so we never recommend an ineligible course). The index
+   is flat/exact, so scores equal a numpy cosine dot product, which is also kept
+   as a fallback when faiss or the index is unavailable (`Retriever.search_backend`
+   reports `faiss-flat-ip` or `numpy-exact`; see `eval.run_retrieval`).
+2. **Cross-encoder** — `BAAI/bge-reranker-base` re-ranks the top-k
+   bi-encoder hits with full pair attention. It is **on by default**
+   (`RERANK_DEFAULT = True`), forming the full two-stage pipeline; retrieval
+   transparently falls back to bi-encoder order if the reranker model is
+   unavailable. The retrieval eval (`eval.run_retrieval`) reports both ON and
+   OFF as an ablation, so the reranker's contribution stays measurable.
 
 > ⚠️ **macOS Apple Silicon note:** `SentenceTransformer` must be imported **before** `faiss` in the same process. Both link OpenBLAS; double-init causes a segfault (exit code 139). `retriever.py` handles this — don't reorder the imports.
 
@@ -541,6 +551,7 @@ Labeled, reproducible evaluation with metrics. See `eval/README.md` for details.
 | `python -m eval.run_retrieval` | Retrieval Recall@k / MRR / nDCG + re-ranker ablation (34 queries) | no |
 | `python -m eval.run_conflicts` | Conflict-detector accuracy + scheduler soundness | no |
 | `python -m eval.run_requirements` | Degree-requirement engine vs official Degree Evaluation | no |
+| `python -m eval.run_eligibility` | Prereq engine: in-progress courses satisfy hard prereqs for the future term | no |
 | `python -m eval.run_agent` | End-to-end agent grounding, latency, token cost (8 questions) | **yes** |
 
 Headline results (regenerate with the runners above): retrieval Hit@5 = 1.00 /

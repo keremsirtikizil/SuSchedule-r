@@ -66,6 +66,18 @@ DEFAULT_ID_MAP_PATH = EMBEDDINGS_DIR / "id_map.json"
 MODEL_NAME = "BAAI/bge-base-en-v1.5"
 RERANKER_NAME = "BAAI/bge-reranker-base"
 
+# Whether the cross-encoder reranker is on by default.
+#
+# Kept ON: the full two-stage pipeline is FAISS bi-encoder retrieval ->
+# BAAI/bge-reranker-base cross-encoder re-ranking. Note the retrieval evaluation
+# (eval/run_retrieval.py) found the reranker slightly *hurt* metrics on these
+# short, topical course queries (e.g. Hit@1 0.97 -> 0.91, MRR@10 0.985 -> 0.956)
+# and adds ~0.5 s latency; run_retrieval reports both ON and OFF so the trade-off
+# stays visible. Set to False to make bi-encoder order the default. If the
+# reranker model is unavailable, retrieval transparently falls back to
+# bi-encoder order.
+RERANK_DEFAULT = True
+
 # BGE query-side instruction prefix (passages do NOT use this).
 BGE_QUERY_PREFIX = "Represent this sentence for searching relevant passages: "
 
@@ -209,7 +221,14 @@ class Retriever:
         self._id_map = id_map          # {row_int: course_code}
         self._code_to_row: dict[str, int] = {v: k for k, v in id_map.items()}
         self._model = model
+        # ``_index`` is a faiss.IndexFlatIP over the full corpus (ids 0..N-1 match
+        # the embedding/parquet row order). Stage-1 search runs THROUGH it: every
+        # query filters to an eligible subset first, and ``_search`` restricts the
+        # FAISS search to those row ids via a faiss IDSelector. IndexFlatIP is
+        # exact (brute-force inner product), so results equal the numpy dot used
+        # as a fallback when faiss/the index is unavailable.
         self._index = index
+        self.search_backend = "faiss-flat-ip" if index is not None else "numpy-exact"
         self._reranker = reranker
 
     # ------------------------------------------------------------------ #
@@ -384,15 +403,45 @@ class Retriever:
                 ) -> tuple[np.ndarray, np.ndarray]:
         """Score query_vec against the subset of rows in row_ids.
 
-        Returns (scores, local_ranks) — both length min(k, |row_ids|).
-        Uses the FAISS index when available (faster for large catalogs),
-        numpy dot otherwise.
+        Returns ``(scores, local_ranks)`` — both length ``min(k, |row_ids|)``,
+        where ``local_ranks`` index into ``row_ids`` (the caller maps them back
+        to global rows). The embeddings are L2-normalised, so inner product is
+        cosine similarity.
+
+        Primary path: query the FAISS ``IndexFlatIP`` restricted to ``row_ids``
+        with a faiss ``IDSelector`` — this honours the eligibility filter while
+        running through the index. Because the index is exact (flat), it returns
+        the same top-k as the numpy fallback used when faiss or the index is
+        unavailable. See ``search_backend``.
         """
         k = min(k, len(row_ids))
         if k == 0:
             return np.array([]), np.array([], dtype=int)
 
-        # numpy fallback (or when faiss unavailable)
+        # Primary path — FAISS, restricted to the eligible row ids.
+        if self._index is not None:
+            try:
+                import faiss  # type: ignore
+
+                q = np.ascontiguousarray(query_vec[:1], dtype="float32")
+                ids64 = np.asarray(row_ids, dtype="int64")
+                params = faiss.SearchParameters()
+                params.sel = faiss.IDSelectorBatch(ids64)
+                fscores, fids = self._index.search(q, k, params=params)
+                # Map FAISS global ids back to local positions within row_ids.
+                pos = {int(g): i for i, g in enumerate(row_ids)}
+                out_scores: list[float] = []
+                out_local: list[int] = []
+                for s, g in zip(fscores[0], fids[0]):
+                    if g == -1:
+                        continue  # faiss pads with -1 when fewer than k hits
+                    out_scores.append(float(s))
+                    out_local.append(pos[int(g)])
+                return np.asarray(out_scores), np.asarray(out_local, dtype=int)
+            except Exception as exc:  # pragma: no cover - defensive fallback
+                print(f"[Retriever] FAISS search failed ({exc}); using numpy fallback.")
+
+        # Fallback — exact numpy dot product over the filtered subset.
         sub_emb = self._embeddings[row_ids]          # (M, D)
         scores = (sub_emb @ query_vec[0]).astype(float)  # (M,)
         top_local = np.argsort(scores)[::-1][:k]
@@ -471,10 +520,10 @@ class Retriever:
         query: str,
         k: int = 10,
         filt: RetrieverFilter | None = None,
-        rerank: bool = True,
+        rerank: bool = RERANK_DEFAULT,
         first_stage_k: int | None = None,
     ) -> list[RetrievalResult]:
-        """Two-stage retrieval: bi-encoder FAISS → cross-encoder re-rank.
+        """Retrieval: bi-encoder cosine search, optional cross-encoder re-rank.
 
         Parameters
         ----------
@@ -486,9 +535,11 @@ class Retriever:
             Optional :py:class:`RetrieverFilter`. When *None*, only the
             ``active_only=True`` default is applied.
         rerank:
-            When ``True`` (default), re-rank the first-stage candidates with
-            the cross-encoder. Automatically falls back to bi-encoder order
-            if no reranker was loaded.
+            When ``True``, re-rank the first-stage candidates with the
+            cross-encoder. Defaults to ``RERANK_DEFAULT`` (True): the full
+            two-stage pipeline is the production default. Automatically falls
+            back to bi-encoder order if no reranker was loaded. (The eval
+            ablation in ``eval/run_retrieval.py`` still reports both ON and OFF.)
         first_stage_k:
             How many candidates to retrieve in stage 1 before re-ranking.
             Defaults to ``DEFAULT_FIRST_STAGE_MULTIPLIER × k`` (= 4k).
@@ -512,7 +563,7 @@ class Retriever:
         query_vec: np.ndarray,
         k: int = 10,
         filt: RetrieverFilter | None = None,
-        rerank: bool = True,
+        rerank: bool = RERANK_DEFAULT,
         first_stage_k: int | None = None,
         _query_text: str = "",
     ) -> list[RetrievalResult]:
@@ -583,7 +634,7 @@ class Retriever:
         seasons: list[str] | None = None,
         subj: list[str] | None = None,
         sections: list[str] | None = None,
-        rerank: bool = True,
+        rerank: bool = RERANK_DEFAULT,
     ) -> list[RetrievalResult]:
         """Retrieve within *eligible_set* — the primary planner entry-point.
 

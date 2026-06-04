@@ -149,7 +149,11 @@ def compute_remaining(
     prog_dir = data_dir / program / cohort
     report = RequirementsReport(program=program, cohort_term=cohort)
 
-    done = set(completed_for_eligibility)
+    # Honor registrar-accepted substitutions (e.g. MATH 201+202 -> MATH 212) so
+    # we don't keep reporting a required course as still-needed / over-count its
+    # credits when an accepted equivalent has already been completed.
+    from scheduler.equivalences import apply_equivalences
+    done = apply_equivalences(completed_for_eligibility)
     wip = set(in_progress)
     all_done_or_wip = done | wip
     # Track codes already placed in a higher-precedence section so a course

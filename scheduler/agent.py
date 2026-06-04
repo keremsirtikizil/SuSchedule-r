@@ -178,11 +178,19 @@ def _retrieve_candidates(
             query=query,
             k=request.k_per_query,
             filt=filt,
-            rerank=True,
+            rerank=True,  # full two-stage pipeline (bi-encoder -> cross-encoder); see retriever.RERANK_DEFAULT
             first_stage_k=request.first_stage_k,
         )
         for h in hits:
-            if h.code not in seen or h.reranker_score > (seen[h.code].reranker_score or -99):
+            # Rank on the effective score: reranker logit when present, else the
+            # bi-encoder cosine. (With rerank off, reranker_score is None.)
+            h_score = h.reranker_score if h.reranker_score is not None else h.score
+            prev = seen.get(h.code)
+            prev_score = (
+                (prev.reranker_score if prev.reranker_score is not None else prev.score)
+                if prev is not None else None
+            )
+            if prev is None or h_score > prev_score:
                 seen[h.code] = h
 
     # Inject required courses that weren't retrieved (they may not be semantically

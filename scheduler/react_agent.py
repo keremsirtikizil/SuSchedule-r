@@ -131,7 +131,10 @@ Workflow heuristics
     recent same-season term because the target term isn't published yet and may
     shift. If a course is in 'missing' (not offered) or 'no_meetings' (TBA), say
     so plainly. If ok is false, state no conflict-free combination exists and
-    name the clashing courses from 'reason'.
+    name the clashing courses from 'reason'. If the tool returns a
+    'proxy_infeasibility_caveat', you MUST relay it: explain that the
+    infeasibility/missing result comes from the limited proxy term and is
+    indicative, not a definitive conflict for the target term.
 14. When the user asks you to check/review "my schedule" or "my current
     schedule" (e.g. via the Check Schedule button), call get_current_schedule.
     Comment on: time conflicts (from has_conflicts/conflicts), total SU credit
@@ -1205,7 +1208,7 @@ class Toolbox:
                         query,
                         k=k,
                         filt=RetrieverFilter(candidate_pool=pool, subj=subj or None, active_only=True),
-                        rerank=True,
+                        rerank=True,  # full two-stage pipeline (bi-encoder -> cross-encoder); see retriever.RERANK_DEFAULT
                     )
                     rows = [
                         {
@@ -1674,6 +1677,19 @@ class Toolbox:
                 "are typical for the course but may shift, and CRNs/section numbers "
                 "are NOT shown because they will differ for the target term."
             )
+            # An infeasible result on a PROXY term is not authoritative: the
+            # proxy term only had whichever sections ran that term, so a clash
+            # (or a "missing" course) may be an artifact of the limited proxy
+            # catalog rather than a real conflict in the target term.
+            if not result.ok or result.missing:
+                payload["proxy_infeasibility_caveat"] = (
+                    "This 'no feasible schedule' / 'not offered' result comes from "
+                    f"the proxy term {proxy_lbl}, which only lists the sections that "
+                    "ran then. The target term may add sections or times, so treat "
+                    "this as indicative, not a definitive conflict for "
+                    f"{tgt_lbl}."
+                )
+                payload["note"] += " " + payload["proxy_infeasibility_caveat"]
         _trace(self.session, {
             "type": "build_timetable",
             "courses": codes,
