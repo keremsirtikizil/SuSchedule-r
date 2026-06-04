@@ -58,7 +58,7 @@ Type into the chat, one at a time:
 > report's error analysis."
 
 ## Backup / Q&A facts
-- Catalogue: **688 courses**; prereq graph **721 nodes / 729 edges**, verified DAG.
+- Catalogue: **817 courses**; prereq graph **721 nodes / 729 edges**, verified DAG.
 - Models: **BGE-base** bi-encoder + **BGE-reranker** cross-encoder; **GPT-4o** agent (**21 tools**).
 - Cost/latency: ~**6k tokens**, ~**1–3 s** per question (26 s once, on first retriever load).
 - Reproduce results: `python -m eval.run_retrieval | run_conflicts | run_requirements | run_agent`.

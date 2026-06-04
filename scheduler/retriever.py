@@ -38,7 +38,7 @@ Design notes
   stored and encoded without it.
 * Cross-encoder passage text = same ``embedding_text`` field used by the
   bi-encoder (``"CODE — Title\\ndescription"``).
-* Falls back gracefully: no faiss → numpy dot product; no reranker → return
+* FAISS is required for first-stage vector search. No reranker → return
   bi-encoder order; no model → ``retrieve_by_vector`` still works.
 * ⚠️  macOS import order: sentence-transformers must be imported BEFORE faiss
   (duplicate OpenBLAS initialisation segfault on Apple Silicon).
@@ -211,6 +211,8 @@ class Retriever:
         self._model = model
         self._index = index
         self._reranker = reranker
+        self._last_search_backend = "not_run"
+        self._search_counts = {"faiss": 0}
 
     # ------------------------------------------------------------------ #
     # Factory
@@ -300,17 +302,41 @@ class Retriever:
                 print(f"[Retriever] Could not load re-ranker ({exc}); skipping.")
 
         # FAISS index (after ST models — see macOS note above) ---------------
-        index = None
         try:
             import faiss  # type: ignore
             index = faiss.read_index(str(Path(index_path)))
-        except ImportError:
-            print(
-                "[Retriever] faiss not installed — falling back to numpy dot product. "
-                "Install with: pip install faiss-cpu"
-            )
+        except ImportError as exc:
+            raise RuntimeError(
+                "FAISS is required for catalog retrieval. "
+                "Install it with: pip install faiss-cpu"
+            ) from exc
         except Exception as exc:
-            print(f"[Retriever] Could not load FAISS index ({exc}); using numpy fallback.")
+            raise RuntimeError(
+                f"Could not load FAISS index from {Path(index_path)}. "
+                "Rebuild it with: python -m scheduler.build_faiss_index"
+            ) from exc
+
+        expected_rows = len(df)
+        if embeddings.ndim != 2 or embeddings.shape[0] != expected_rows:
+            raise ValueError(
+                "RAG artifact mismatch: metadata rows and embedding rows differ "
+                f"({expected_rows} vs {embeddings.shape}). Rebuild the index."
+            )
+        mapped_codes = [id_map.get(i) for i in range(expected_rows)]
+        expected_codes = df["code"].astype(str).tolist()
+        if mapped_codes != expected_codes:
+            raise ValueError(
+                "RAG artifact mismatch: id_map row order does not match parquet "
+                "metadata. Rebuild the index."
+            )
+        if (
+            int(index.ntotal) != expected_rows
+            or int(index.d) != int(embeddings.shape[1])
+        ):
+            raise ValueError(
+                "RAG artifact mismatch: FAISS index shape does not match "
+                "metadata/embeddings. Rebuild with: python -m scheduler.build_faiss_index"
+            )
 
         return cls(
             df=df, embeddings=embeddings, id_map=id_map,
@@ -382,21 +408,57 @@ class Retriever:
 
     def _search(self, query_vec: np.ndarray, row_ids: np.ndarray, k: int
                 ) -> tuple[np.ndarray, np.ndarray]:
-        """Score query_vec against the subset of rows in row_ids.
+        """Search the allowed rows and return scores with their global row IDs.
 
-        Returns (scores, local_ranks) — both length min(k, |row_ids|).
-        Uses the FAISS index when available (faster for large catalogs),
-        numpy dot otherwise.
+        FAISS handles both full-catalog and filtered searches. For filtered
+        searches, an ID selector keeps the query inside the allowed course pool.
         """
         k = min(k, len(row_ids))
         if k == 0:
             return np.array([]), np.array([], dtype=int)
 
-        # numpy fallback (or when faiss unavailable)
-        sub_emb = self._embeddings[row_ids]          # (M, D)
-        scores = (sub_emb @ query_vec[0]).astype(float)  # (M,)
-        top_local = np.argsort(scores)[::-1][:k]
-        return scores[top_local], top_local
+        query_vec = np.ascontiguousarray(query_vec.astype("float32", copy=False))
+        row_ids = np.ascontiguousarray(row_ids.astype("int64", copy=False))
+
+        if self._index is None:
+            raise RuntimeError("FAISS index is not loaded.")
+
+        try:
+            all_rows = (
+                len(row_ids) == len(self._df)
+                and np.array_equal(row_ids, np.arange(len(self._df), dtype="int64"))
+            )
+            if all_rows:
+                distances, indices = self._index.search(query_vec, k)
+            else:
+                import faiss  # type: ignore
+
+                selector = faiss.IDSelectorBatch(row_ids)
+                params = faiss.SearchParameters(sel=selector)
+                distances, indices = self._index.search(query_vec, k, params=params)
+        except Exception as exc:
+            raise RuntimeError("FAISS catalog search failed.") from exc
+
+        valid = indices[0] >= 0
+        self._last_search_backend = "faiss"
+        self._search_counts["faiss"] += 1
+        return (
+            distances[0][valid].astype(float),
+            indices[0][valid].astype(int),
+        )
+
+    def backend_info(self) -> dict:
+        """Expose which first-stage backend is loaded and how often it was used."""
+        index_type = type(self._index).__name__ if self._index is not None else None
+        return {
+            "faiss_index_loaded": self._index is not None,
+            "index_type": index_type,
+            "index_ntotal": int(self._index.ntotal) if self._index is not None else 0,
+            "embedding_rows": int(self._embeddings.shape[0]),
+            "embedding_dimension": int(self._embeddings.shape[1]),
+            "last_search_backend": self._last_search_backend,
+            "search_counts": dict(self._search_counts),
+        }
 
     def _row_to_result(
         self,
@@ -540,11 +602,10 @@ class Retriever:
             else min(k * DEFAULT_FIRST_STAGE_MULTIPLIER, len(row_ids))
         ) if rerank else k
 
-        scores, local_idxs = self._search(query_vec, row_ids, stage1_k)
+        scores, global_idxs = self._search(query_vec, row_ids, stage1_k)
 
         candidates: list[RetrievalResult] = []
-        for rank, (local_idx, score) in enumerate(zip(local_idxs, scores), start=1):
-            global_idx = row_ids[local_idx]
+        for rank, (global_idx, score) in enumerate(zip(global_idxs, scores), start=1):
             row = self._df.iloc[global_idx]
             candidates.append(self._row_to_result(rank, score, row))
 
@@ -618,7 +679,7 @@ class Retriever:
 def _smoke_test(args: argparse.Namespace) -> None:
     print(f"Loading Retriever (bi-encoder + cross-encoder) from {EMBEDDINGS_DIR} …")
     r = Retriever.load(device="cpu")
-    print("Loaded.\n")
+    print(f"Loaded. Backend: {r.backend_info()}\n")
 
     # --- Show bi-encoder vs re-ranked side-by-side for one query ---
     demo_query = "intro to machine learning and neural networks"

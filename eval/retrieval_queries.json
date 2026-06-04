@@ -1,5 +1,5 @@
 {
-  "_comment": "Labeled retrieval eval set for SuSchedule-r. Each item is a natural-language student query with the set of catalog course codes considered relevant (gold). Gold labels were assigned by hand from the SU catalog titles/descriptions. Used by run_retrieval.py to compute Recall@k, MRR, nDCG with and without the cross-encoder reranker.",
+  "_comment": "Labeled retrieval eval set for SuSchedule-r. Each item is a natural-language student query with the set of catalog course codes considered relevant (gold). Gold labels were assigned by hand from the SU catalog titles/descriptions. Queries q35-q44 are provisional cross-domain additions and must be human-reviewed before final reporting. Used by run_retrieval.py to compute Recall@k, MRR, nDCG with and without the cross-encoder reranker.",
   "queries": [
     {"id": "q01", "query": "I want to learn machine learning", "gold": ["CS 412", "CS 415"], "category": "CS-elective"},
     {"id": "q02", "query": "courses about neural networks and deep learning", "gold": ["CS 415", "CS 412"], "category": "CS-elective"},
@@ -34,6 +34,16 @@
     {"id": "q31", "query": "wireless and digital communications", "gold": ["EE 314", "EE 313", "EE 413"], "category": "EE"},
     {"id": "q32", "query": "operations research and optimization", "gold": ["IE 311", "IE 312", "IE 313"], "category": "IE"},
     {"id": "q33", "query": "digital logic and circuit design", "gold": ["CS 303"], "category": "CS-core"},
-    {"id": "q34", "query": "computer architecture and processors", "gold": ["CS 401"], "category": "CS-elective"}
+    {"id": "q34", "query": "computer architecture and processors", "gold": ["CS 401"], "category": "CS-elective"},
+    {"id": "q35", "query": "I want to make factories and service operations run more efficiently", "gold": ["IE 304", "IE 401"], "category": "IE", "review_status": "provisional"},
+    {"id": "q36", "query": "How can companies manage inventory and move products through a supply chain?", "gold": ["IE 454", "IE 430", "OPIM 401"], "category": "IE", "review_status": "provisional"},
+    {"id": "q37", "query": "I want to test a manufacturing system without disrupting the real factory", "gold": ["IE 305"], "category": "IE", "review_status": "provisional"},
+    {"id": "q38", "query": "I want to understand why customers choose and buy products", "gold": ["MKTG 402", "MKTG 301"], "category": "Management", "review_status": "provisional"},
+    {"id": "q39", "query": "How do I analyze economic data and test whether an economic theory holds?", "gold": ["ECON 301", "ECON 401"], "category": "Economics", "review_status": "provisional"},
+    {"id": "q40", "query": "I want to learn how investors choose stocks and build portfolios", "gold": ["FIN 402"], "category": "Finance", "review_status": "provisional"},
+    {"id": "q41", "query": "I want to build robots that can move and act on their own", "gold": ["ME 403", "ME 425"], "category": "ME", "review_status": "provisional"},
+    {"id": "q42", "query": "I care about renewable energy and sustainable power systems", "gold": ["ME 420", "ENRG 301"], "category": "Energy", "review_status": "provisional"},
+    {"id": "q43", "query": "How can a production line reduce defects and control process variation?", "gold": ["IE 403"], "category": "IE", "review_status": "provisional"},
+    {"id": "q44", "query": "I need methods for making decisions when outcomes are uncertain", "gold": ["IE 405"], "category": "IE", "review_status": "provisional"}
   ]
 }

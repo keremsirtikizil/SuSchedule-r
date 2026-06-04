@@ -13,63 +13,187 @@
   "soundness": {
     "schedule_term": "202501",
     "is_proxy": true,
-    "n_bundles": 4,
+    "n_bundles": 6,
     "unsound_results": 0,
+    "wrong_feasibility_results": 0,
+    "incomplete_corequisite_picks": 0,
+    "feasibility_accuracy": 1.0,
     "bundles": [
       {
+        "name": "intro courses",
         "plan": [
           "CS 201",
           "MATH 101"
         ],
+        "expanded_plan": [
+          "CS 201",
+          "CS 201R",
+          "MATH 101",
+          "MATH 101R"
+        ],
+        "auto_added_corequisites": [
+          "CS 201R",
+          "MATH 101R"
+        ],
         "schedule_term": "202501",
+        "expected_feasible": true,
         "feasible": true,
+        "feasibility_correct": true,
+        "corequisites_present_when_feasible": true,
         "picks": [
           "CS 201 (A, CRN 10190)",
-          "MATH 101 (B, CRN 10778)"
+          "MATH 101 (B, CRN 10778)",
+          "CS 201R (A1, CRN 10195)",
+          "MATH 101R (A1, CRN 10780)"
         ],
         "residual_conflicts": 0,
         "missing": []
       },
       {
+        "name": "known constrained bundle",
         "plan": [
           "CS 300",
           "CS 301",
           "MATH 201"
         ],
+        "expanded_plan": [
+          "CS 300",
+          "CS 300R",
+          "CS 301",
+          "CS 301R",
+          "MATH 201",
+          "MATH 201R"
+        ],
+        "auto_added_corequisites": [
+          "CS 300R",
+          "CS 301R",
+          "MATH 201R"
+        ],
         "schedule_term": "202501",
+        "expected_feasible": false,
         "feasible": false,
+        "feasibility_correct": true,
+        "corequisites_present_when_feasible": true,
         "picks": [],
         "residual_conflicts": 0,
         "missing": []
       },
       {
+        "name": "machine learning bundle",
         "plan": [
           "CS 201",
           "CS 204",
           "CS 412"
         ],
+        "expanded_plan": [
+          "CS 201",
+          "CS 201R",
+          "CS 204",
+          "CS 204L",
+          "CS 412",
+          "CS 412R"
+        ],
+        "auto_added_corequisites": [
+          "CS 201R",
+          "CS 204L",
+          "CS 412R"
+        ],
         "schedule_term": "202501",
+        "expected_feasible": true,
         "feasible": true,
+        "feasibility_correct": true,
+        "corequisites_present_when_feasible": true,
         "picks": [
           "CS 204 (0, CRN 10218)",
           "CS 412 (0, CRN 10188)",
-          "CS 201 (B, CRN 10192)"
+          "CS 412R (0, CRN 10189)",
+          "CS 201 (B, CRN 10192)",
+          "CS 204L (A1, CRN 10221)",
+          "CS 201R (A1, CRN 10195)"
         ],
         "residual_conflicts": 0,
         "missing": []
       },
       {
+        "name": "software systems lectures fit but required sessions do not",
         "plan": [
           "CS 306",
           "CS 307",
           "CS 308"
         ],
+        "expanded_plan": [
+          "CS 306",
+          "CS 306R",
+          "CS 307",
+          "CS 307R",
+          "CS 308",
+          "CS 308L"
+        ],
+        "auto_added_corequisites": [
+          "CS 306R",
+          "CS 307R",
+          "CS 308L"
+        ],
         "schedule_term": "202501",
+        "expected_feasible": false,
+        "feasible": false,
+        "feasibility_correct": true,
+        "corequisites_present_when_feasible": true,
+        "picks": [],
+        "residual_conflicts": 0,
+        "missing": []
+      },
+      {
+        "name": "lecture fits but recitation conflicts",
+        "plan": [
+          "CS 412",
+          "CS 302"
+        ],
+        "expanded_plan": [
+          "CS 412",
+          "CS 412R",
+          "CS 302",
+          "CS 302R"
+        ],
+        "auto_added_corequisites": [
+          "CS 412R",
+          "CS 302R"
+        ],
+        "schedule_term": "202501",
+        "expected_feasible": false,
+        "feasible": false,
+        "feasibility_correct": true,
+        "corequisites_present_when_feasible": true,
+        "picks": [],
+        "residual_conflicts": 0,
+        "missing": []
+      },
+      {
+        "name": "multiple required labs and recitations fit",
+        "plan": [
+          "CS 302",
+          "CS 308"
+        ],
+        "expanded_plan": [
+          "CS 302",
+          "CS 302R",
+          "CS 308",
+          "CS 308L"
+        ],
+        "auto_added_corequisites": [
+          "CS 302R",
+          "CS 308L"
+        ],
+        "schedule_term": "202501",
+        "expected_feasible": true,
         "feasible": true,
+        "feasibility_correct": true,
+        "corequisites_present_when_feasible": true,
         "picks": [
-          "CS 306 (0, CRN 10141)",
-          "CS 307 (0, CRN 10135)",
-          "CS 308 (0, CRN 10150)"
+          "CS 302 (0, CRN 10116)",
+          "CS 302R (0, CRN 10118)",
+          "CS 308 (0, CRN 10150)",
+          "CS 308L (0, CRN 12026)"
         ],
         "residual_conflicts": 0,
         "missing": []

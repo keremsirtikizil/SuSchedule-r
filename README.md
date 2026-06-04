@@ -54,7 +54,7 @@ The system reads a student's PDF transcript, retrieves semantically relevant cou
 Sabancı Banner
      │ HTTP (cached on disk)
      ▼
-scraper/discover.py        →  data/discovery_manifest.json   (688 courses, 14 programs)
+scraper/discover.py        →  data/discovery_manifest.json   (817 courses, 14 programs)
 scraper/scrape_full.py     →  data/SU_full_catalog.json
 scraper/build_graph.py     →  data/SU_full_graph.gpickle     (721 nodes, 729 prereq edges)
 scraper/build_degree_graphs.py → data/degree_graphs/<PROGRAM>/{Required,Core_Elective,...}.gpickle
@@ -69,7 +69,7 @@ data/SU_full_catalog.json
      ├─ BAAI/bge-base-en-v1.5  (bi-encoder, 768-dim, L2-normalised)
      │        │
      │        ▼
-     │  embeddings/su_courses.index      (FAISS IndexFlatIP, 688 vectors)
+     │  embeddings/su_courses.index      (FAISS IndexFlatIP, 817 vectors)
      │  embeddings/su_courses.parquet    (metadata DataFrame)
      │  embeddings/su_courses_embeddings.npy
      │  embeddings/id_map.json
@@ -146,11 +146,11 @@ SuSchedule-r/
 ├── notebooks/
 │   └── build_faiss_index.ipynb   ← Colab notebook to build the FAISS index
 │
-├── embeddings/                    ← built by the notebook; commit parquet + id_map only
-│   ├── su_courses.parquet         ← 688-row metadata DataFrame
+├── embeddings/                    ← versioned RAG artifacts for deterministic retrieval
+│   ├── su_courses.parquet         ← 817-row metadata DataFrame
 │   ├── id_map.json                ← row_int → course_code
-│   ├── su_courses_embeddings.npy  ← gitignored (2 MB, rebuild from notebook)
-│   └── su_courses.index           ← gitignored (2 MB, rebuild from notebook)
+│   ├── su_courses_embeddings.npy  ← 817 × 768 normalized embedding matrix
+│   └── su_courses.index           ← FAISS IndexFlatIP over the same rows
 │
 ├── scheduler/
 │   ├── __init__.py
@@ -187,7 +187,7 @@ SuSchedule-r/
 │   └── scrape_offerings.py        ← per-term CRN / meeting scraper
 │
 ├── data/
-│   ├── SU_full_catalog.json       ← 688 courses, structured
+│   ├── SU_full_catalog.json       ← 817 courses, structured
 │   ├── SU_full_graph.gpickle      ← 721-node prereq DAG (NetworkX)
 │   ├── degree_graphs/             ← per-(program, section) sub-DAGs
 │   │   ├── BSCS-DM/
@@ -242,8 +242,8 @@ Open `notebooks/build_faiss_index.ipynb` in Google Colab (free GPU/CPU runtime w
 embeddings/
 ├── su_courses.parquet         ✓ committed
 ├── id_map.json                ✓ committed
-├── su_courses_embeddings.npy  ← download from Colab
-└── su_courses.index           ← download from Colab
+├── su_courses_embeddings.npy  ✓ committed
+└── su_courses.index           ✓ committed
 ```
 
 ---
@@ -288,11 +288,19 @@ Embedding text per course:
 <description>
 ```
 
-Index type: `IndexFlatIP` (exact cosine search via L2-normalised inner product — fine for 688 vectors).
+Index type: `IndexFlatIP` (exact cosine search via L2-normalised inner product — fine for 817 vectors).
 
 At query time `scheduler/retriever.py` runs two stages:
-1. **Bi-encoder** — encode query with BGE query prefix, score against all eligible courses in the FAISS index.
+1. **Bi-encoder + FAISS** — encode the query with the BGE query prefix, then call
+   `IndexFlatIP.search()`. Degree, section, subject, and eligibility scopes are
+   applied inside FAISS with `IDSelectorBatch`, so filtered retrieval remains
+   exact.
 2. **Cross-encoder** — `BAAI/bge-reranker-base` re-ranks the top-k bi-encoder hits with full pair attention.
+
+FAISS is required for first-stage vector search. If the index cannot load or
+does not match the metadata and embeddings, the retriever raises an error
+instead of silently changing retrieval backends. `eval/results_retrieval.json`
+records FAISS search counts so the evaluated backend is visible.
 
 > ⚠️ **macOS Apple Silicon note:** `SentenceTransformer` must be imported **before** `faiss` in the same process. Both link OpenBLAS; double-init causes a segfault (exit code 139). `retriever.py` handles this — don't reorder the imports.
 
@@ -538,14 +546,15 @@ Labeled, reproducible evaluation with metrics. See `eval/README.md` for details.
 
 | Runner | Measures | OpenAI? |
 |---|---|---|
-| `python -m eval.run_retrieval` | Retrieval Recall@k / MRR / nDCG + re-ranker ablation (34 queries) | no |
-| `python -m eval.run_conflicts` | Conflict-detector accuracy + scheduler soundness | no |
-| `python -m eval.run_requirements` | Degree-requirement engine vs official Degree Evaluation | no |
-| `python -m eval.run_agent` | End-to-end agent grounding, latency, token cost (8 questions) | **yes** |
+| `python -m eval.run_retrieval` | Retrieval Recall@k / MRR / nDCG + re-ranker ablation (44 queries) | no |
+| `python -m eval.run_conflicts` | Conflict-detector accuracy + corequisite-expanded scheduler checks | no |
+| `python -m eval.run_requirements` | Official Required-section credit gap vs graph engine | no |
+| `python -m eval.run_agent` | End-to-end answer grounding, required actions, latency, token cost (12 questions) | **yes** |
 
-Headline results (regenerate with the runners above): retrieval Hit@5 = 1.00 /
-Recall@10 = 0.96; conflict detection 100% on labeled pairs, 0 unsound schedules;
-end-to-end grounding 8/8. Full write-up + honest error analysis in
+Regenerate all result files after changing a labeled dataset. The conflict and
+requirements runners are deterministic; retrieval additionally requires the
+local embedding matrix and FAISS index; the agent runner calls OpenAI. Full
+write-up + honest error analysis in
 `report/CS455_SuSchedule-r_Final_Report.docx` (slides in `report/`).
 
 ---

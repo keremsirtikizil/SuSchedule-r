@@ -4,26 +4,31 @@ End-to-end agent evaluation for SuSchedule-r (LIVE -- calls OpenAI).
 Runs a labeled set of student questions (eval/agent_questions.json) through the
 full ReAct agent with a real transcript loaded, then measures:
 
-  - Grounding accuracy : fraction of answers that contain the correct,
-                         catalog-grounded fact (`must_contain` / `any_of`) and
-                         none of the `must_not` hallucination markers.
-  - Latency            : wall-clock seconds per question.
-  - Token cost         : OpenAI tokens per question (from llm_client usage).
-  - Tool calls         : how many tool invocations the ReAct loop made.
+  - Answer grounding : structured checks for required course codes, terms,
+                       credit facts, and forbidden claims.
+  - Action success   : whether required semantic actions such as catalog
+                       retrieval or timetable construction appear in the trace.
+  - Task success     : both answer grounding and required actions pass.
+  - Latency / tokens / tool calls.
 
-Full answers + traces are saved to eval/agent_transcript.md for manual error
-analysis. Cost: a handful of gpt-4o calls per question.
+Full answers and scoring failures are saved to eval/agent_transcript.md for
+manual error analysis. Structured observed actions are saved in
+eval/results_agent.json. Cost: a handful of gpt-4o calls per question.
 
 Usage (needs OPENAI_API_KEY in .env):
     python -m eval.run_agent
 """
 from __future__ import annotations
 
+import argparse
 import json
+import hashlib
+import re
 import time
 from pathlib import Path
 
 from scheduler import llm_client
+from scheduler.catalog import Catalog
 from scheduler.schemas import PlannerRequest
 from scheduler.session import PlannerSession
 
@@ -31,18 +36,122 @@ ROOT = Path(__file__).resolve().parent.parent
 EVAL_DIR = ROOT / "eval"
 
 
-def grounded(answer: str, q: dict) -> bool:
+COURSE_CODE_RE = re.compile(r"\b([A-Z]{2,5})\s+(\d{2,6}[A-Z]?)\b", re.I)
+
+
+def _normalized_code(subject: str, number: str) -> str:
+    return f"{subject.upper()} {number.upper()}"
+
+
+def extract_course_codes(answer: str, known_subjects: set[str]) -> set[str]:
+    """Find course-like codes without mistaking phrases such as FALL 2026 for one."""
+    return {
+        _normalized_code(match.group(1), match.group(2))
+        for match in COURSE_CODE_RE.finditer(answer)
+        if match.group(1).upper() in known_subjects
+    }
+
+
+def _credit_fact_present(answer: str, code: str, credits: float) -> bool:
+    code_pattern = re.escape(code).replace(r"\ ", r"\s+")
+    credit_value = rf"{credits:g}(?:\.0)?"
+    credit_pattern = rf"\b{credit_value}\s*(?:SU(?:\s+credits?)?|credits?)\b"
+    return bool(
+        re.search(rf"{code_pattern}.{{0,180}}{credit_pattern}", answer, re.I | re.S)
+        or re.search(rf"{credit_pattern}.{{0,180}}{code_pattern}", answer, re.I | re.S)
+    )
+
+
+def evaluate_answer(answer: str, q: dict, known_subjects: set[str]) -> tuple[bool, list[str], list[str]]:
+    """Check one answer against its labels and explain any misses."""
     a = answer.lower()
+    failures: list[str] = []
+    mentioned = extract_course_codes(answer, known_subjects)
+
+    # Keep support for the first version of the dataset.
     for s in q.get("must_contain", []):
         if s.lower() not in a:
-            return False
+            failures.append(f"missing required text: {s}")
     anyof = q.get("any_of")
     if anyof and not any(s.lower() in a for s in anyof):
-        return False
+        failures.append(f"missing any accepted text: {anyof}")
     for s in q.get("must_not", []):
         if s.lower() in a:
-            return False
-    return True
+            failures.append(f"contains forbidden text: {s}")
+
+    for term in q.get("required_terms", []):
+        if term.lower() not in a:
+            failures.append(f"missing required term: {term}")
+    any_terms = q.get("any_terms", [])
+    if any_terms and not any(term.lower() in a for term in any_terms):
+        failures.append(f"missing any accepted term: {any_terms}")
+    for term in q.get("forbidden_terms", []):
+        if term.lower() in a:
+            failures.append(f"contains forbidden term: {term}")
+
+    required_codes = set(q.get("required_course_codes", []))
+    missing_codes = sorted(required_codes - mentioned)
+    if missing_codes:
+        failures.append(f"missing required course codes: {missing_codes}")
+
+    any_codes = set(q.get("any_course_codes", []))
+    if any_codes and not (any_codes & mentioned):
+        failures.append(f"missing any accepted course code: {sorted(any_codes)}")
+
+    forbidden_codes = set(q.get("forbidden_course_codes", []))
+    present_forbidden = sorted(forbidden_codes & mentioned)
+    if present_forbidden:
+        failures.append(f"contains forbidden course codes: {present_forbidden}")
+
+    allowed_codes = set(q.get("allowed_course_codes", []))
+    if allowed_codes:
+        unexpected = sorted(mentioned - allowed_codes)
+        if unexpected:
+            failures.append(f"contains unexpected course codes: {unexpected}")
+
+    credit_fact = q.get("course_credit")
+    if credit_fact and not _credit_fact_present(
+        answer,
+        str(credit_fact["code"]),
+        float(credit_fact["credits"]),
+    ):
+        failures.append(
+            f"missing linked credit fact: {credit_fact['code']} = {credit_fact['credits']} SU"
+        )
+
+    for pattern in q.get("required_patterns", []):
+        if not re.search(pattern, answer, re.I | re.S):
+            failures.append(f"missing required regex: {pattern}")
+    any_patterns = q.get("any_patterns", [])
+    if any_patterns and not any(re.search(pattern, answer, re.I | re.S) for pattern in any_patterns):
+        failures.append(f"missing any accepted regex: {any_patterns}")
+    for pattern in q.get("forbidden_patterns", []):
+        if re.search(pattern, answer, re.I | re.S):
+            failures.append(f"matched forbidden regex: {pattern}")
+
+    return not failures, failures, sorted(mentioned)
+
+
+def trace_actions(trace: list[dict]) -> set[str]:
+    """Collect tool calls and automatic prefetches under the same action names."""
+    actions: set[str] = set()
+    event_action = {
+        "retrieval": "retrieve_catalog_courses",
+        "build_timetable": "build_timetable",
+        "selected_graphs": "select_degree_graphs",
+        "requirements": "get_requirement_state",
+        "check_courses_against_current_schedule": "check_courses_against_current_schedule",
+    }
+    for ev in trace or []:
+        event_type = ev.get("type")
+        if event_type in event_action:
+            actions.add(event_action[event_type])
+        if event_type == "assistant_step":
+            for call in ev.get("tool_calls", []) or []:
+                name = call.get("name")
+                if name:
+                    actions.add(name)
+    return actions
 
 
 def count_tool_calls(trace: list[dict]) -> int:
@@ -53,8 +162,159 @@ def count_tool_calls(trace: list[dict]) -> int:
     return n
 
 
+def _summarize_rows(rows: list[dict], spec: dict, dataset_bytes: bytes, total_session_tokens: int) -> dict:
+    n = len(rows)
+    grounding_acc = sum(r["answer_grounded"] for r in rows) / n if n else 0.0
+    action_acc = sum(r["action_ok"] for r in rows) / n if n else 0.0
+    task_acc = sum(r["task_success"] for r in rows) / n if n else 0.0
+    avg_lat = sum(r["latency_s"] for r in rows) / n if n else 0.0
+    avg_tok = sum(r["tokens"] for r in rows) / n if n else 0.0
+    avg_calls = sum(r["tool_calls"] for r in rows) / n if n else 0.0
+    by_review_status = {}
+    for status in sorted({r["review_status"] for r in rows}):
+        subset = [r for r in rows if r["review_status"] == status]
+        by_review_status[status] = {
+            "n": len(subset),
+            "answer_grounding_accuracy": round(
+                sum(r["answer_grounded"] for r in subset) / len(subset), 4
+            ),
+            "action_success_accuracy": round(
+                sum(r["action_ok"] for r in subset) / len(subset), 4
+            ),
+            "task_success_accuracy": round(
+                sum(r["task_success"] for r in subset) / len(subset), 4
+            ),
+        }
+    return {
+        "n": n,
+        "dataset_sha256": hashlib.sha256(dataset_bytes).hexdigest(),
+        "mode": spec["mode"],
+        "answer_grounding_accuracy": round(grounding_acc, 4),
+        "action_success_accuracy": round(action_acc, 4),
+        "task_success_accuracy": round(task_acc, 4),
+        "avg_latency_s": round(avg_lat, 2),
+        "avg_tokens": round(avg_tok, 1),
+        "avg_tool_calls": round(avg_calls, 2),
+        "by_review_status": by_review_status,
+        "per_question": rows,
+        "total_session_tokens": total_session_tokens,
+    }
+
+
+def _print_summary(summary: dict) -> None:
+    n = summary["n"]
+    print(f"\n=== End-to-end agent ({n} questions, mode={summary['mode']}) ===")
+    print(
+        f"  answer grounding   : {summary['answer_grounding_accuracy']:.3f}  "
+        f"({sum(r['answer_grounded'] for r in summary['per_question'])}/{n})"
+    )
+    print(
+        f"  action success     : {summary['action_success_accuracy']:.3f}  "
+        f"({sum(r['action_ok'] for r in summary['per_question'])}/{n})"
+    )
+    print(
+        f"  task success       : {summary['task_success_accuracy']:.3f}  "
+        f"({sum(r['task_success'] for r in summary['per_question'])}/{n})"
+    )
+    print(f"  avg latency        : {summary['avg_latency_s']:.1f} s")
+    print(f"  avg tokens/question: {summary['avg_tokens']:.0f}")
+    print(f"  avg tool calls     : {summary['avg_tool_calls']:.1f}")
+    for status, metrics in summary["by_review_status"].items():
+        print(
+            f"  {status:<18}: task_success={metrics['task_success_accuracy']:.3f} "
+            f"(n={metrics['n']})"
+        )
+
+
+def _render_transcript(spec: dict, rows: list[dict]) -> str:
+    md = [
+        "# SuSchedule-r — end-to-end agent transcript\n",
+        f"Transcript: `{spec['transcript']}` · term {spec['target_term']} · mode {spec['mode']}\n",
+    ]
+    for row in rows:
+        md.append(f"\n## [{row['id']}] {row['q']}\n")
+        md.append(
+            f"*task_success={row['task_success']} · answer_grounded={row['answer_grounded']} · "
+            f"action_ok={row['action_ok']} · review_status={row['review_status']} · "
+            f"{row['latency_s']:.1f}s · {row['tokens']} tokens · {row['tool_calls']} tool calls*\n"
+        )
+        failures = row["failures"]
+        missing_actions = row["missing_actions"]
+        if failures or missing_actions:
+            scoring_failures = failures + ([f"missing actions: {missing_actions}"] if missing_actions else [])
+            md.append(f"\nScoring failures: `{scoring_failures}`\n")
+        clean_answer = "\n".join(line.rstrip() for line in row["answer"].splitlines()).strip()
+        md.append(f"\n{clean_answer}\n")
+    return "\n".join(md)
+
+
+def _write_outputs(spec: dict, summary: dict) -> None:
+    (EVAL_DIR / "results_agent.json").write_text(json.dumps(summary, indent=2))
+    (EVAL_DIR / "agent_transcript.md").write_text(
+        _render_transcript(spec, summary["per_question"])
+    )
+    print("\nSaved -> eval/results_agent.json, eval/agent_transcript.md")
+
+
+def _score_saved_answers(spec: dict, dataset_bytes: bytes, known_subjects: set[str]) -> dict:
+    result_path = EVAL_DIR / "results_agent.json"
+    if not result_path.exists():
+        raise SystemExit("No eval/results_agent.json exists to rescore. Run the live evaluation first.")
+    previous = json.loads(result_path.read_text())
+    previous_by_id = {row["id"]: row for row in previous.get("per_question", [])}
+    rows = []
+    for q in spec["questions"]:
+        old = previous_by_id.get(q["id"])
+        if not old or "answer" not in old:
+            raise SystemExit(
+                f"Saved result for {q['id']} has no raw answer. Run the live evaluation once "
+                "with the current evaluator before using --rescore."
+            )
+        answer = old["answer"]
+        actions = set(old.get("observed_actions", []))
+        answer_ok, failures, mentioned_codes = evaluate_answer(answer, q, known_subjects)
+        missing_actions = sorted(set(q.get("required_actions", [])) - actions)
+        action_ok = not missing_actions
+        rows.append({
+            **old,
+            "kind": q["kind"],
+            "q": q["q"],
+            "review_status": q.get("review_status", "existing"),
+            "answer_grounded": answer_ok,
+            "action_ok": action_ok,
+            "task_success": answer_ok and action_ok,
+            "failures": failures,
+            "mentioned_course_codes": mentioned_codes,
+            "missing_actions": missing_actions,
+        })
+    return _summarize_rows(
+        rows,
+        spec,
+        dataset_bytes,
+        int(previous.get("total_session_tokens", 0)),
+    )
+
+
 def main() -> None:
-    spec = json.loads((EVAL_DIR / "agent_questions.json").read_text())
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--rescore",
+        action="store_true",
+        help="Re-evaluate saved raw answers against the current labels without calling OpenAI.",
+    )
+    args = parser.parse_args()
+
+    dataset_path = EVAL_DIR / "agent_questions.json"
+    dataset_bytes = dataset_path.read_bytes()
+    spec = json.loads(dataset_bytes)
+    catalog = Catalog.load()
+    known_subjects = {course.subj.upper() for course in catalog.courses}
+    if args.rescore:
+        summary = _score_saved_answers(spec, dataset_bytes, known_subjects)
+        _print_summary(summary)
+        _write_outputs(spec, summary)
+        return
+
     req = PlannerRequest(
         target_term=spec["target_term"],
         user_request="",
@@ -65,8 +325,6 @@ def main() -> None:
     session._ensure_heavy_state()
 
     rows = []
-    md = ["# SuSchedule-r — end-to-end agent transcript\n",
-          f"Transcript: `{spec['transcript']}` · term {spec['target_term']} · mode {spec['mode']}\n"]
 
     for q in spec["questions"]:
         usage_before = llm_client.get_session_usage()["total_tokens"]
@@ -74,46 +332,48 @@ def main() -> None:
         try:
             answer = session.handle_turn(q["q"])
         except Exception as exc:
-            answer = f"[ERROR] {type(exc).__name__}: {exc}"
+            raise RuntimeError(
+                f"Agent evaluation aborted on {q['id']}: {type(exc).__name__}: {exc}. "
+                "No result files were written."
+            ) from exc
         dt = time.time() - t0
         usage_after = llm_client.get_session_usage()["total_tokens"]
         tokens = usage_after - usage_before
         calls = count_tool_calls(session.last_trace)
-        ok = grounded(answer, q)
+        answer_ok, failures, mentioned_codes = evaluate_answer(answer, q, known_subjects)
+        actions = trace_actions(session.last_trace)
+        required_actions = set(q.get("required_actions", []))
+        missing_actions = sorted(required_actions - actions)
+        action_ok = not missing_actions
+        ok = answer_ok and action_ok
         rows.append({
             "id": q["id"], "kind": q["kind"], "q": q["q"],
-            "grounded": ok, "latency_s": round(dt, 2),
-            "tokens": tokens, "tool_calls": calls,
+            "review_status": q.get("review_status", "existing"),
+            "answer": answer,
+            "answer_grounded": answer_ok,
+            "action_ok": action_ok,
+            "task_success": ok,
+            "failures": failures,
+            "mentioned_course_codes": mentioned_codes,
+            "observed_actions": sorted(actions),
+            "missing_actions": missing_actions,
+            "latency_s": round(dt, 2),
+            "tokens": tokens,
+            "tool_calls": calls,
         })
-        print(f"[{q['id']}] grounded={ok} {dt:5.1f}s tokens={tokens:6d} calls={calls}  {q['q']}")
-        md.append(f"\n## [{q['id']}] {q['q']}\n")
-        md.append(f"*grounded={ok} · {dt:.1f}s · {tokens} tokens · {calls} tool calls*\n")
-        md.append(f"\n{answer}\n")
+        print(
+            f"[{q['id']}] success={ok} answer={answer_ok} actions={action_ok} "
+            f"{dt:5.1f}s tokens={tokens:6d} calls={calls}  {q['q']}"
+        )
 
-    n = len(rows)
-    acc = sum(r["grounded"] for r in rows) / n if n else 0.0
-    avg_lat = sum(r["latency_s"] for r in rows) / n if n else 0.0
-    avg_tok = sum(r["tokens"] for r in rows) / n if n else 0.0
-    avg_calls = sum(r["tool_calls"] for r in rows) / n if n else 0.0
-
-    print(f"\n=== End-to-end agent ({n} questions, mode={spec['mode']}) ===")
-    print(f"  grounding accuracy : {acc:.3f}  ({sum(r['grounded'] for r in rows)}/{n})")
-    print(f"  avg latency        : {avg_lat:.1f} s")
-    print(f"  avg tokens/question: {avg_tok:.0f}")
-    print(f"  avg tool calls     : {avg_calls:.1f}")
-
-    summary = {
-        "n": n, "mode": spec["mode"],
-        "grounding_accuracy": round(acc, 4),
-        "avg_latency_s": round(avg_lat, 2),
-        "avg_tokens": round(avg_tok, 1),
-        "avg_tool_calls": round(avg_calls, 2),
-        "per_question": rows,
-        "total_session_tokens": llm_client.get_session_usage()["total_tokens"],
-    }
-    (EVAL_DIR / "results_agent.json").write_text(json.dumps(summary, indent=2))
-    (EVAL_DIR / "agent_transcript.md").write_text("\n".join(md))
-    print("\nSaved -> eval/results_agent.json, eval/agent_transcript.md")
+    summary = _summarize_rows(
+        rows,
+        spec,
+        dataset_bytes,
+        llm_client.get_session_usage()["total_tokens"],
+    )
+    _print_summary(summary)
+    _write_outputs(spec, summary)
 
 
 if __name__ == "__main__":

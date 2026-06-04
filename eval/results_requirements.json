@@ -56,10 +56,24 @@
     }
   ],
   "official_total": {
-    "min_su": 250.0,
-    "completed_su": 268.0,
-    "remaining_su": 0.0,
-    "completion_pct": 107.2
+    "source": "GENERAL",
+    "min_su": 125.0,
+    "completed_su": 122.0,
+    "remaining_su": 3.0,
+    "completion_pct": 97.6
+  },
+  "primary_section_sum": {
+    "sections": [
+      "AREA ELECTIVES",
+      "CORE ELECTIVES",
+      "FREE ELECTIVES",
+      "REQUIRED COURSES",
+      "UNIVERSITY COURSES"
+    ],
+    "min_su": 125.0,
+    "completed_su": 122.0,
+    "remaining_su": 3.0,
+    "general_remaining_discrepancy_su": 0.0
   },
   "engine": {
     "required_left": [
@@ -71,5 +85,9 @@
     "core_left_count": 27,
     "area_left_count": 81
   },
-  "required_bucket_discrepancy_su": 4.0
+  "required_bucket_discrepancy_su": 4.0,
+  "notes": [
+    "Section rows overlap and are not summed into the overall total.",
+    "The required-bucket comparison is a credit-gap diagnostic, not a precision/recall score."
+  ]
 }

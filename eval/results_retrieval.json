@@ -1,38 +1,65 @@
 {
   "summary": {
-    "n_queries": 34,
+    "n_queries": 44,
+    "dataset_sha256": "5b0efe7569ad5897e20303a163ee028923e6040f85ddc0a43e1baad14ee124fd",
     "k": 10,
     "rerank": {
-      "hit@1": 0.9118,
-      "hit@5": 1.0,
-      "recall@5": 0.9412,
-      "recall@10": 0.9608,
-      "mrr@10": 0.9559,
-      "ndcg@10": 0.9239
+      "hit@1": 0.7727,
+      "hit@5": 0.9545,
+      "recall@5": 0.875,
+      "recall@10": 0.9432,
+      "mrr@10": 0.8586,
+      "ndcg@10": 0.8488
     },
     "bienc": {
-      "hit@1": 0.9706,
-      "hit@5": 1.0,
-      "recall@5": 0.9657,
-      "recall@10": 0.9755,
-      "mrr@10": 0.9853,
-      "ndcg@10": 0.9632
+      "hit@1": 0.9091,
+      "hit@5": 0.9773,
+      "recall@5": 0.928,
+      "recall@10": 0.9659,
+      "mrr@10": 0.9375,
+      "ndcg@10": 0.9221
     },
     "delta": {
-      "hit@1": -0.0588,
-      "hit@5": 0.0,
-      "recall@5": -0.0245,
-      "recall@10": -0.0147,
-      "mrr@10": -0.0294,
-      "ndcg@10": -0.0393
+      "hit@1": -0.1364,
+      "hit@5": -0.0227,
+      "recall@5": -0.053,
+      "recall@10": -0.0227,
+      "mrr@10": -0.0789,
+      "ndcg@10": -0.0734
     },
     "by_category_recall@10": {
       "CS-core": 1.0,
-      "CS-elective": 0.9333,
-      "EE": 0.8333,
-      "IE": 1.0,
+      "CS-elective": 0.9667,
+      "EE": 1.0,
+      "Economics": 0.5,
+      "Energy": 0.5,
+      "Finance": 1.0,
+      "IE": 0.8333,
       "MATH": 1.0,
+      "ME": 1.0,
+      "Management": 1.0,
       "cross-subject": 1.0
+    },
+    "by_review_status": {
+      "existing": {
+        "recall@10": 0.9853,
+        "n": 34
+      },
+      "provisional": {
+        "recall@10": 0.8,
+        "n": 10
+      }
+    },
+    "retriever_backend": {
+      "faiss_index_loaded": true,
+      "index_type": "IndexFlatIP",
+      "index_ntotal": 817,
+      "embedding_rows": 817,
+      "embedding_dimension": 768,
+      "last_search_backend": "faiss",
+      "search_counts": {
+        "faiss": 88
+      }
     }
   },
   "per_query": [
@@ -44,19 +71,20 @@
         "CS 415"
       ],
       "category": "CS-elective",
+      "review_status": "existing",
       "rerank_top5": [
         "CS 412",
+        "ECON 495",
         "ECON 494",
         "ENT 201",
-        "EE 48009",
-        "OPIM 413"
+        "EE 48009"
       ],
       "bienc_top5": [
         "CS 412",
-        "EE 48009",
+        "ECON 495",
         "CS 415",
-        "CS 455",
-        "CS 404"
+        "EE 48009",
+        "PSY 317"
       ],
       "rerank": {
         "hit@1": 1.0,
@@ -83,12 +111,13 @@
         "CS 412"
       ],
       "category": "CS-elective",
+      "review_status": "existing",
       "rerank_top5": [
         "PSY 416",
         "CS 415",
         "CS 445",
         "CS 412",
-        "PHIL 310"
+        "IF 467"
       ],
       "bienc_top5": [
         "CS 415",
@@ -121,19 +150,20 @@
         "CS 307"
       ],
       "category": "CS-core",
+      "review_status": "existing",
       "rerank_top5": [
         "CS 307",
         "CS 48008",
+        "EE 48008",
         "CS 432",
-        "CS 437",
-        "OPIM 301"
+        "CS 437"
       ],
       "bienc_top5": [
         "CS 307",
-        "EE 308",
         "EE 302",
+        "EE 308",
         "IE 411",
-        "EE 401"
+        "CS 403"
       ],
       "rerank": {
         "hit@1": 1.0,
@@ -159,6 +189,7 @@
         "CS 306"
       ],
       "category": "CS-core",
+      "review_status": "existing",
       "rerank_top5": [
         "CS 306",
         "IE 413",
@@ -169,8 +200,8 @@
       "bienc_top5": [
         "CS 455",
         "CS 306",
-        "IE 413",
         "ENS 210",
+        "IE 413",
         "BIO 310"
       ],
       "rerank": {
@@ -198,10 +229,11 @@
         "CS 407"
       ],
       "category": "CS-core",
+      "review_status": "existing",
       "rerank_top5": [
         "CS 301",
-        "CS 300",
         "MATH 484",
+        "CS 300",
         "CS 407",
         "IF 100"
       ],
@@ -210,7 +242,7 @@
         "CS 407",
         "CS 300",
         "IF 100",
-        "CS 302"
+        "IE 311"
       ],
       "rerank": {
         "hit@1": 1.0,
@@ -236,19 +268,20 @@
         "CS 300"
       ],
       "category": "CS-core",
+      "review_status": "existing",
       "rerank_top5": [
         "CS 300",
         "CS 306",
         "ENS 210",
-        "DSA 201",
-        "MATH 204"
+        "ECON 495",
+        "DSA 201"
       ],
       "bienc_top5": [
         "CS 300",
+        "DSA 428",
         "BIO 310",
         "CS 301",
-        "CS 306",
-        "MATH 204"
+        "CS 306"
       ],
       "rerank": {
         "hit@1": 1.0,
@@ -274,11 +307,12 @@
         "CS 408"
       ],
       "category": "CS-core",
+      "review_status": "existing",
       "rerank_top5": [
         "CS 408",
         "CS 432",
-        "EE 414",
         "CS 403",
+        "EE 414",
         "EE 48009"
       ],
       "bienc_top5": [
@@ -313,12 +347,13 @@
         "CS 437"
       ],
       "category": "CS-elective",
+      "review_status": "existing",
       "rerank_top5": [
         "CS 437",
         "CS 48008",
         "CS 432",
-        "EE 48009",
-        "CS 408"
+        "IR 410",
+        "EE 48009"
       ],
       "bienc_top5": [
         "CS 432",
@@ -351,6 +386,7 @@
         "CS 411"
       ],
       "category": "CS-elective",
+      "review_status": "existing",
       "rerank_top5": [
         "CS 411",
         "CS 440",
@@ -389,18 +425,19 @@
         "CS 445"
       ],
       "category": "CS-elective",
+      "review_status": "existing",
       "rerank_top5": [
         "CS 445",
         "CS 455",
         "TLL 101",
-        "TLL 102",
-        "PSY 314"
+        "PSY 314",
+        "CS 404"
       ],
       "bienc_top5": [
         "CS 445",
         "CS 455",
         "CS 415",
-        "CS 302",
+        "LIT 212",
         "BIO 310"
       ],
       "rerank": {
@@ -428,12 +465,13 @@
         "CS 419"
       ],
       "category": "cross-subject",
+      "review_status": "existing",
       "rerank_top5": [
         "EE 417",
         "CS 405",
-        "CS 404",
-        "CS 419",
-        "PSY 412"
+        "ENS 216",
+        "VA 310",
+        "CS 404"
       ],
       "bienc_top5": [
         "EE 417",
@@ -445,10 +483,10 @@
       "rerank": {
         "hit@1": 1.0,
         "hit@5": 1.0,
-        "recall@5": 1.0,
+        "recall@5": 0.5,
         "recall@10": 1.0,
         "mrr@10": 1.0,
-        "ndcg@10": 0.8772153153380493
+        "ndcg@10": 0.8175295903539445
       },
       "bienc": {
         "hit@1": 1.0,
@@ -466,6 +504,7 @@
         "CS 404"
       ],
       "category": "CS-elective",
+      "review_status": "existing",
       "rerank_top5": [
         "CS 404",
         "PHIL 370",
@@ -504,19 +543,20 @@
         "CS 403"
       ],
       "category": "CS-elective",
+      "review_status": "existing",
       "rerank_top5": [
         "CS 438",
         "CS 403",
-        "ENRG 423",
         "IE 401",
+        "EE 48008",
         "EE 48009"
       ],
       "bienc_top5": [
         "CS 403",
         "CS 438",
         "CS 406",
-        "CS 307",
-        "EE 48009"
+        "ENS 216",
+        "CS 307"
       ],
       "rerank": {
         "hit@1": 0.0,
@@ -542,18 +582,19 @@
         "CS 436"
       ],
       "category": "CS-elective",
+      "review_status": "existing",
       "rerank_top5": [
         "CS 436",
         "IE 413",
         "IE 404",
-        "CS 432",
-        "CS 408"
+        "ENS 216",
+        "SOC 420"
       ],
       "bienc_top5": [
         "CS 436",
+        "DSA 428",
         "CS 406",
         "IE 404",
-        "IE 413",
         "CS 403"
       ],
       "rerank": {
@@ -580,19 +621,20 @@
         "CS 406"
       ],
       "category": "CS-elective",
+      "review_status": "existing",
       "rerank_top5": [
         "CS 406",
+        "EE 48008",
         "CS 301",
         "EE 48009",
-        "CS 401",
-        "CS 415"
+        "CS 401"
       ],
       "bienc_top5": [
         "CS 406",
-        "CS 436",
-        "CS 403",
-        "CS 300",
-        "EE 401"
+        "EE 48008",
+        "EE 402",
+        "DSA 428",
+        "CS 436"
       ],
       "rerank": {
         "hit@1": 1.0,
@@ -618,12 +660,13 @@
         "CS 405"
       ],
       "category": "CS-elective",
+      "review_status": "existing",
       "rerank_top5": [
         "CS 405",
         "VA 433",
         "ENS 209",
-        "DSA 301",
-        "VA 303"
+        "VA 310",
+        "DSA 301"
       ],
       "bienc_top5": [
         "CS 405",
@@ -657,12 +700,13 @@
         "CS 442"
       ],
       "category": "CS-core",
+      "review_status": "existing",
       "rerank_top5": [
         "CS 442",
         "CS 308",
         "EE 308",
         "CS 48008",
-        "CS 301"
+        "EE 48008"
       ],
       "bienc_top5": [
         "CS 442",
@@ -696,35 +740,36 @@
         "CS 48006"
       ],
       "category": "CS-elective",
+      "review_status": "existing",
       "rerank_top5": [
         "CS 438",
+        "CS 48006",
         "IE 404",
         "MGMT 426",
-        "CS 432",
-        "EE 48009"
+        "EE 48008"
       ],
       "bienc_top5": [
         "CS 438",
+        "CS 48006",
         "CS 403",
         "IE 404",
-        "CS 436",
-        "CS 437"
+        "DSA 428"
       ],
       "rerank": {
         "hit@1": 1.0,
         "hit@5": 1.0,
-        "recall@5": 0.5,
-        "recall@10": 0.5,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
         "mrr@10": 1.0,
-        "ndcg@10": 0.6131471927654584
+        "ndcg@10": 1.0
       },
       "bienc": {
         "hit@1": 1.0,
         "hit@5": 1.0,
-        "recall@5": 0.5,
-        "recall@10": 0.5,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
         "mrr@10": 1.0,
-        "ndcg@10": 0.6131471927654584
+        "ndcg@10": 1.0
       }
     },
     {
@@ -736,6 +781,7 @@
         "MATH 484"
       ],
       "category": "cross-subject",
+      "review_status": "existing",
       "rerank_top5": [
         "CS 440",
         "CS 435",
@@ -774,12 +820,13 @@
         "CS 449"
       ],
       "category": "CS-elective",
+      "review_status": "existing",
       "rerank_top5": [
         "CS 449",
         "VA 325",
-        "IF 100",
-        "MKTG 413",
-        "EE 48010"
+        "VA 310",
+        "IF 467",
+        "IF 100"
       ],
       "bienc_top5": [
         "CS 449",
@@ -812,19 +859,20 @@
         "CS 310"
       ],
       "category": "CS-elective",
+      "review_status": "existing",
       "rerank_top5": [
         "CS 310",
+        "SOC 420",
+        "ENS 216",
         "CS 48004",
-        "CS 449",
-        "CS 436",
-        "ENRG 424"
+        "CS 436"
       ],
       "bienc_top5": [
         "CS 310",
+        "MGMT 420",
         "ENRG 424",
         "PSY 421",
-        "CS 48004",
-        "IE 409"
+        "CS 48004"
       ],
       "rerank": {
         "hit@1": 1.0,
@@ -850,6 +898,7 @@
         "CS 305"
       ],
       "category": "CS-core",
+      "review_status": "existing",
       "rerank_top5": [
         "CS 305",
         "IF 100",
@@ -888,18 +937,19 @@
         "CS 455"
       ],
       "category": "CS-elective",
+      "review_status": "existing",
       "rerank_top5": [
         "CS 455",
         "DSA 440",
         "IF 100",
         "CS 415",
-        "GER 110"
+        "ECON 495"
       ],
       "bienc_top5": [
         "CS 455",
-        "CS 415",
         "CS 445",
         "EE 48009",
+        "CS 415",
         "CS 302"
       ],
       "rerank": {
@@ -927,19 +977,20 @@
         "MATH 102"
       ],
       "category": "MATH",
+      "review_status": "existing",
       "rerank_top5": [
         "MATH 101",
         "MATH 102",
-        "MATH 305",
-        "FIN 403",
-        "MATH 301"
+        "MATH 206",
+        "MATH 410",
+        "MATH 305"
       ],
       "bienc_top5": [
         "MATH 101",
         "MATH 102",
+        "MATH 206",
         "MATH 305",
-        "MATH 202",
-        "FIN 403"
+        "MATH 410"
       ],
       "rerank": {
         "hit@1": 1.0,
@@ -966,18 +1017,19 @@
         "MATH 212"
       ],
       "category": "MATH",
+      "review_status": "existing",
       "rerank_top5": [
         "MATH 212",
         "MATH 201",
         "MATH 102",
         "MAT 309",
-        "MAT 405"
+        "MATH 206"
       ],
       "bienc_top5": [
         "MATH 212",
         "MATH 201",
         "MAT 309",
-        "ENS 201",
+        "MATH 206",
         "ENS 206"
       ],
       "rerank": {
@@ -1004,19 +1056,20 @@
         "MATH 202"
       ],
       "category": "MATH",
+      "review_status": "existing",
       "rerank_top5": [
         "MATH 202",
         "MATH 212",
         "ME 415",
-        "EE 311",
-        "ENS 311"
+        "MATH 410",
+        "EE 311"
       ],
       "bienc_top5": [
         "MATH 202",
         "MATH 212",
+        "MATH 322",
         "PHYS 401",
-        "MATH 101",
-        "ME 309"
+        "MATH 101"
       ],
       "rerank": {
         "hit@1": 1.0,
@@ -1042,6 +1095,7 @@
         "MATH 203"
       ],
       "category": "MATH",
+      "review_status": "existing",
       "rerank_top5": [
         "MATH 203",
         "EE 313",
@@ -1053,8 +1107,8 @@
         "MATH 203",
         "PHYS 412",
         "OPIM 410",
-        "MATH 306",
-        "IE 432"
+        "EE 313",
+        "MATH 306"
       ],
       "rerank": {
         "hit@1": 1.0,
@@ -1080,6 +1134,7 @@
         "MATH 204"
       ],
       "category": "MATH",
+      "review_status": "existing",
       "rerank_top5": [
         "MATH 204",
         "ENS 206",
@@ -1089,10 +1144,10 @@
       ],
       "bienc_top5": [
         "MATH 204",
-        "MATH 484",
         "IF 100",
+        "MATH 484",
         "CS 301",
-        "CS 303"
+        "MATH 318"
       ],
       "rerank": {
         "hit@1": 1.0,
@@ -1118,19 +1173,20 @@
         "MATH 306"
       ],
       "category": "MATH",
+      "review_status": "existing",
       "rerank_top5": [
         "MATH 306",
         "DSA 210",
         "MAT 306",
-        "OPIM 410",
-        "MGMT 203"
+        "SPS 201",
+        "OPIM 410"
       ],
       "bienc_top5": [
         "MATH 306",
-        "ECON 301",
         "PHYS 412",
+        "ECON 301",
         "PSIR 311",
-        "MATH 203"
+        "IE 48002"
       ],
       "rerank": {
         "hit@1": 1.0,
@@ -1158,35 +1214,36 @@
         "EE 419"
       ],
       "category": "EE",
+      "review_status": "existing",
       "rerank_top5": [
+        "EE 419",
         "EE 312",
         "EE 409",
-        "EE 311",
-        "EE 411",
-        "EE 48010"
+        "EE 444",
+        "ENS 216"
       ],
       "bienc_top5": [
         "EE 312",
+        "EE 419",
         "EE 311",
         "ENS 211",
-        "EE 313",
-        "EE 314"
+        "EE 415"
       ],
       "rerank": {
         "hit@1": 1.0,
         "hit@5": 1.0,
         "recall@5": 0.6666666666666666,
-        "recall@10": 0.6666666666666666,
+        "recall@10": 1.0,
         "mrr@10": 1.0,
-        "ndcg@10": 0.7039180890341347
+        "ndcg@10": 0.9217868789962071
       },
       "bienc": {
         "hit@1": 1.0,
         "hit@5": 1.0,
-        "recall@5": 0.6666666666666666,
-        "recall@10": 0.6666666666666666,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
         "mrr@10": 1.0,
-        "ndcg@10": 0.7653606369886217
+        "ndcg@10": 1.0
       }
     },
     {
@@ -1198,27 +1255,28 @@
         "EE 413"
       ],
       "category": "EE",
+      "review_status": "existing",
       "rerank_top5": [
         "EE 409",
+        "ENS 216",
         "EE 413",
         "EE 314",
-        "EE 48009",
-        "EE 414"
+        "EE 406"
       ],
       "bienc_top5": [
         "EE 314",
-        "EE 313",
         "EE 413",
+        "EE 313",
         "EE 409",
-        "EE 414"
+        "EE 405"
       ],
       "rerank": {
         "hit@1": 0.0,
         "hit@5": 1.0,
         "recall@5": 0.6666666666666666,
         "recall@10": 1.0,
-        "mrr@10": 0.5,
-        "ndcg@10": 0.6871475159848289
+        "mrr@10": 0.3333333333333333,
+        "ndcg@10": 0.5723986829443736
       },
       "bienc": {
         "hit@1": 1.0,
@@ -1238,12 +1296,13 @@
         "IE 313"
       ],
       "category": "IE",
+      "review_status": "existing",
       "rerank_top5": [
         "IE 312",
         "IE 411",
         "OPIM 402",
         "IE 311",
-        "ENRG 420"
+        "IF 467"
       ],
       "bienc_top5": [
         "IE 312",
@@ -1258,7 +1317,7 @@
         "recall@5": 0.6666666666666666,
         "recall@10": 1.0,
         "mrr@10": 1.0,
-        "ndcg@10": 0.8385465274895063
+        "ndcg@10": 0.8278123145308894
       },
       "bienc": {
         "hit@1": 1.0,
@@ -1276,6 +1335,7 @@
         "CS 303"
       ],
       "category": "CS-core",
+      "review_status": "existing",
       "rerank_top5": [
         "CS 303",
         "EE 302",
@@ -1288,7 +1348,7 @@
         "EE 401",
         "EE 302",
         "EE 202",
-        "EE 310"
+        "EE 402"
       ],
       "rerank": {
         "hit@1": 1.0,
@@ -1314,19 +1374,20 @@
         "CS 401"
       ],
       "category": "CS-elective",
+      "review_status": "existing",
       "rerank_top5": [
         "CS 401",
+        "EE 48008",
+        "DSA 428",
         "CS 307",
-        "CS 48008",
-        "EE 308",
-        "CS 408"
+        "CS 48008"
       ],
       "bienc_top5": [
         "CS 401",
+        "EE 48008",
         "CS 406",
-        "EE 308",
-        "EE 401",
-        "CS 303"
+        "EE 402",
+        "EE 308"
       ],
       "rerank": {
         "hit@1": 1.0,
@@ -1343,6 +1404,403 @@
         "recall@10": 1.0,
         "mrr@10": 1.0,
         "ndcg@10": 1.0
+      }
+    },
+    {
+      "id": "q35",
+      "query": "I want to make factories and service operations run more efficiently",
+      "gold": [
+        "IE 304",
+        "IE 401"
+      ],
+      "category": "IE",
+      "review_status": "provisional",
+      "rerank_top5": [
+        "IE 435",
+        "ENRG 420",
+        "OPIM 407",
+        "IE 404",
+        "ENRG 426"
+      ],
+      "bienc_top5": [
+        "IE 401",
+        "IE 304",
+        "IE 435",
+        "OPIM 301",
+        "IE 313"
+      ],
+      "rerank": {
+        "hit@1": 0.0,
+        "hit@5": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "mrr@10": 0.0,
+        "ndcg@10": 0.0
+      },
+      "bienc": {
+        "hit@1": 1.0,
+        "hit@5": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@10": 1.0
+      }
+    },
+    {
+      "id": "q36",
+      "query": "How can companies manage inventory and move products through a supply chain?",
+      "gold": [
+        "IE 454",
+        "IE 430",
+        "OPIM 401"
+      ],
+      "category": "IE",
+      "review_status": "provisional",
+      "rerank_top5": [
+        "OPIM 401",
+        "IE 454",
+        "IE 401",
+        "IE 430",
+        "OPIM 408"
+      ],
+      "bienc_top5": [
+        "OPIM 401",
+        "IE 454",
+        "IE 401",
+        "OPIM 301",
+        "MKTG 412"
+      ],
+      "rerank": {
+        "hit@1": 1.0,
+        "hit@5": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@10": 0.9674679834891693
+      },
+      "bienc": {
+        "hit@1": 1.0,
+        "hit@5": 1.0,
+        "recall@5": 0.6666666666666666,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@10": 0.9217868789962071
+      }
+    },
+    {
+      "id": "q37",
+      "query": "I want to test a manufacturing system without disrupting the real factory",
+      "gold": [
+        "IE 305"
+      ],
+      "category": "IE",
+      "review_status": "provisional",
+      "rerank_top5": [
+        "IE 435",
+        "MAT 406",
+        "ENS 410",
+        "IE 48005",
+        "ECON 415"
+      ],
+      "bienc_top5": [
+        "IE 435",
+        "IE 48005",
+        "IE 402",
+        "IE 304",
+        "IE 414"
+      ],
+      "rerank": {
+        "hit@1": 0.0,
+        "hit@5": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.1111111111111111,
+        "ndcg@10": 0.3010299956639812
+      },
+      "bienc": {
+        "hit@1": 0.0,
+        "hit@5": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "mrr@10": 0.0,
+        "ndcg@10": 0.0
+      }
+    },
+    {
+      "id": "q38",
+      "query": "I want to understand why customers choose and buy products",
+      "gold": [
+        "MKTG 402",
+        "MKTG 301"
+      ],
+      "category": "Management",
+      "review_status": "provisional",
+      "rerank_top5": [
+        "FIN 406",
+        "MKTG 402",
+        "MKTG 409",
+        "MKTG 413",
+        "MGMT 413"
+      ],
+      "bienc_top5": [
+        "MKTG 402",
+        "OPIM 408",
+        "MKTG 409",
+        "MKTG 413",
+        "ECON 435"
+      ],
+      "rerank": {
+        "hit@1": 0.0,
+        "hit@5": 1.0,
+        "recall@5": 0.5,
+        "recall@10": 1.0,
+        "mrr@10": 0.5,
+        "ndcg@10": 0.5640920940185894
+      },
+      "bienc": {
+        "hit@1": 1.0,
+        "hit@5": 1.0,
+        "recall@5": 0.5,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@10": 0.8175295903539445
+      }
+    },
+    {
+      "id": "q39",
+      "query": "How do I analyze economic data and test whether an economic theory holds?",
+      "gold": [
+        "ECON 301",
+        "ECON 401"
+      ],
+      "category": "Economics",
+      "review_status": "provisional",
+      "rerank_top5": [
+        "ECON 301",
+        "ECON 405",
+        "PSIR 311",
+        "IE 303",
+        "ECON 204"
+      ],
+      "bienc_top5": [
+        "ECON 401",
+        "ECON 430",
+        "ECON 204",
+        "ECON 202",
+        "ECON 345"
+      ],
+      "rerank": {
+        "hit@1": 1.0,
+        "hit@5": 1.0,
+        "recall@5": 0.5,
+        "recall@10": 0.5,
+        "mrr@10": 1.0,
+        "ndcg@10": 0.6131471927654584
+      },
+      "bienc": {
+        "hit@1": 1.0,
+        "hit@5": 1.0,
+        "recall@5": 0.5,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@10": 0.7903864795495061
+      }
+    },
+    {
+      "id": "q40",
+      "query": "I want to learn how investors choose stocks and build portfolios",
+      "gold": [
+        "FIN 402"
+      ],
+      "category": "Finance",
+      "review_status": "provisional",
+      "rerank_top5": [
+        "FIN 408",
+        "FIN 402",
+        "ENT 201",
+        "FIN 301",
+        "FIN 499"
+      ],
+      "bienc_top5": [
+        "FIN 402",
+        "FIN 407",
+        "FIN 499",
+        "FIN 403",
+        "FIN 401"
+      ],
+      "rerank": {
+        "hit@1": 0.0,
+        "hit@5": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.5,
+        "ndcg@10": 0.6309297535714575
+      },
+      "bienc": {
+        "hit@1": 1.0,
+        "hit@5": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@10": 1.0
+      }
+    },
+    {
+      "id": "q41",
+      "query": "I want to build robots that can move and act on their own",
+      "gold": [
+        "ME 403",
+        "ME 425"
+      ],
+      "category": "ME",
+      "review_status": "provisional",
+      "rerank_top5": [
+        "ENT 201",
+        "ME 425",
+        "ME 403",
+        "CS 48011",
+        "MGMT 426"
+      ],
+      "bienc_top5": [
+        "ME 403",
+        "ME 425",
+        "CS 48012",
+        "MGMT 426",
+        "PHIL 370"
+      ],
+      "rerank": {
+        "hit@1": 0.0,
+        "hit@5": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.5,
+        "ndcg@10": 0.6934264036172708
+      },
+      "bienc": {
+        "hit@1": 1.0,
+        "hit@5": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 1.0,
+        "ndcg@10": 1.0
+      }
+    },
+    {
+      "id": "q42",
+      "query": "I care about renewable energy and sustainable power systems",
+      "gold": [
+        "ME 420",
+        "ENRG 301"
+      ],
+      "category": "Energy",
+      "review_status": "provisional",
+      "rerank_top5": [
+        "ME 420",
+        "ENRG 322",
+        "ENRG 420",
+        "IF 201",
+        "ENRG 423"
+      ],
+      "bienc_top5": [
+        "ME 420",
+        "ENRG 401",
+        "MGMT 301",
+        "ENRG 423",
+        "ENRG 322"
+      ],
+      "rerank": {
+        "hit@1": 1.0,
+        "hit@5": 1.0,
+        "recall@5": 0.5,
+        "recall@10": 0.5,
+        "mrr@10": 1.0,
+        "ndcg@10": 0.6131471927654584
+      },
+      "bienc": {
+        "hit@1": 1.0,
+        "hit@5": 1.0,
+        "recall@5": 0.5,
+        "recall@10": 0.5,
+        "mrr@10": 1.0,
+        "ndcg@10": 0.6131471927654584
+      }
+    },
+    {
+      "id": "q43",
+      "query": "How can a production line reduce defects and control process variation?",
+      "gold": [
+        "IE 403"
+      ],
+      "category": "IE",
+      "review_status": "provisional",
+      "rerank_top5": [
+        "OPIM 416",
+        "IE 403",
+        "ENS 208",
+        "IE 402",
+        "MAT 402"
+      ],
+      "bienc_top5": [
+        "IE 435",
+        "OPIM 416",
+        "IE 304",
+        "IE 403",
+        "IE 402"
+      ],
+      "rerank": {
+        "hit@1": 0.0,
+        "hit@5": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.5,
+        "ndcg@10": 0.6309297535714575
+      },
+      "bienc": {
+        "hit@1": 0.0,
+        "hit@5": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.25,
+        "ndcg@10": 0.43067655807339306
+      }
+    },
+    {
+      "id": "q44",
+      "query": "I need methods for making decisions when outcomes are uncertain",
+      "gold": [
+        "IE 405"
+      ],
+      "category": "IE",
+      "review_status": "provisional",
+      "rerank_top5": [
+        "OPIM 410",
+        "IF 467",
+        "IE 405",
+        "SPS 201",
+        "MGMT 417"
+      ],
+      "bienc_top5": [
+        "OPIM 410",
+        "IE 405",
+        "IF 467",
+        "PSIR 311",
+        "ECON 482"
+      ],
+      "rerank": {
+        "hit@1": 0.0,
+        "hit@5": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.3333333333333333,
+        "ndcg@10": 0.5
+      },
+      "bienc": {
+        "hit@1": 0.0,
+        "hit@5": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "mrr@10": 0.5,
+        "ndcg@10": 0.6309297535714575
       }
     }
   ],

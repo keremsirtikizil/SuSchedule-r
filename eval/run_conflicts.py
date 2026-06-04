@@ -9,10 +9,10 @@ Two parts:
    multi-day meetings. We measure accuracy / precision / recall of
    `meetings_overlap`.
 
-2. SOUNDNESS ON REAL DATA -- run `build_timetable` on several real course
-   bundles for an actual term and assert the returned assignment is genuinely
-   conflict-free (`conflict_report` on the chosen picks must be empty). A
-   scheduler that returns overlapping picks would be unsound.
+2. REAL COURSE BUNDLES -- add each lecture's required recitations/labs, run
+   `build_timetable` for a real term, and verify the returned schedule has no
+   overlaps. The cases include bundles we know should fit and bundles we know
+   should not.
 
 Runs fully locally (no OpenAI). Usage:
     python -m eval.run_conflicts
@@ -22,6 +22,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from scheduler.catalog import Catalog, corequisite_codes
 from scheduler.timetable import (
     meetings_overlap, conflict_report, build_timetable,
     load_offerings, resolve_schedule_term,
@@ -77,22 +78,55 @@ def eval_labeled_pairs() -> dict:
     }
 
 
-# Real bundles to schedule (a feasible one + a known clashing pair).
+# These start as lecture choices. The test adds their required labs and
+# recitations before asking the timetable builder to place them.
 REAL_BUNDLES = [
-    ["CS 201", "MATH 101"],
-    ["CS 300", "CS 301", "MATH 201"],
-    ["CS 201", "CS 204", "CS 412"],
-    ["CS 306", "CS 307", "CS 308"],
+    {"name": "intro courses", "plan": ["CS 201", "MATH 101"], "expected_feasible": True},
+    {"name": "known constrained bundle", "plan": ["CS 300", "CS 301", "MATH 201"], "expected_feasible": False},
+    {"name": "machine learning bundle", "plan": ["CS 201", "CS 204", "CS 412"], "expected_feasible": True},
+    {
+        "name": "software systems lectures fit but required sessions do not",
+        "plan": ["CS 306", "CS 307", "CS 308"],
+        "expected_feasible": False,
+    },
+    {
+        "name": "lecture fits but recitation conflicts",
+        "plan": ["CS 412", "CS 302"],
+        "expected_feasible": False,
+    },
+    {
+        "name": "multiple required labs and recitations fit",
+        "plan": ["CS 302", "CS 308"],
+        "expected_feasible": True,
+    },
 ]
+
+
+def expand_with_corequisites(catalog: Catalog, plan: list[str]) -> tuple[list[str], list[str]]:
+    expanded: list[str] = []
+    added: list[str] = []
+    for code in plan:
+        if code not in expanded:
+            expanded.append(code)
+        for coreq in corequisite_codes(catalog, code):
+            if coreq not in expanded:
+                expanded.append(coreq)
+                added.append(coreq)
+    return expanded, added
 
 
 def eval_soundness() -> dict:
     offerings = load_offerings()
+    catalog = Catalog.load()
     term, is_proxy = resolve_schedule_term(offerings, "202601")
     results = []
     unsound = 0
-    for plan in REAL_BUNDLES:
-        res = build_timetable(plan, term, offerings)
+    wrong_feasibility = 0
+    incomplete_coreq_picks = 0
+    for bundle in REAL_BUNDLES:
+        plan = bundle["plan"]
+        expanded, added_coreqs = expand_with_corequisites(catalog, plan)
+        res = build_timetable(expanded, term, offerings)
         picks = []
         for p in res.picks:
             picks.append({"label": p.get("label", p.get("code", "?")), "meetings": p.get("meetings", [])})
@@ -100,15 +134,37 @@ def eval_soundness() -> dict:
         sound = len(clashes) == 0  # a feasible result must be conflict-free
         if res.ok and not sound:
             unsound += 1
+        feasibility_correct = res.ok == bundle["expected_feasible"]
+        if not feasibility_correct:
+            wrong_feasibility += 1
+        picked_codes = {p.get("code") for p in res.picks}
+        coreqs_present_when_feasible = not res.ok or set(added_coreqs).issubset(picked_codes)
+        if not coreqs_present_when_feasible:
+            incomplete_coreq_picks += 1
         results.append({
-            "plan": plan, "schedule_term": term, "feasible": res.ok,
+            "name": bundle["name"],
+            "plan": plan,
+            "expanded_plan": expanded,
+            "auto_added_corequisites": added_coreqs,
+            "schedule_term": term,
+            "expected_feasible": bundle["expected_feasible"],
+            "feasible": res.ok,
+            "feasibility_correct": feasibility_correct,
+            "corequisites_present_when_feasible": coreqs_present_when_feasible,
             "picks": [p["label"] for p in picks],
             "residual_conflicts": len(clashes),
             "missing": res.missing,
         })
-    return {"schedule_term": term, "is_proxy": is_proxy,
-            "n_bundles": len(REAL_BUNDLES), "unsound_results": unsound,
-            "bundles": results}
+    return {
+        "schedule_term": term,
+        "is_proxy": is_proxy,
+        "n_bundles": len(REAL_BUNDLES),
+        "unsound_results": unsound,
+        "wrong_feasibility_results": wrong_feasibility,
+        "incomplete_corequisite_picks": incomplete_coreq_picks,
+        "feasibility_accuracy": round((len(REAL_BUNDLES) - wrong_feasibility) / len(REAL_BUNDLES), 4),
+        "bundles": results,
+    }
 
 
 def main() -> None:
@@ -124,10 +180,16 @@ def main() -> None:
     sound = eval_soundness()
     print("\n=== build_timetable soundness on real bundles ===")
     print(f"  schedule_term={sound['schedule_term']} (proxy={sound['is_proxy']})  "
-          f"bundles={sound['n_bundles']}  unsound={sound['unsound_results']}")
+          f"bundles={sound['n_bundles']}  unsound={sound['unsound_results']}  "
+          f"feasibility_accuracy={sound['feasibility_accuracy']:.3f}  "
+          f"incomplete_coreqs={sound['incomplete_corequisite_picks']}")
     for b in sound["bundles"]:
-        flag = "OK " if (not b["feasible"] or b["residual_conflicts"] == 0) else "BAD"
-        print(f"  [{flag}] {b['plan']} -> feasible={b['feasible']} "
+        flag = "OK " if (
+            b["feasibility_correct"]
+            and b["corequisites_present_when_feasible"]
+            and (not b["feasible"] or b["residual_conflicts"] == 0)
+        ) else "BAD"
+        print(f"  [{flag}] {b['name']}: {b['plan']} + {b['auto_added_corequisites']} -> feasible={b['feasible']} "
               f"picks={len(b['picks'])} residual_conflicts={b['residual_conflicts']}"
               + (f" missing={b['missing']}" if b['missing'] else ""))
 

@@ -1,83 +1,289 @@
 {
-  "n": 8,
+  "n": 12,
+  "dataset_sha256": "d61a987bd5362895a3e1c3198898451516eec81c8fcaa84b2b169a7ac4e399c2",
   "mode": "react",
-  "grounding_accuracy": 1.0,
-  "avg_latency_s": 6.7,
-  "avg_tokens": 6155.9,
+  "answer_grounding_accuracy": 0.9167,
+  "action_success_accuracy": 1.0,
+  "task_success_accuracy": 0.9167,
+  "avg_latency_s": 8.59,
+  "avg_tokens": 6691.0,
   "avg_tool_calls": 0.5,
+  "by_review_status": {
+    "existing": {
+      "n": 11,
+      "answer_grounding_accuracy": 1.0,
+      "action_success_accuracy": 1.0,
+      "task_success_accuracy": 1.0
+    },
+    "provisional": {
+      "n": 1,
+      "answer_grounding_accuracy": 0.0,
+      "action_success_accuracy": 1.0,
+      "task_success_accuracy": 0.0
+    }
+  },
   "per_question": [
     {
       "id": "a01",
       "kind": "fact-credit",
       "q": "How many SU credits is CS 412?",
-      "grounded": true,
-      "latency_s": 2.66,
-      "tokens": 3611,
-      "tool_calls": 0
+      "answer": "The course CS 412, titled \"Machine Learning,\" is worth 3.0 SU credits.",
+      "answer_grounded": true,
+      "action_ok": true,
+      "task_success": true,
+      "failures": [],
+      "mentioned_course_codes": [
+        "CS 412"
+      ],
+      "observed_actions": [
+        "get_course_details"
+      ],
+      "missing_actions": [],
+      "latency_s": 2.64,
+      "tokens": 7932,
+      "tool_calls": 1,
+      "review_status": "existing"
     },
     {
       "id": "a02",
       "kind": "fact-prereq",
       "q": "What are the prerequisites for CS 301?",
-      "grounded": true,
-      "latency_s": 2.56,
-      "tokens": 7442,
-      "tool_calls": 1
+      "answer": "The prerequisites for CS 301, titled \"Algorithms,\" are:\n\n- **MATH 204** with a minimum grade of D\n- **CS 300** with a minimum grade of D\n\nAdditionally, the course CS 301 requires a corequisite, **CS 301R**. Since you are currently taking CS 301, you meet these prerequisites.",
+      "answer_grounded": true,
+      "action_ok": true,
+      "task_success": true,
+      "failures": [],
+      "mentioned_course_codes": [
+        "CS 300",
+        "CS 301",
+        "CS 301R",
+        "MATH 204"
+      ],
+      "observed_actions": [
+        "check_prereqs"
+      ],
+      "missing_actions": [],
+      "latency_s": 2.17,
+      "tokens": 7483,
+      "tool_calls": 1,
+      "review_status": "existing"
     },
     {
       "id": "a03",
       "kind": "fact-prereq",
       "q": "What is the prerequisite for CS 307?",
-      "grounded": true,
-      "latency_s": 2.35,
-      "tokens": 7557,
-      "tool_calls": 1
+      "answer": "The prerequisite for CS 307, titled \"Operating Systems,\" is:\n\n- **CS 204** with a minimum grade of D\n\nAdditionally, it requires a corequisite, **CS 307R**. You have already completed CS 307, so you have met these prerequisites.",
+      "answer_grounded": true,
+      "action_ok": true,
+      "task_success": true,
+      "failures": [],
+      "mentioned_course_codes": [
+        "CS 204",
+        "CS 307",
+        "CS 307R"
+      ],
+      "observed_actions": [
+        "check_prereqs"
+      ],
+      "missing_actions": [],
+      "latency_s": 1.99,
+      "tokens": 7637,
+      "tool_calls": 1,
+      "review_status": "existing"
     },
     {
       "id": "a04",
       "kind": "fact-topic",
       "q": "What does CS 445 cover?",
-      "grounded": true,
-      "latency_s": 3.05,
-      "tokens": 8291,
-      "tool_calls": 1
+      "answer": "CS 445, titled \"Natural Language Processing,\" covers the theory, design, and implementation of natural language processing systems. The topics include:\n\n- Text processing\n- Regular expressions\n- Statistical properties of text\n- Edit distance\n- Language modeling\n- Text classification\n- Sequence modeling\n- Topic modeling\n- Computational morphology\n- Neural networks for NLP\n- Chatbots\n- Transfer learning for NLP\n\nThis course is structured to provide a comprehensive understanding of natural language processing technologies.",
+      "answer_grounded": true,
+      "action_ok": true,
+      "task_success": true,
+      "failures": [],
+      "mentioned_course_codes": [
+        "CS 445"
+      ],
+      "observed_actions": [
+        "get_course_details"
+      ],
+      "missing_actions": [],
+      "latency_s": 8.83,
+      "tokens": 8382,
+      "tool_calls": 1,
+      "review_status": "existing"
     },
     {
       "id": "a05",
       "kind": "fact-prereq",
       "q": "Does CS 411 require a math prerequisite, and which one?",
-      "grounded": true,
-      "latency_s": 1.99,
-      "tokens": 7913,
-      "tool_calls": 1
+      "answer": "Yes, CS 411, titled \"Cryptography,\" requires a math prerequisite:\n\n- **MATH 204** with a minimum grade of D\n\nYou have already completed MATH 204, so you have met this prerequisite if you choose to take the course in the next term.",
+      "answer_grounded": true,
+      "action_ok": true,
+      "task_success": true,
+      "failures": [],
+      "mentioned_course_codes": [
+        "CS 411",
+        "MATH 204"
+      ],
+      "observed_actions": [
+        "check_prereqs"
+      ],
+      "missing_actions": [],
+      "latency_s": 2.13,
+      "tokens": 8014,
+      "tool_calls": 1,
+      "review_status": "existing"
     },
     {
       "id": "a06",
       "kind": "fact-topic",
       "q": "Is CS 412 a machine learning course?",
-      "grounded": true,
-      "latency_s": 1.43,
-      "tokens": 4009,
-      "tool_calls": 0
+      "answer": "Yes, CS 412 is indeed a machine learning course. It is specifically titled \"Machine Learning\" and covers various aspects of machine learning algorithms and techniques.",
+      "answer_grounded": true,
+      "action_ok": true,
+      "task_success": true,
+      "failures": [],
+      "mentioned_course_codes": [
+        "CS 412"
+      ],
+      "observed_actions": [],
+      "missing_actions": [],
+      "latency_s": 9.49,
+      "tokens": 4022,
+      "tool_calls": 0,
+      "review_status": "existing"
     },
     {
       "id": "a07",
       "kind": "fact-topic",
       "q": "What is CS 307 about?",
-      "grounded": true,
-      "latency_s": 13.53,
-      "tokens": 4095,
-      "tool_calls": 0
+      "answer": "CS 307, titled \"Operating Systems,\" focuses on the fundamental concepts of operating systems. The course covers topics such as:\n\n- Process management\n- Threading and concurrency\n- Memory management\n- File systems\n- Input/output systems\n- Security and protection\n- Virtualization\n\nIt aims to provide a comprehensive understanding of how operating systems function as resource managers and support various computing environments.",
+      "answer_grounded": true,
+      "action_ok": true,
+      "task_success": true,
+      "failures": [],
+      "mentioned_course_codes": [
+        "CS 307"
+      ],
+      "observed_actions": [],
+      "missing_actions": [],
+      "latency_s": 8.73,
+      "tokens": 4115,
+      "tool_calls": 0,
+      "review_status": "existing"
     },
     {
       "id": "a08",
       "kind": "recommendation",
       "q": "Recommend one theoretical computer science elective I could take.",
-      "grounded": true,
-      "latency_s": 26.03,
-      "tokens": 6329,
-      "tool_calls": 0
+      "answer": "Based on your interest in theoretical computer science and your current eligibility, I recommend considering **CS 400 - Logic in Computer Science**. \n\nThis course delves into propositional and first-order logic, covering topics such as soundness and completeness, incompleteness, undecidability, and logical issues in computer science, including decision procedures and formal systems. It's a strong choice if you're focused on the theoretical aspects of computer science. \n\nIf you'd like to explore more options or need further assistance with planning, feel free to ask!",
+      "answer_grounded": true,
+      "action_ok": true,
+      "task_success": true,
+      "failures": [],
+      "mentioned_course_codes": [
+        "CS 400"
+      ],
+      "observed_actions": [
+        "get_requirement_state",
+        "retrieve_catalog_courses",
+        "select_degree_graphs"
+      ],
+      "missing_actions": [],
+      "latency_s": 21.72,
+      "tokens": 6364,
+      "tool_calls": 0,
+      "review_status": "existing"
+    },
+    {
+      "id": "a09",
+      "kind": "recommendation",
+      "q": "Recommend one course about computer networks and explain what it covers.",
+      "answer": "For a course focused on computer networks, I would recommend **CS 408 - Computer Networks**. Although you've already completed this course, it's a fundamental course that provides insight into network architectures and protocols.\n\n**CS 408 - Computer Networks** covers a range of topics essential to understanding computer networks:\n\n- Network architectures\n- Circuit and packet switching\n- Local and wide-area networks\n- Network technologies and topologies\n- Data link, network, and transport layer protocols\n- Routing and addressing\n- Network congestion and control\n\nThese topics form the backbone of knowledge needed for anyone interested in working with networked systems and communication technologies. If you're interested in more advanced or specialized topics within networking, please let me know!",
+      "answer_grounded": true,
+      "action_ok": true,
+      "task_success": true,
+      "failures": [],
+      "mentioned_course_codes": [
+        "CS 408"
+      ],
+      "observed_actions": [
+        "retrieve_catalog_courses",
+        "select_degree_graphs"
+      ],
+      "missing_actions": [],
+      "latency_s": 11.67,
+      "tokens": 6211,
+      "tool_calls": 0,
+      "review_status": "existing"
+    },
+    {
+      "id": "a10",
+      "kind": "fact-corequisite",
+      "q": "Does CS 412 require a recitation?",
+      "answer": "Yes, CS 412, titled \"Machine Learning,\" requires a corequisite recitation, which is **CS 412R**. You should ensure to enroll in both the lecture and the recitation components when you take this course.",
+      "answer_grounded": true,
+      "action_ok": true,
+      "task_success": true,
+      "failures": [],
+      "mentioned_course_codes": [
+        "CS 412",
+        "CS 412R"
+      ],
+      "observed_actions": [],
+      "missing_actions": [],
+      "latency_s": 1.29,
+      "tokens": 4466,
+      "tool_calls": 0,
+      "review_status": "existing"
+    },
+    {
+      "id": "a11",
+      "kind": "timetable",
+      "q": "Can CS 412 and CS 302 be scheduled together in the target term?",
+      "answer": "CS 412 and CS 302 cannot be scheduled together without a time conflict in the target term. The scheduling uses the most recent same-season term as a proxy, so these times are typical but may shift.\n\nIt would be best to consider alternative scheduling options or different elective choices if needed to avoid conflicts.",
+      "answer_grounded": true,
+      "action_ok": true,
+      "task_success": true,
+      "failures": [],
+      "mentioned_course_codes": [
+        "CS 302",
+        "CS 412"
+      ],
+      "observed_actions": [
+        "build_timetable"
+      ],
+      "missing_actions": [],
+      "latency_s": 17.76,
+      "tokens": 9276,
+      "tool_calls": 1,
+      "review_status": "existing"
+    },
+    {
+      "id": "a12",
+      "kind": "recommendation",
+      "q": "I enjoy optimization and operations research. Suggest one course I could explore.",
+      "answer": "For your interest in optimization and operations research, consider exploring **CS 306 - Database Systems**. While it primarily focuses on database management, the design and optimization techniques in database query optimization can offer valuable insights into efficient data management and retrieval, which are relevant to operations research.\n\n**CS 306 - Database Systems** covers:\n\n- Fundamental topics in database management systems\n- Data abstraction and independence\n- Data definition and manipulation languages\n- Entity-relationship and relational data models\n- Integrity constraints\n- Schema design\n- Functional dependencies\n- Normal forms\n- Relational algebra and calculus, and query optimization\n\nThese topics provide an excellent foundation for understanding how optimization is applied within the context of databases, contributing to a broader knowledge base in operations research.\n\nConsider adding this to your educational plan if it aligns with your interests!",
+      "answer_grounded": false,
+      "action_ok": true,
+      "task_success": false,
+      "failures": [
+        "missing any accepted course code: ['IE 311', 'IE 312', 'IE 313']",
+        "contains unexpected course codes: ['CS 306']"
+      ],
+      "mentioned_course_codes": [
+        "CS 306"
+      ],
+      "observed_actions": [
+        "retrieve_catalog_courses",
+        "select_degree_graphs"
+      ],
+      "missing_actions": [],
+      "latency_s": 14.64,
+      "tokens": 6390,
+      "tool_calls": 0,
+      "review_status": "provisional"
     }
   ],
-  "total_session_tokens": 49247
+  "total_session_tokens": 80292
 }
