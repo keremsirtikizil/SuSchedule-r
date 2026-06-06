@@ -611,6 +611,13 @@ The current ReAct implementation is intentionally not fully token-optimized. In 
 
 The cost risk is context growth. Each later turn may carry more conversation history, structured profile context, and tool traces, so per-message cost can grow quickly over long conversations. It is not mathematically exponential per API call, but in practice it feels steep if every turn resends a large accumulated context. To control this, the implementation caps conversation history at \textbf{25 turns}, caps ReAct iterations at \textbf{8}, compacts tool traces before storing them, and uses local/no-cost evaluation runners whenever possible. Further token optimization is possible through stronger tool-call planning, shorter tool results, better citation summaries, and more selective context injection.
 
+\subsection{Agentic Design Tradeoff}
+The agentic structure is useful but not perfect. During development, several serious behavioral problems were fixed by adding focused tools or guardrail-style helper functions: scoped degree retrieval, current-schedule inspection, candidate-vs-current-schedule checking, Engineering/Basic-Science credit lookup, minor progress, and title-mismatch repair. This was an effective engineering path because each tool removed a repeated failure mode from the LLM's free-form reasoning.
+
+However, the final 22-tool interface is not necessarily the cleanest possible agent design. Some tools are rarely called, and a few return information that is helpful but not always critical. A more mature version could merge related tools, simplify the schema, and build a smaller set of higher-level task tools. That would likely reduce prompt tokens, reduce malformed tool-call risk, and improve latency.
+
+We tried to reduce the tool surface during iteration, but the model lost useful abilities when important distinctions were collapsed too aggressively. For example, checking a candidate course against the student's fixed schedule is not the same action as building a brand-new timetable; exact Engineering/Basic-Science credit lookup is not the same as semantic course retrieval; and degree-section retrieval should not search the whole catalog. The current design therefore favors reliable behavior over minimality. It achieves the desired user-facing behavior, but future work should revisit the tool taxonomy and measure which tools can be safely merged or removed.
+
 \subsection{Scoreboard}
 \begin{table}[h]
 \centering
@@ -728,7 +735,7 @@ We did not use LLMs to fabricate results. Metrics in this report come from versi
 
 SuSchedule-r satisfies the CS 455 application/system-building goal: it is a working LLM-powered course scheduler-assistant with RAG, ReAct tool use, deterministic parsing, symbolic validation, a web UI, and reproducible evaluation. The system is more complex than a plain chatbot because the LLM is only one layer in a larger grounded architecture. The strongest engineering result is the separation of responsibilities: the model orchestrates and explains, while deterministic tools own catalogue facts, prerequisites, degree requirements, and schedule conflicts.
 
-The project is not perfect. The re-ranker ablation is negative, the requirement engine needs substitution logic, broad recommendation questions still need stronger citation enforcement, and LLM tool calls can still be brittle around small parameter mistakes. These limitations are visible because the evaluation suite is designed to expose them. That makes the project ready for submission: it works, it is runnable, it is evaluated, and it reports its failures honestly.
+The project is not perfect. The re-ranker ablation is negative, the requirement engine needs substitution logic, broad recommendation questions still need stronger citation enforcement, the 22-tool agent interface is effective but not minimal, and LLM tool calls can still be brittle around small parameter mistakes. These limitations are visible because the evaluation suite is designed to expose them. That makes the project ready for submission: it works, it is runnable, it is evaluated, and it reports its failures honestly.
 
 \appendix
 \section{Per-Question Agent Results}
