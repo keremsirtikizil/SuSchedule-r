@@ -51,8 +51,8 @@ Type into the chat, one at a time:
 
 ## 5. Evaluation in one breath (30s)
 > "We evaluated four ways, all reproducible in `eval/`:
-> retrieval Hit@5 = 1.00 / Recall@10 = 0.96; conflict detection 100% on labelled
-> pairs with a provably sound scheduler; 8/8 grounded end-to-end answers.
+> bi-encoder retrieval Hit@5 = 0.977 / Recall@10 = 0.966; conflict detection 100% on labelled
+> pairs with zero unsound schedules; 11/12 grounded end-to-end answers, and 11/11 on reviewed labels.
 > And honestly — the cross-encoder re-ranker didn't help, and our requirement
 > engine over-counts by 4 credits on a course-substitution case. Both are in the
 > report's error analysis."
@@ -60,5 +60,5 @@ Type into the chat, one at a time:
 ## Backup / Q&A facts
 - Catalogue: **817 courses**; prereq graph **721 nodes / 729 edges**, verified DAG.
 - Models: **BGE-base** bi-encoder + **BGE-reranker** cross-encoder; **GPT-4o** agent (**21 tools**).
-- Cost/latency: ~**6k tokens**, ~**1–3 s** per question (26 s once, on first retriever load).
+- Cost/latency: ~**6.7k tokens**, ~**8.6 s** average in the live agent benchmark.
 - Reproduce results: `python -m eval.run_retrieval | run_conflicts | run_requirements | run_agent`.

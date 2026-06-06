@@ -11,33 +11,33 @@ SRC = HERE / "CS455_SuSchedule-r_Report.md"
 OUT_HTML = HERE / "CS455_SuSchedule-r_Report.html"
 
 CSS = """
-@page { size: Letter; margin: 22mm 18mm; }
+@page { size: Letter; margin: 15mm 14mm; }
 * { box-sizing: border-box; }
 body {
   font-family: "Calibri", "Segoe UI", Arial, sans-serif;
-  font-size: 10.5pt; line-height: 1.45; color: #1a1f2e; margin: 0;
+  font-size: 9.3pt; line-height: 1.32; color: #1a1f2e; margin: 0;
 }
-h1 { font-size: 17pt; color: #002776; border-bottom: 2px solid #d8e0f0;
-     padding-bottom: 3px; margin: 18px 0 8px; }
-h2 { font-size: 13pt; color: #1c47a8; margin: 14px 0 6px; }
-h3 { font-size: 11.5pt; color: #002776; margin: 10px 0 4px; }
+h1 { font-size: 15pt; color: #002776; border-bottom: 1.5px solid #d8e0f0;
+     padding-bottom: 2px; margin: 12px 0 5px; }
+h2 { font-size: 11.5pt; color: #1c47a8; margin: 9px 0 4px; }
+h3 { font-size: 10.2pt; color: #002776; margin: 7px 0 3px; }
 h1:first-of-type { margin-top: 0; }
-p { margin: 6px 0; text-align: justify; }
+p { margin: 4px 0; text-align: justify; }
 a { color: #1c47a8; text-decoration: none; }
-table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 9.5pt; }
-th, td { border: 1px solid #c9d2e5; padding: 4px 8px; text-align: left;
+table { border-collapse: collapse; width: 100%; margin: 6px 0; font-size: 8.1pt; }
+th, td { border: 1px solid #c9d2e5; padding: 3px 5px; text-align: left;
          vertical-align: top; }
 th { background: #d8e0f0; color: #002776; font-weight: bold; }
 tr:nth-child(even) td { background: #f1f4fa; }
-code { font-family: "Consolas", monospace; font-size: 9pt;
+code { font-family: "Consolas", monospace; font-size: 8.2pt;
        background: #f1f4fa; padding: 0 3px; border-radius: 3px; }
 pre { background: #f6f8fc; border: 1px solid #d8e0f0; border-radius: 4px;
-      padding: 8px 10px; overflow: hidden; }
-pre code { font-size: 7.6pt; line-height: 1.2; background: none; padding: 0;
+      padding: 5px 7px; overflow: hidden; margin: 5px 0; }
+pre code { font-size: 6.7pt; line-height: 1.1; background: none; padding: 0;
            white-space: pre; }
-hr { border: none; border-top: 1px solid #d8e0f0; margin: 14px 0; }
-ul, ol { margin: 6px 0 6px 0; padding-left: 22px; }
-li { margin: 2px 0; }
+hr { border: none; border-top: 1px solid #d8e0f0; margin: 8px 0; }
+ul, ol { margin: 4px 0 4px 0; padding-left: 18px; }
+li { margin: 1px 0; }
 strong { color: #0e1730; }
 h1, h2, h3 { page-break-after: avoid; }
 table, pre { page-break-inside: avoid; }

@@ -1,4 +1,9 @@
-"""SuSchedule-r ReAct course-advising agent."""
+"""SuSchedule-r ReAct course-advising agent.
+
+This module is the conversational center of the project. The LLM is allowed to
+choose tools and explain results, but catalog facts, degree rules, prerequisites,
+and schedule conflicts still come from deterministic Python functions.
+"""
 from __future__ import annotations
 
 import json
@@ -181,6 +186,9 @@ def _tool(name: str, description: str, properties: dict, required: list[str] | N
     }
 
 
+# This is the public contract we expose to the model. The descriptions matter:
+# GPT-4o uses them to decide both *which* tool to call and *how* to shape the
+# JSON arguments. Keep them explicit and conservative.
 TOOLS: list[dict] = [
     _tool("get_student_profile", "Return known student context.", {}),
     _tool("set_student_context", "Store degree/admit/completed/in-progress info from chat.", {
@@ -259,6 +267,13 @@ TOOLS: list[dict] = [
 
 
 def _fallback_queries(text: str) -> list[str]:
+    """Cheap query expansion for common student wording.
+
+    Query rewriting normally goes through the LLM, but retrieval should still be
+    useful if that call fails or returns something too narrow. These expansions
+    encode the domain vocabulary students actually use in chat ("LLM",
+    "operations", "networking") into phrases that appear in catalog text.
+    """
     base = text.strip() or "course recommendations"
     low = base.lower()
     queries = [base]
@@ -300,6 +315,7 @@ def _exclude_current_schedule_requested(text: str) -> bool:
 
 
 def _course_recommendation_requested(text: str) -> bool:
+    """Detect turns where prefetching RAG context is worth the extra work."""
     low = text.lower()
     asks_for_courses = re.search(
         r"\b(suggest|recommend|recommendation|which courses|what courses|"
@@ -360,6 +376,12 @@ def _runtime_course_title(session: "PlannerSession", code: str) -> str | None:
 
 
 def _catalog_title_mismatches(session: "PlannerSession", text: str) -> list[dict[str, str]]:
+    """Catch the most damaging hallucination: right code, wrong title.
+
+    The model may retrieve a real course code and then attach a plausible but
+    false title. This post-check compares answer lines against the catalog and
+    triggers a repair turn if the mismatch is strong enough.
+    """
     mismatches: list[dict[str, str]] = []
     if not text.strip():
         return mismatches
@@ -496,14 +518,6 @@ def _infer_context_from_message(session: "PlannerSession", text: str) -> None:
         admit_term = year + {"fall": "01", "spring": "02", "summer": "03"}[season]
     if program or admit_term:
         session.update_manual_context(program=program, admit_term=admit_term)
-
-
-def _is_ie_operations_query(text: str) -> bool:
-    return any(term in text.lower() for term in (
-        "operational", "operations", "operation", "supply chain", "logistics",
-        "production", "inventory", "quality", "scheduling", "manufacturing",
-        "service systems",
-    ))
 
 
 def _infer_section_from_text(text: str) -> str | None:
@@ -693,6 +707,13 @@ def _prefetch_recommendation_context(
     toolbox: "Toolbox",
     user_message: str,
 ) -> str | None:
+    """Front-load RAG context for recommendation-style turns.
+
+    This is a pragmatic guardrail. Without it, the model sometimes answers from
+    memory before deciding to retrieve. We still keep it visible in the trace so
+    demos can show which rewritten queries and filtered candidates shaped the
+    answer.
+    """
     if not _course_recommendation_requested(user_message):
         return None
 
@@ -858,6 +879,14 @@ def _minor_catalog() -> Any:
 
 
 class Toolbox:
+    """All functions the ReAct agent can call.
+
+    The toolbox is intentionally a thin orchestration layer: it normalizes LLM
+    arguments, calls the deterministic modules, and returns compact JSON. Heavy
+    domain logic lives in scheduler.retriever, scheduler.requirements,
+    scheduler.eligibility, scheduler.timetable, etc.
+    """
+
     def __init__(self, session: "PlannerSession") -> None:
         self.session = session
         session._ensure_heavy_state()
@@ -1153,14 +1182,7 @@ class Toolbox:
         if eligible_only:
             pool = set(self.session._eligible_pool)
             if degree_filter and sg is not None:
-                if (
-                    self.session._student
-                    and self.session._student.program == "BSIE-DM"
-                    and not section
-                    and _is_ie_operations_query(joined)
-                ):
-                    scoped = sg.candidate_courses("Required") | sg.candidate_courses("Core Elective")
-                elif section:
+                if section:
                     scoped = sg.candidate_courses(section)
                 elif re.search(r"\bfree\s+elective|free\s+electives\b", joined, re.I):
                     scoped = sg.candidate_courses("Free Elective")
@@ -1175,13 +1197,6 @@ class Toolbox:
         # degree_filter=True (default): scope to the student's degree graph.
         # degree_filter=False: search the full catalog (open exploration).
         if degree_filter and sg is not None:
-            if (
-                self.session._student
-                and self.session._student.program == "BSIE-DM"
-                and not section
-                and _is_ie_operations_query(joined)
-            ):
-                return sg.candidate_courses("Required") | sg.candidate_courses("Core Elective")
             if not section:
                 return sg.candidate_courses("Required") | sg.candidate_courses("Core Elective") | sg.candidate_courses("Area Elective")
             return sg.candidate_courses(section)
@@ -1247,6 +1262,12 @@ class Toolbox:
         section: str | None = None,
         eligible_only: bool = False,
     ) -> list[dict]:
+        """Run catalog RAG with the current planning scope.
+
+        The important choice is the candidate pool: exploratory chat can search
+        the full catalog, but degree-aware advising should stay inside the
+        selected cohort/section graphs and, when possible, the eligible set.
+        """
         k = max(1, min(int(k), 15))
         joined_queries = " ".join(queries or [])
         if section is None:
@@ -1256,20 +1277,6 @@ class Toolbox:
             return [{"error": "eligible_only requires transcript or completed-course context", "needed": ["transcript or completed/in-progress courses"]}]
         if subj is None:
             subj = _subject_filter_from_text(joined_queries)
-        if (
-            subj is None
-            and self.session._student is not None
-            and self.session._student.program == "BSIE-DM"
-            and _is_ie_operations_query(joined_queries)
-        ):
-            subj = ["IE", "OPIM"] if section in ("Area Elective", "Free Elective") else ["IE"]
-        elif (
-            subj is None
-            and self.session._student is not None
-            and self.session._student.program == "BSCS-DM"
-            and _focus_terms_for_queries(queries)
-        ):
-            subj = ["CS", "DSA", "EE", "MATH"]
 
         exclude_scheduled = _exclude_current_schedule_requested(joined_queries)
         scheduled_codes = _current_schedule_codes(self.session)
@@ -1958,6 +1965,12 @@ class Toolbox:
         return payload
 
     def dispatch(self, name: str, arguments: dict) -> Any:
+        """Call one model-requested tool and turn failures into tool results.
+
+        ReAct agents are useful but not perfectly tidy; occasionally the model
+        passes a near-miss argument. Returning a structured error lets the model
+        recover on the next step and keeps the server from crashing mid-demo.
+        """
         method = getattr(self, name, None)
         if method is None or name.startswith("_"):
             return {"error": f"unknown tool: {name}"}
@@ -1973,6 +1986,7 @@ MAX_ITERATIONS = 8
 
 
 def handle_turn(session: "PlannerSession", user_message: str) -> str:
+    """Run one conversational ReAct turn."""
     session.last_trace = []
     session.last_raw_trace = []
     _infer_context_from_message(session, user_message)
@@ -1988,7 +2002,9 @@ def handle_turn(session: "PlannerSession", user_message: str) -> str:
     })
 
     # Keep the system prompt stable for provider-side prompt caching. Runtime
-    # values are injected as labeled context messages below.
+    # values are injected as labeled context messages below, so the model still
+    # sees the current date/term/profile without making the system prompt unique
+    # on every turn.
     from scheduler.prompts import term_label as _term_label
 
     target_term = session.base_request.target_term
@@ -2030,6 +2046,9 @@ def handle_turn(session: "PlannerSession", user_message: str) -> str:
             "content": json.dumps(profile, ensure_ascii=False),
         })
 
+    # Recommendation turns are the highest-risk place for hallucinated course
+    # suggestions, so we retrieve first and feed the candidates as authoritative
+    # context before the model starts its visible ReAct loop.
     recommendation_context = _prefetch_recommendation_context(session, toolbox, user_message)
     if recommendation_context:
         _trace(session, {"type": "prefetched_recommendation_context", "content": recommendation_context})

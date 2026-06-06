@@ -1,567 +1,876 @@
 # SuSchedule-r
 
-A **conversational course-planning agent for Sabancı University** — built as the term project for **CS 455 / CS 555: Large Language Models (Spring 2025/2026)**.
+**A Retrieval-Augmented, Tool-Using Course Scheduler-Assistant for Sabanci University**
 
-The system reads a student's PDF transcript, retrieves semantically relevant courses from the SU catalog via a two-stage RAG pipeline, and builds a graduation-aligned semester plan through either a **fixed 8-stage pipeline** or a **tool-using ReAct loop** backed by GPT-4o. Plans are validated deterministically against real prereq/coreq rules before being shown to the student.
+SuSchedule-r is the CS 455 / CS 555 Large Language Models final project by Kerem Sirtikizil, Cagan Cakir, and Eray Cagan Ozdemir. It is a working course-advising chatbot and schedule checker grounded in Sabanci catalogue data, prerequisite graphs, degree/cohort requirements, course offering history, and a student's uploaded academic context.
+
+The important design decision is simple:
+
+> The LLM explains and orchestrates. Deterministic tools own the facts.
+
+The runtime is primarily a **single GPT-4o ReAct tool-calling agent**, not a multi-agent system. The agent can search the catalog, select scoped degree graphs, inspect requirements, check prerequisites, validate plans, and test schedules, but the hard constraints are computed by Python code.
 
 ---
 
 ## Table of Contents
 
-1. [What this system does](#1-what-this-system-does)
-2. [Architecture](#2-architecture)
-3. [Repository layout](#3-repository-layout)
-4. [Quick start](#4-quick-start)
-5. [Data layer (scraper pipeline)](#5-data-layer-scraper-pipeline)
-6. [FAISS index (embeddings)](#6-faiss-index-embeddings)
-7. [Scheduler modules](#7-scheduler-modules)
-8. [Agent modes](#8-agent-modes)
-9. [CLI usage](#9-cli-usage)
-10. [Web UI](#10-web-ui)
-11. [Data formats](#11-data-formats)
-12. [Verification & regression checks](#12-verification--regression-checks)
-13. [Credits](#13-credits)
+1. [Submission Status](#1-submission-status)
+2. [What the System Does](#2-what-the-system-does)
+3. [Architecture](#3-architecture)
+4. [Repository Layout](#4-repository-layout)
+5. [Setup](#5-setup)
+6. [Run the App](#6-run-the-app)
+7. [Debug CLI](#7-debug-cli)
+8. [Data Pipeline](#8-data-pipeline)
+9. [RAG and FAISS](#9-rag-and-faiss)
+10. [Runtime Modules](#10-runtime-modules)
+11. [Evaluation and Tests](#11-evaluation-and-tests)
+12. [Human-Labeled Datasets](#12-human-labeled-datasets)
+13. [Known Limitations](#13-known-limitations)
+14. [Optional Cleanup](#14-optional-cleanup)
+15. [Use of LLM Assistants](#15-use-of-llm-assistants)
 
 ---
 
-## 1. What this system does
+## 1. Submission Status
 
-| Concern | Where handled | Technology |
+The project is ready for a CS 455 application/system-building submission:
+
+- working FastAPI web app,
+- working ReAct course-advising chatbot,
+- deterministic prerequisite/requirement/schedule engines,
+- FAISS-backed RAG over the Sabanci catalogue,
+- versioned FAISS artifacts for deterministic demos,
+- debug CLI that prints tool calls and tool results,
+- reproducible evaluation suite,
+- final report in `report/`,
+- honest error analysis and limitations.
+
+Current branch during this audit: `eval-1`.
+
+One local code file, `scheduler/react_agent.py`, already had uncommitted changes before this documentation pass. Those changes were preserved and not edited here.
+
+---
+
+## 2. What the System Does
+
+The assistant supports three levels of advice.
+
+| Level | User can do this without profile? | Uses RAG? | Uses degree graph? | Uses transcript / Degree Evaluation? |
+|---|:---:|:---:|:---:|:---:|
+| Exploratory catalog chat | yes | yes | optional | no |
+| Degree-aware advising | degree/cohort needed | yes | yes | optional |
+| Validated planning/scheduling | profile needed | yes | yes | yes |
+
+Example user requests:
+
+- "What does CS 412 cover?"
+- "Suggest theoretical CS electives."
+- "I am a CS student interested in networking and security. Which Core/Area electives fit?"
+- "What requirements do I still need for graduation?"
+- "Can CS 412 and CS 302 fit in my current schedule?"
+- "Plan next semester, but only after checking prerequisites and likely offerings."
+
+The assistant should answer ordinary course questions directly, then offer next actions. It should not silently create a full semester plan unless the user asks for one.
+
+---
+
+## 3. Architecture
+
+The diagrams in this section are Mermaid diagrams, so GitHub renders them as structured architecture figures while keeping the source readable in Markdown.
+
+### High-Level Topology
+
+```mermaid
+flowchart TB
+    U["Student chat message<br/>or file upload"] --> API["FastAPI API layer<br/><code>api/main.py</code>"]
+    API --> S["PlannerSession<br/>history, profile, schedule picks,<br/>current plan, target term"]
+
+    S --> R["GPT-4o ReAct agent<br/><code>scheduler/react_agent.py</code>"]
+    S -. comparison/fallback .-> P["Legacy fixed pipeline<br/><code>scheduler/agent.py</code>"]
+
+    R --> T["Toolbox<br/>22 typed tool functions"]
+
+    T --> RAG["FAISS RAG<br/><code>scheduler/retriever.py</code><br/>BGE embeddings + IndexFlatIP"]
+    T --> G["Scoped degree graphs<br/><code>data/degree_graphs/{program}/{cohort}</code>"]
+    T --> REQ["Requirement engine<br/><code>scheduler/requirements.py</code>"]
+    T --> ELIG["Prereq/coreq validator<br/><code>scheduler/eligibility.py</code>"]
+    T --> TIME["Timetable engine<br/><code>scheduler/timetable.py</code>"]
+    T --> OFF["Offering history<br/><code>scheduler/offerings.py</code>"]
+    T --> DE["Degree Evaluation parser<br/><code>scheduler/degree_eval.py</code>"]
+    T --> CAT["Course catalog<br/><code>data/SU_full_catalog.json</code>"]
+
+    R --> A["Grounded assistant answer<br/>plus suggested next actions"]
+    P --> A
+```
+
+### ReAct Turn Flow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant User
+    participant API as FastAPI
+    participant Session as PlannerSession
+    participant LLM as GPT-4o ReAct
+    participant Tools as Deterministic Toolbox
+    participant Data as Catalog / Graphs / FAISS / Offerings
+
+    User->>API: Chat turn or Check Schedule button
+    API->>Session: Load history + structured state
+    alt transcript or Degree Evaluation uploaded
+        API->>Session: Parse and store authoritative student profile
+    end
+    Session->>LLM: Stable system prompt + profile message + recent turns
+    loop max 8 ReAct iterations
+        LLM->>Tools: tool call with JSON arguments
+        Tools->>Data: scoped lookup / retrieval / validation
+        Data-->>Tools: factual result
+        Tools-->>LLM: normalized tool result
+    end
+    LLM-->>Session: final grounded answer
+    Session-->>API: answer + trace + token usage
+    API-->>User: chat response and visible trace
+```
+
+### Retrieval and Planning Scope
+
+```mermaid
+flowchart LR
+    Q["Original user question"] --> QR["Internal query rewrite<br/>discarded after retrieval"]
+    QR --> F{"Profile context?"}
+    F -- none --> FULL["Search full catalog<br/>817 FAISS vectors"]
+    F -- degree/cohort --> DG["Select scoped degree graphs<br/>Required / Core / Area / Free"]
+    F -- transcript or audit --> EL["Filter by completed courses,<br/>prereqs, requirement section,<br/>and likely offerings"]
+    FULL --> TOPK["Top-k course context"]
+    DG --> TOPK
+    EL --> TOPK
+    TOPK --> ANS["Answer original user wording<br/>do not expose rewritten query"]
+```
+
+### ReAct Mode
+
+The main mode is `react`. GPT-4o receives a system prompt, structured student context, recent history, and tool definitions. It can call tools iteratively and then answer.
+
+Important runtime constraints:
+
+- max ReAct iterations per turn: **8**,
+- history is capped by turn count,
+- structured student state is kept outside message history,
+- transcript/Degree Evaluation context is authoritative,
+- `set_plan()` is guarded by deterministic validation,
+- schedule conflict checks include direct labs/recitations/corequisites.
+
+### Agent Tool Contract
+
+The ReAct agent has one toolbox, but the tools are deliberately separated by responsibility. This is the contract the model is expected to follow:
+
+| Tool | What it does | When the agent should use it |
 |---|---|---|
-| Discover every SU course | `scraper/` | BeautifulSoup + Banner HTML |
-| Parse prereq text → boolean tree | `scraper/prereq_parser.py` | Recursive-descent parser |
-| Build prereq DAG | `scraper/build_graph.py` | NetworkX DiGraph |
-| Eligibility check (hard rules) | `scheduler/eligibility.py` | Symbolic (no LLM) |
-| Timetable / conflict check | `scheduler/timetable.py` | Symbolic (no LLM) |
-| Transcript → student profile | `scheduler/transcript.py` | pdfplumber |
-| Semantic course retrieval | `scheduler/retriever.py` | FAISS + cross-encoder |
-| Graduation requirements | `scheduler/requirements.py` | Degree graph slices |
-| Plan proposal | `scheduler/agent.py` | GPT-4o structured outputs |
-| Plan repair loop | `scheduler/agent.py` | GPT-4o → validate → retry |
-| Conversational session | `scheduler/session.py` | Stateful, history-aware |
-| Intent dispatch (pipeline mode) | `scheduler/intents.py` | GPT-4o-mini classifier |
-| ReAct tool loop | `scheduler/react_agent.py` | GPT-4o with function calling |
-| Web API | `api/main.py` | FastAPI + uvicorn |
-| Web frontend | `api/static/` | Vanilla JS, dark-theme SPA |
+| `get_student_profile` | returns the current structured profile: program, cohort, completed/in-progress courses, loaded Degree Evaluation/transcript state, schedule picks, and requirement summary | whenever the model needs to know whether profile context already exists |
+| `set_student_context` | stores manually provided program, admit term, completed courses, or in-progress courses | only when the user explicitly gives academic context in chat |
+| `select_degree_graphs` | selects scoped graphs from `data/degree_graphs/{program}/{cohort}/` and returns graph metadata | before degree/cohort-specific requirement or elective reasoning |
+| `get_requirement_state` | computes remaining required/core/area/free requirements from selected graphs and official profile data | for graduation-progress and "what do I still need" questions |
+| `get_degree_section_courses` | returns courses inside a selected requirement section, optionally RAG-ranked by a topic query | when the user asks about Required/Core/Area/Free Elective subsets |
+| `get_current_plan` | returns the currently committed plan, if any | when discussing or modifying an already accepted plan |
+| `rewrite_retrieval_queries` | rewrites the latest user message into short internal retrieval queries | before RAG on course-content, focus-area, and recommendation questions |
+| `retrieve_catalog_courses` | searches catalog descriptions with FAISS and optional filters by degree, section, subject, or eligibility | for exploratory course questions and topic-based recommendations |
+| `get_course_details` | exact catalog lookup for course codes, credits, prerequisites, corequisites, and descriptions | for questions naming specific course codes |
+| `get_eligible_courses` | filters scoped graph courses by completed/in-progress courses and prerequisite expressions | for exact takeability after profile context exists |
+| `check_prereqs` | returns prerequisite/corequisite text and eligibility verdict for one course | when the user asks whether they can take a course |
+| `get_offering_pattern` | summarizes historical offering seasons and likely availability | when recommending for a future term or explaining offering uncertainty |
+| `validate_plan` | checks a candidate plan for prerequisites, duplicates, already-taken courses, and credit bounds | only after the user asks for planning or gives courses to validate |
+| `validate_courses` | checks a list of courses individually without committing a plan | when the user asks "can I take these?" |
+| `set_plan` | commits a plan into session state | only after explicit user permission and successful `validate_plan` |
+| `list_minors` | lists available undergraduate minors | for minor discovery questions |
+| `get_minor_requirements` | returns minor rules and student progress when profile data exists | for "how close am I to a minor?" questions |
+| `get_science_engineering_progress` | computes Engineering and Basic-Science ECTS progress | for engineering-degree graduation-credit questions |
+| `find_courses_by_credit_type` | lists courses that actually carry Engineering or Basic-Science ECTS | when the user asks for courses with those credit types |
+| `build_timetable` | builds a conflict-free schedule from real sections and auto-added direct recitations/labs | for "do these courses conflict?" or "build/show schedule" questions |
+| `get_current_schedule` | reads the UI schedule-builder state, including selected recitations/labs and conflicts | when the user asks to check "my current schedule" |
+| `check_courses_against_current_schedule` | tests candidate courses against the fixed current UI schedule | when the user asks whether suggested courses can be added |
+
+This is why the system is not "the LLM remembers course facts." The model decides which tool to call, but the tool result is the source of truth.
+
+### Pipeline Mode
+
+The older `pipeline` mode remains as a comparison/fallback path. It follows a fixed 8-stage planner:
+
+1. parse/load student profile,
+2. compute remaining requirements,
+3. build eligible/offered candidate pool,
+4. retrieve relevant courses,
+5. ask GPT-4o for a structured plan,
+6. validate the plan,
+7. repair violations,
+8. resolve timetable when section data exists.
 
 ---
 
-## 2. Architecture
+## 4. Repository Layout
 
-### 2a. Data layer
-
-```
-Sabancı Banner
-     │ HTTP (cached on disk)
-     ▼
-scraper/discover.py        →  data/discovery_manifest.json   (817 courses, 14 programs)
-scraper/scrape_full.py     →  data/SU_full_catalog.json
-scraper/build_graph.py     →  data/SU_full_graph.gpickle     (721 nodes, 729 prereq edges)
-scraper/build_degree_graphs.py → data/degree_graphs/<PROGRAM>/{Required,Core_Elective,...}.gpickle
-scraper/scrape_offerings.py→  data/offerings_<TERM>.json     (per-term CRN / meeting data)
-```
-
-### 2b. RAG index (built once in Colab)
-
-```
-data/SU_full_catalog.json
-     │
-     ├─ BAAI/bge-base-en-v1.5  (bi-encoder, 768-dim, L2-normalised)
-     │        │
-     │        ▼
-     │  embeddings/su_courses.index      (FAISS IndexFlatIP, 817 vectors)
-     │  embeddings/su_courses.parquet    (metadata DataFrame)
-     │  embeddings/su_courses_embeddings.npy
-     │  embeddings/id_map.json
-     │
-     └─ BAAI/bge-reranker-base  (cross-encoder, re-ranks top-k at query time)
-```
-
-### 2c. Planning session
-
-```
-User turn
-   │
-   ▼
-PlannerSession.handle_turn()
-   │
-   ├── mode="pipeline" ──────────────────────────────────────────────────────┐
-   │       │                                                                  │
-   │   classify_intent()  (gpt-4o)                                            │
-   │       │                                                                  │
-   │   ┌──────────────┐                                                       │
-   │   │ plan intent  │──▶ agent.plan() ──────────────────────────────────────┤
-   │   │              │    Stage 1: load transcript                            │
-   │   │              │    Stage 2: compute_remaining()                        │
-   │   │              │    Stage 3: eligible pool (eligibility + offerings)    │
-   │   │              │    Stage 4: RAG (intent split → retrieve → rerank)     │
-   │   │              │    Stage 5: gpt-4o structured output → PlannerOutput   │
-   │   │              │    Stage 6: validate_plan()                            │
-   │   │              │    Stage 7: repair loop (max 3 iters)                  │
-   │   │              │    Stage 8: timetable resolution                       │
-   │   │ swap/drop/add│──▶ hardcoded handler + re-validate                    │
-   │   │ explain      │──▶ read session.current_plan.reasoning                 │
-   │   └──────────────┘                                                       │
-   │                                                                          │
-   └── mode="react" ──────────────────────────────────────────────────────────┘
-           │
-       react_agent.handle_turn()
-           │
-       [system prompt + history]
-           │
-       ┌────────────────────────────────────────────────────────────────┐
-       │  ReAct loop (max 12 steps)                                     │
-       │                                                                │
-       │  call_with_tools(gpt-4o, messages, TOOLS)                      │
-       │       │                                                        │
-       │  if tool_calls → dispatch → append tool results → repeat       │
-       │  if no tool_calls → return final assistant message             │
-       └────────────────────────────────────────────────────────────────┘
-```
-
-**Tools available to the ReAct agent:**
-
-| Tool | What it does |
-|---|---|
-| `get_student_profile()` | Transcript snapshot (program, completed, in-progress, CGPA) |
-| `get_remaining_requirements()` | What's still needed for graduation |
-| `get_current_plan()` | Currently committed plan + per-course reasoning |
-| `retrieve_courses(query, k, subj)` | Two-stage semantic search (FAISS → cross-encoder) |
-| `check_prereqs(code)` | Full prereq/coreq text + whether student is eligible |
-| `get_offerings(code)` | Historical offering terms + likely-offered flag |
-| `validate_plan(plan)` | Eligibility check — ok/violations/total_credits |
-| `set_plan(plan, reasoning, summary)` | Commit a validated plan to the session |
-
----
-
-## 3. Repository layout
-
-```
+```text
 SuSchedule-r/
-├── README.md
-├── LICENSE                        ← MIT
-├── requirements.txt
-├── .env.example                   ← copy to .env and add OPENAI_API_KEY
-│
-├── notebooks/
-│   └── build_faiss_index.ipynb   ← Colab notebook to build the FAISS index
-│
-├── embeddings/                    ← versioned RAG artifacts for deterministic retrieval
-│   ├── su_courses.parquet         ← 817-row metadata DataFrame
-│   ├── id_map.json                ← row_int → course_code
-│   ├── su_courses_embeddings.npy  ← 817 × 768 normalized embedding matrix
-│   └── su_courses.index           ← FAISS IndexFlatIP over the same rows
+├── api/
+│   ├── main.py                 # FastAPI endpoints and session store
+│   └── static/                 # browser UI: HTML, CSS, JS, logo
 │
 ├── scheduler/
-│   ├── __init__.py
-│   ├── transcript.py              ← PDF transcript → student profile JSON
-│   ├── eligibility.py             ← prereq / coreq / credit-load checker (symbolic)
-│   ├── offerings.py               ← season-aware "likely offered?" filter
-│   ├── timetable.py               ← time-conflict detection, feasible CRN combos
-│   ├── requirements.py            ← graduation requirements per program
-│   ├── retriever.py               ← FAISS bi-encoder + bge-reranker-base (two-stage RAG)
-│   ├── schemas.py                 ← Pydantic + dataclass I/O models (PlannerRequest, TermPlan, …)
-│   ├── llm_client.py              ← OpenAI wrapper (structured outputs, tool calls, retry, usage)
-│   ├── prompts.py                 ← all system / user prompt templates
-│   ├── agent.py                   ← 8-stage pipeline (Phase A/B entry point)
-│   ├── intents.py                 ← intent classifier + swap/drop/add/explain handlers
-│   ├── session.py                 ← stateful conversational session (routes pipeline vs ReAct)
-│   ├── react_agent.py             ← ReAct tool-using loop + Toolbox class
-│   └── cli.py                     ← interactive REPL with slash commands
+│   ├── react_agent.py          # GPT-4o ReAct loop and 22-tool Toolbox
+│   ├── session.py              # stateful chat/session orchestration
+│   ├── llm_client.py           # OpenAI wrapper, tool calls, token usage
+│   ├── retriever.py            # FAISS + BGE RAG retriever
+│   ├── requirements.py         # remaining degree requirements
+│   ├── graph_selector.py       # program/cohort graph selection
+│   ├── degree_eval.py          # official Degree Evaluation HTML parser
+│   ├── transcript.py           # academic-records PDF/JSON parser
+│   ├── eligibility.py          # prerequisite/corequisite/credit validation
+│   ├── timetable.py            # section meeting parser and conflict search
+│   ├── offerings.py            # historical offering pattern helpers
+│   ├── catalog.py              # catalog lookup and lexical helpers
+│   ├── eng_sci.py              # Engineering / Basic-Science ECTS logic
+│   ├── minors.py               # minor requirements/progress helpers
+│   ├── schemas.py              # request/plan dataclasses and schemas
+│   ├── prompts.py              # system/user prompt templates
+│   ├── agent.py                # legacy fixed planner pipeline
+│   ├── intents.py              # legacy intent routing helpers
+│   └── cli.py                  # interactive/debug CLI
 │
-├── api/
-│   ├── __init__.py
-│   ├── main.py                    ← FastAPI backend (6 REST endpoints)
-│   └── static/
-│       ├── index.html             ← SPA shell
-│       ├── style.css              ← dark-theme CSS
-│       └── app.js                 ← drag-and-drop upload, chat, plan sidebar
-│
-├── scraper/                       ← data-layer pipeline (run once)
-│   ├── discover.py                ← Stage 1: enumerate all (subj, num) pairs
-│   ├── scrape_full.py             ← Stage 2: fetch each course-detail page
-│   ├── prereq_parser.py           ← prereq text → boolean expression tree
-│   ├── build_graph.py             ← Stage 3: unified prereq DAG
-│   ├── build_degree_graphs.py     ← Stage 3b: per-(program, section) sub-DAGs
-│   ├── audit_prereqs.py           ← parser coverage diagnostic
-│   └── scrape_offerings.py        ← per-term CRN / meeting scraper
+├── scraper/
+│   ├── discover.py             # discover courses from degree/pool pages
+│   ├── scrape_full.py          # scrape full catalog metadata
+│   ├── scrape_cs.py            # lower-level Banner scraping helpers
+│   ├── prereq_parser.py        # prerequisite text -> boolean expression tree
+│   ├── build_graph.py          # unified prerequisite DAG
+│   ├── build_degree_graphs.py  # per-program/per-cohort/per-section graphs
+│   ├── scrape_offerings.py     # section/CRN/meeting scraper
+│   ├── build_eng_sci.py        # Engineering/Basic-Science credit table
+│   ├── build_minors.py         # minor requirement tables
+│   └── audit_prereqs.py        # parser coverage diagnostics
 │
 ├── data/
-│   ├── SU_full_catalog.json       ← 817 courses, structured
-│   ├── SU_full_graph.gpickle      ← 721-node prereq DAG (NetworkX)
-│   ├── degree_graphs/             ← per-(program, section) sub-DAGs
-│   │   ├── BSCS-DM/
-│   │   │   ├── Required.gpickle
-│   │   │   ├── Core_Elective.gpickle
-│   │   │   ├── Area_Elective.gpickle
-│   │   │   └── Free_Elective.gpickle
-│   │   └── … (14 programs × 4 sections)
-│   ├── offerings_*.json           ← per-term section listings (202401 → 202503)
-│   └── transcript_cagan.json      ← sample parsed transcript
+│   ├── SU_full_catalog.json    # 817 structured courses
+│   ├── SU_full_graph.*         # full prerequisite graph
+│   ├── degree_graphs/          # {program}/{cohort}/{section}.{json,gpickle}
+│   ├── offerings*.json         # term offerings and meeting times
+│   ├── eng_sci_credits.json    # Basic-Science / Engineering ECTS credits
+│   ├── minors.json             # minor requirement data
+│   └── transcript_cagan.json   # sample parsed student context
 │
-├── courses/                       ← cached course-detail HTML pages
-├── degrees/                       ← cached degree-requirements HTML pages
-├── pools/                         ← cached elective-pool HTML pages
-└── offerings/                     ← cached per-term section HTML pages
+├── embeddings/
+│   ├── su_courses.parquet
+│   ├── id_map.json
+│   ├── su_courses_embeddings.npy
+│   └── su_courses.index        # FAISS IndexFlatIP, committed for demos
+│
+├── eval/
+│   ├── retrieval_queries.json  # human-labeled RAG benchmark
+│   ├── agent_questions.json    # human-labeled end-to-end benchmark
+│   ├── general_conversation_questions.json
+│   │                           # human-labeled transcript-free chat benchmark
+│   ├── submission_human_cases.json
+│   │                           # 20-case report coverage matrix
+│   ├── run_retrieval.py
+│   ├── run_conflicts.py
+│   ├── run_requirements.py
+│   ├── run_agent.py
+│   ├── results_*.json
+│   └── agent_transcript.md
+│
+├── report/
+│   ├── CS455_SuSchedule-r_Report.md
+│   ├── CS455_SuSchedule-r_Report.pdf
+│   ├── CS455_SuSchedule-r_Slides.pptx
+│   └── DEMO_SCRIPT.md
+│
+├── courses/ degrees/ pools/ offerings/
+│   └── cached HTML from Banner/SU pages
+│
+├── requirements.txt
+├── .env.example
+└── README.md
 ```
 
 ---
 
-## 4. Quick start
+## 5. Setup
 
-### Prerequisites
-
-- Python 3.10+
-- An OpenAI API key (GPT-4o access required)
-
-### Install
+### 5.1 Clone and Create the Environment
 
 ```bash
-git clone git@github.com:keremsirtikizil/SuSchedule-r.git
+git clone https://github.com/keremsirtikizil/SuSchedule-r.git
 cd SuSchedule-r
-git checkout kero
+
+# Use the submitted branch if it is not already the default branch.
+git switch eval-1
 
 python3 -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Set your API key
+Python 3.10+ is expected. The project has been tested locally with Python 3.12.
+
+### 5.2 Add the API Key
 
 ```bash
 cp .env.example .env
-# then edit .env and set:
-# OPENAI_API_KEY=your_openai_api_key_here
 ```
 
-### (Re)build the FAISS index — one time only
+Then edit `.env`:
 
-Open `notebooks/build_faiss_index.ipynb` in Google Colab (free GPU/CPU runtime works fine), run all cells, then download the four output files from `/content/out/` and place them in `embeddings/`:
-
-```
-embeddings/
-├── su_courses.parquet         ✓ committed
-├── id_map.json                ✓ committed
-├── su_courses_embeddings.npy  ✓ committed
-└── su_courses.index           ✓ committed
+```text
+OPENAI_API_KEY=your_key_here
 ```
 
----
+Do not commit `.env`. It is ignored by git.
 
-## 5. Data layer (scraper pipeline)
+### 5.3 Reproducibility Notes
 
-The scraper runs **once** to build the catalog. All outputs are already committed; only re-run if Sabancı updates its Banner pages.
+The repository includes the built data artifacts needed for a deterministic demo:
+
+- `data/SU_full_catalog.json`
+- `data/degree_graphs/`
+- `data/offerings*.json`
+- `data/eng_sci_credits.json`
+- `data/minors.json`
+- `embeddings/su_courses.index`
+- `embeddings/su_courses_embeddings.npy`
+- `embeddings/su_courses.parquet`
+- `embeddings/id_map.json`
+
+Reviewers do **not** need to rerun the scraper pipeline or rebuild FAISS before testing the submitted system.
+
+Without an OpenAI API key, these local checks still run:
 
 ```bash
-source .venv/bin/activate
-
-# Stage 1a: enumerate courses from degree pages (~30 s)
-python -m scraper.discover --degrees
-
-# Stage 1b (optional): brute-force subject ranges for orphan courses (~1.5 h)
-python -m scraper.discover --subjects
-
-# Stage 2: fetch each course-detail page (cached in courses/)
-python -m scraper.scrape_full
-
-# Stage 3a: unified prereq DAG (721 nodes, 729 edges, 100% parse coverage)
-python -m scraper.build_graph --full
-
-# Stage 3b: per-(degree, section) sub-DAGs
-python -m scraper.build_degree_graphs
-
-# Audit parser coverage (should report: strict=426, all others=0 failures)
+python -m eval.run_retrieval
+python -m eval.run_conflicts
+python -m eval.run_requirements
+python -m scheduler.retriever
 python -m scraper.audit_prereqs
 ```
 
-Every step is **idempotent and resumable** — HTML pages are cached; Ctrl-C mid-run is safe.
-
----
-
-## 6. FAISS index (embeddings)
-
-Built in `notebooks/build_faiss_index.ipynb` using **BAAI/bge-base-en-v1.5** (768-dim).
-
-Embedding text per course:
-```
-<CODE> — <Title>
-<description>
-```
-
-Index type: `IndexFlatIP` (exact cosine search via L2-normalised inner product — fine for 817 vectors).
-
-At query time `scheduler/retriever.py` runs two stages:
-1. **Bi-encoder + FAISS** — encode the query with the BGE query prefix, then call
-   `IndexFlatIP.search()`. Degree, section, subject, and eligibility scopes are
-   applied inside FAISS with `IDSelectorBatch`, so filtered retrieval remains
-   exact.
-2. **Cross-encoder** — `BAAI/bge-reranker-base` re-ranks the top-k bi-encoder hits with full pair attention.
-
-FAISS is required for first-stage vector search. If the index cannot load or
-does not match the metadata and embeddings, the retriever raises an error
-instead of silently changing retrieval backends. `eval/results_retrieval.json`
-records FAISS search counts so the evaluated backend is visible.
-
-> ⚠️ **macOS Apple Silicon note:** `SentenceTransformer` must be imported **before** `faiss` in the same process. Both link OpenBLAS; double-init causes a segfault (exit code 139). `retriever.py` handles this — don't reorder the imports.
-
----
-
-## 7. Scheduler modules
-
-| Module | Role | LLM? |
-|---|---|---|
-| `transcript.py` | Parse Sabancı "Academic Records" PDF → student profile dict | No |
-| `eligibility.py` | Prereq / coreq / credit-load check; `validate_plan()` | No |
-| `offerings.py` | "Is course X likely offered in Fall 26-27?" | No |
-| `timetable.py` | Find a CRN combo with no time conflicts | No |
-| `requirements.py` | Graduation requirements left by program | No |
-| `retriever.py` | Two-stage RAG (FAISS + cross-encoder) | No |
-| `schemas.py` | `PlannerRequest`, `TermPlan`, LLM output schemas | — |
-| `llm_client.py` | OpenAI wrapper with retry + usage tracking | — |
-| `prompts.py` | All system/user prompt templates | — |
-| `agent.py` | 8-stage fixed pipeline (`plan()`) | GPT-4o |
-| `intents.py` | Intent classifier + swap/drop/add/explain handlers | GPT-4o-mini |
-| `session.py` | Stateful session; routes pipeline vs ReAct per turn | — |
-| `react_agent.py` | ReAct loop + toolbox; all intents handled by the model | GPT-4o |
-| `cli.py` | Interactive REPL | — |
-
----
-
-## 8. Agent modes
-
-`PlannerRequest.mode` selects the agent style. Default is `"pipeline"`.
-
-### `mode="pipeline"` (default)
-
-Fixed 8-stage execution:
-1. Load student profile from transcript
-2. Compute graduation requirements remaining
-3. Build eligible + offered candidate pool
-4. Parse user intent into retrieval queries (gpt-4o) → retrieve + re-rank
-5. GPT-4o proposes a plan (structured output — guaranteed JSON schema)
-6. Validate plan against hard rules (`eligibility.validate_plan`)
-7. Repair loop if violations (up to 3 iterations)
-8. Best-effort timetable resolution
-
-For subsequent turns (swap / drop / add / explain), a lightweight intent classifier routes to a hardcoded handler — no full re-planning.
-
-### `mode="react"` (tool-using ReAct loop)
-
-The model receives the same tool suite at every turn and decides what to call and in what order. It can:
-- Search for courses across multiple queries before deciding
-- Look up prereqs for specific codes before committing
-- Check offering history to verify a course will actually run
-- Validate a plan, get the violation list, and fix it without being explicitly told to retry
-
-The loop runs up to **8 steps** per turn. On the final step with no tool calls the model's text is returned to the user.
-
-`set_plan()` includes a re-validation guardrail — it will not commit a plan that `validate_plan()` would reject, even if the model skips the explicit validation step.
-
----
-
-## 9. CLI usage
+With an OpenAI API key, these live agent checks also run:
 
 ```bash
-source .venv/bin/activate
-
-# Interactive REPL (ReAct mode, default)
-python -m scheduler.cli \
-    --transcript data/transcript_cagan.json \
-    --term 202601
-
-# Live debug trace for demos: every tool call, arguments, result, repair, final answer
-python -m scheduler.cli \
-    --transcript data/transcript_cagan.json \
-    --term 202601 \
-    --debug-trace
-
-# With an automatic first message (useful for demos)
-python -m scheduler.cli \
-    --transcript data/transcript_cagan.json \
-    --debug-trace \
-    --first-message "Plan my fall semester. I want ML and a databases course."
-
-# Full untruncated raw JSON trace, then exit after the first message
-python -m scheduler.cli \
-    --transcript data/transcript_cagan.json \
-    --debug-trace \
-    --raw-trace \
-    --one-shot \
-    --first-message "Suggest CS-coded Core Electives about security."
+python -m eval.run_agent
+python -m eval.run_agent --dataset general_conversation_questions.json
 ```
 
-### Slash commands inside the REPL
+If the submitted branch is already checked out by the instructor, start from `python3 -m venv .venv`; the `git clone` / `git switch` lines are only for a fresh local checkout.
 
-| Command | What it does |
+### 5.4 Dependency Roles
+
+| Dependency area | Used for |
 |---|---|
-| `/plan` | Re-run planning (same as typing a plan request) |
-| `/state` | Print current plan + session summary |
-| `/trace` | Pretty-print the last agent/tool trace |
-| `/raw-trace` | Print the last full trace as raw JSON |
-| `/json` | Print the current plan as raw JSON |
-| `/usage` | Print token usage for the session |
-| `/help` | List commands |
-| `/exit` or Ctrl-D | Quit |
-
-### One-shot agent (no REPL)
-
-```bash
-python -m scheduler.agent \
-    --transcript data/transcript_cagan.json \
-    --request "I want ML and a database course, no early classes" \
-    --term 202601 \
-    --json   # raw JSON output
-```
+| FastAPI / uvicorn | web backend |
+| pandas / numpy / pyarrow | catalog and embedding metadata |
+| faiss-cpu | vector search over course embeddings |
+| sentence-transformers | BGE bi-encoder and cross-encoder |
+| networkx | prerequisite and degree graphs |
+| beautifulsoup4 / requests | scraping Banner/SU pages |
+| pdfplumber | transcript PDF parsing |
+| openai | GPT-4o ReAct and structured calls |
+| python-dotenv | `.env` API key loading |
 
 ---
 
-## 10. Web UI
-
-### Run the server
+## 6. Run the App
 
 ```bash
 source .venv/bin/activate
 uvicorn api.main:app --reload --port 8000
 ```
 
-Then open [http://localhost:8000](http://localhost:8000).
+Open:
 
-### REST API
+```text
+http://127.0.0.1:8000/
+```
 
-| Method | Path | Purpose |
+The web app supports:
+
+- creating a chat session without a transcript,
+- asking catalog questions with RAG,
+- uploading a transcript PDF/JSON or Degree Evaluation HTML,
+- asking degree-specific questions,
+- adding courses to the schedule builder,
+- checking current schedule conflicts,
+- viewing tool traces in the UI.
+
+### REST Endpoints
+
+| Method | Endpoint | Purpose |
 |---|---|---|
-| `GET` | `/` | Serve the SPA |
-| `POST` | `/session` | Create session (term, credit range, mode) |
-| `POST` | `/session/{id}/transcript` | Upload transcript PDF or JSON |
-| `POST` | `/session/{id}/turn` | Send a message, get a response + plan |
-| `GET` | `/session/{id}/state` | Current session state + plan |
-| `DELETE` | `/session/{id}` | Clean up |
-
-### Selecting the agent mode via API
-
-```jsonc
-// POST /session
-{
-  "term": "202601",
-  "min_credits": 12,
-  "max_credits": 21,
-  "target_credits": 17,
-  "mode": "react"           // ← "pipeline" or "react"
-}
-```
-
-### UI features
-
-- **Drag-and-drop transcript upload** — PDF or JSON
-- **Chat interface** with markdown rendering (marked.js)
-- **Live plan sidebar** — updated after every turn that changes the plan
-- **Intent badge** on each agent response (pipeline mode)
-- **Token usage stats** in the sidebar
+| `GET` | `/` | serve SPA |
+| `POST` | `/session` | create a session |
+| `POST` | `/session/{id}/transcript` | upload transcript/Degree Evaluation |
+| `POST` | `/session/{id}/turn` | send chat message |
+| `GET` | `/session/{id}/state` | inspect session state |
+| `GET` | `/session/{id}/course_sections` | fetch sections for a course |
+| `POST` | `/session/{id}/schedule` | update UI schedule picks |
+| `POST` | `/session/{id}/check_schedule` | ask agent to review current schedule |
+| `DELETE` | `/session/{id}` | clean session |
 
 ---
 
-## 11. Data formats
+## 7. Debug CLI
 
-### `data/transcript_cagan.json` (student profile)
+For demos, the CLI can print every agent step, tool call, arguments, tool result, and final answer.
 
-```jsonc
-{
-  "name": "Student Name",
-  "program": "BSCS-DM",
-  "admit_term": "202101",
-  "current_semester": 7,
-  "cgpa": 3.40,
-  "cumulative_credits": 127.0,
-  "completed_for_eligibility": ["CS 201", "CS 201R", "CS 204", …],
-  "in_progress": ["CS 412"],
-  "minors": []
-}
+```bash
+source .venv/bin/activate
+python -m scheduler.cli \
+  --transcript data/transcript_cagan.json \
+  --term 202601 \
+  --mode react \
+  --debug-trace
 ```
 
-### `data/offerings_<TERM>.json`
+Useful one-shot demo:
 
-```jsonc
-{
-  "CS 201": [
-    {
-      "crn": "10190",
-      "section": "A",
-      "meetings": [
-        {
-          "type": "lecture",
-          "days": [0, 2],
-          "start": 600,
-          "end": 690,
-          "days_raw": "MW",
-          "where": "FENS L067",
-          "instructor": "Erkay Savaş"
-        }
-      ]
-    }
-  ]
-}
+```bash
+python -m scheduler.cli \
+  --transcript data/transcript_cagan.json \
+  --term 202601 \
+  --mode react \
+  --debug-trace \
+  --one-shot \
+  --first-message "Suggest CS Core Electives about security and networking, and check likely offerings."
 ```
 
-`start` / `end` are minutes since midnight. `days` is a list of weekday integers (0=Monday).
+CLI commands:
 
-### `TermPlan` (agent output, also returned by the API)
-
-```jsonc
-{
-  "plan": ["CS 306", "CS 412", "MATH 212", "CS 449", "ENS 492"],
-  "reasoning": {
-    "CS 306": "Required course; enables CS 406 and CS 437 next term.",
-    "MATH 212": "Required — Differential Equations, needed for graduation."
-  },
-  "summary": "Five-course, 16-credit semester covering required milestones and one CS elective.",
-  "total_credits": 16.0,
-  "validation_ok": true,
-  "violations": [],
-  "auto_added_coreqs": [],
-  "timetable": {
-    "CS 306": { "crn": "12345", "section": "A", "meetings": […] }
-  },
-  "iterations": 0,
-  "alternatives": ["CS 402", "CS 421"],
-  "candidate_pool_size": 87,
-  "warnings": ["No live section data for term 202601 — timetable skipped."]
-}
-```
-
----
-
-## 12. Verification & regression checks
-
-| Check | How |
+| Command | Purpose |
 |---|---|
-| Prereq parser: 100% coverage | `python -m scraper.audit_prereqs` — strict=426, failures=0 |
-| Full prereq graph is a DAG | `data/SU_full_graph_report.txt` → `Is DAG? True` |
-| Eligibility smoke test | `python -m scheduler.eligibility` |
-| Offerings smoke test | `python -m scheduler.offerings` |
-| Retriever smoke test | `python -m scheduler.retriever` |
-
-### Evaluation suite (`eval/`)
-
-Labeled, reproducible evaluation with metrics. See `eval/README.md` for details.
-
-| Runner | Measures | OpenAI? |
-|---|---|---|
-| `python -m eval.run_retrieval` | Retrieval Recall@k / MRR / nDCG + re-ranker ablation (44 queries) | no |
-| `python -m eval.run_conflicts` | Conflict-detector accuracy + corequisite-expanded scheduler checks | no |
-| `python -m eval.run_requirements` | Official Required-section credit gap vs graph engine | no |
-| `python -m eval.run_agent` | End-to-end answer grounding, required actions, latency, token cost (12 questions) | **yes** |
-
-Regenerate all result files after changing a labeled dataset. The conflict and
-requirements runners are deterministic; retrieval additionally requires the
-local embedding matrix and FAISS index; the agent runner calls OpenAI. Full
-write-up + honest error analysis in
-`report/CS455_SuSchedule-r_Final_Report.docx` (slides in `report/`).
+| `/trace` | pretty-print last trace |
+| `/raw-trace` | print full trace JSON |
+| `/state` | inspect session state |
+| `/json` | show current plan JSON |
+| `/usage` | token usage and rough cost |
+| `/help` | command list |
+| `/exit` | quit |
 
 ---
 
-## 13. Credits
+## 8. Data Pipeline
 
-- **Course:** CS 455 / CS 555 — Large Language Models, Spring 2025/2026 (Sabancı University)
-- **Instructor:** Inanç Arın
-- **Models used:** BAAI/bge-base-en-v1.5 (bi-encoder), BAAI/bge-reranker-base (cross-encoder), OpenAI GPT-4o (planner + ReAct), OpenAI GPT-4o-mini (intent classifier)
-- **License:** MIT — see `LICENSE`
+The committed data is already built. Re-run only if Sabanci pages change.
+
+```bash
+source .venv/bin/activate
+
+# Discover courses from degree pages / pools
+python -m scraper.discover --degrees
+
+# Optional broader discovery over subject-number ranges
+python -m scraper.discover --subjects
+
+# Scrape full course details
+python -m scraper.scrape_full
+
+# Build full prerequisite graph
+python -m scraper.build_graph --full
+
+# Build per-degree/per-cohort/per-section graphs
+python -m scraper.build_degree_graphs
+
+# Scrape offerings and meeting times
+python -m scraper.scrape_offerings
+
+# Build science/engineering and minor requirement data
+python -m scraper.build_eng_sci
+python -m scraper.build_minors
+
+# Audit prerequisite parser coverage
+python -m scraper.audit_prereqs
+```
+
+Outputs are cached and mostly idempotent.
+
+Important generated files:
+
+| File/dir | Meaning |
+|---|---|
+| `data/SU_full_catalog.json` | structured 817-course catalog |
+| `data/SU_full_graph.gpickle` | full prerequisite graph |
+| `data/degree_graphs/{program}/{cohort}/` | scoped degree requirement graphs |
+| `data/offerings*.json` | offerings and meeting times |
+| `data/eng_sci_credits.json` | engineering/basic-science ECTS mapping |
+| `data/minors.json` | undergraduate minor rules |
+
+---
+
+## 9. RAG and FAISS
+
+The RAG artifacts are committed for deterministic demos:
+
+```text
+embeddings/su_courses.parquet
+embeddings/id_map.json
+embeddings/su_courses_embeddings.npy
+embeddings/su_courses.index
+```
+
+Index details:
+
+- model: `BAAI/bge-base-en-v1.5`,
+- dimension: 768,
+- rows/vectors: 817,
+- FAISS index type: `IndexFlatIP`,
+- vectors are L2-normalized, so inner product is cosine similarity.
+
+At query time:
+
+1. the model rewrites the user's latest message into retrieval queries when helpful,
+2. the query is embedded,
+3. FAISS searches the full catalog or a filtered candidate set,
+4. filters can restrict by degree graph, section, subject, season, or eligible courses,
+5. optional cross-encoder re-ranking reorders candidates,
+6. the assistant answers the original user message using retrieved context.
+
+FAISS is mandatory. There is no NumPy vector-search fallback. If the FAISS index is missing or inconsistent, retrieval fails loudly.
+
+Rebuild command:
+
+```bash
+python -m scheduler.build_faiss_index
+```
+
+If using Colab, `notebooks/build_faiss_index.ipynb` builds the same four artifacts.
+
+---
+
+## 10. Runtime Modules
+
+| Module | Duty |
+|---|---|
+| `scheduler/react_agent.py` | primary ReAct agent, tool schema, toolbox, prefetching, trace events, guardrails |
+| `scheduler/session.py` | stores conversation state, student context, current plan, current schedule, history |
+| `scheduler/retriever.py` | FAISS-backed RAG retrieval and optional cross-encoder re-ranking |
+| `scheduler/graph_selector.py` | maps program/admit term to correct cohort graph directory |
+| `scheduler/requirements.py` | computes remaining requirements from selected degree graphs |
+| `scheduler/degree_eval.py` | parses official Banner Degree Evaluation HTML |
+| `scheduler/transcript.py` | parses academic-records PDF/JSON into student context |
+| `scheduler/eligibility.py` | evaluates prereq/coreq expression trees and validates plans |
+| `scheduler/timetable.py` | normalizes meetings, checks overlaps, builds conflict-free section combinations |
+| `scheduler/offerings.py` | estimates likely offering patterns from historical terms |
+| `scheduler/catalog.py` | exact course lookup and lightweight lexical helpers |
+| `scheduler/eng_sci.py` | engineering/basic-science credit progress |
+| `scheduler/minors.py` | minor catalog and minor progress |
+| `scheduler/llm_client.py` | OpenAI calls, tool calling, structured output, usage accounting |
+| `scheduler/cli.py` | terminal demo and trace inspection |
+| `api/main.py` | FastAPI endpoints and session lifecycle |
+
+---
+
+## 11. Evaluation and Tests
+
+Run from the repo root with the virtual environment active.
+
+### 11.1 Retrieval Evaluation
+
+```bash
+python -m eval.run_retrieval
+```
+
+Measures:
+
+- Hit@1, Hit@5,
+- Recall@5, Recall@10,
+- MRR@10,
+- nDCG@10,
+- cross-encoder ON vs OFF ablation,
+- FAISS backend evidence.
+
+Current saved headline from the latest completed run:
+
+| Metric | Re-ranker ON | Re-ranker OFF |
+|---|---:|---:|
+| Hit@5 | 0.955 | **0.977** |
+| Recall@10 | 0.943 | **0.966** |
+| MRR@10 | 0.859 | **0.938** |
+
+Backend evidence:
+
+```text
+IndexFlatIP · 817 vectors · FAISS searches=88
+```
+
+Interpretation: FAISS RAG is strong; the cross-encoder re-ranker hurts this short-query benchmark, so this is reported as a negative ablation result.
+
+### 11.2 Conflict and Timetable Evaluation
+
+```bash
+python -m eval.run_conflicts
+```
+
+Measures:
+
+- interval-overlap correctness on 12 human-labeled meeting pairs,
+- feasible/infeasible timetable classification on 6 real bundles,
+- whether required labs/recitations are included,
+- whether any returned schedule still has overlaps.
+
+Current headline:
+
+```text
+labeled-pair accuracy = 1.000
+precision = 1.000
+recall = 1.000
+unsound schedules = 0
+wrong feasibility results = 0
+incomplete corequisite picks = 0
+```
+
+This is deterministic and does not call OpenAI.
+
+### 11.3 Requirement Evaluation
+
+```bash
+python -m eval.run_requirements
+```
+
+Measures:
+
+- official Banner Degree Evaluation totals,
+- graph-engine Required bucket gap,
+- discrepancy between official audit and graph engine.
+
+Current headline:
+
+```text
+official total: 122 / 125 SU = 97.6%
+official remaining: 3 SU
+engine required credits left: 7 SU
+required-bucket discrepancy: +4 SU
+```
+
+Interpretation: the graph engine is conservative but needs a course-equivalence/substitution table to exactly match Banner.
+
+### 11.4 End-to-End Agent Evaluation
+
+```bash
+python -m eval.run_agent
+```
+
+Requires `OPENAI_API_KEY`.
+
+Measures:
+
+- answer grounding,
+- required semantic actions,
+- task success,
+- tool calls,
+- latency,
+- token cost.
+
+Current headline:
+
+```text
+questions = 12
+answer grounding = 0.9167
+action success = 1.0000
+task success = 0.9167
+existing-label task success = 11/11
+provisional-label task success = 0/1
+avg latency = 8.59 s
+avg tokens = 6691
+```
+
+To re-score saved raw answers after changing labels without paying for another API run:
+
+```bash
+python -m eval.run_agent --rescore
+```
+
+General transcript-free conversation benchmark:
+
+```bash
+python -m eval.run_agent --dataset general_conversation_questions.json
+```
+
+This runs the same ReAct agent without a loaded transcript. It checks whether the assistant can answer ordinary catalog questions with RAG, carry short conversational context, avoid unnecessary planning actions, and ask for profile data only when exact planning requires it.
+
+Note: `agent_questions.json` now contains an additional `a13` UI schedule-builder case, and `general_conversation_questions.json` contains a `g09` transcript-free Check Schedule case. Re-run the live agent evaluation before quoting final updated metrics.
+
+### 11.5 Basic Syntax/Smoke Checks
+
+```bash
+python -m py_compile \
+  scheduler/retriever.py \
+  scheduler/react_agent.py \
+  scheduler/session.py \
+  scheduler/timetable.py \
+  eval/run_retrieval.py \
+  eval/run_conflicts.py \
+  eval/run_requirements.py \
+  eval/run_agent.py
+
+python -m scheduler.retriever
+python -m scraper.audit_prereqs
+```
+
+---
+
+## 12. Human-Labeled Datasets
+
+### Retrieval Dataset
+
+File: `eval/retrieval_queries.json`
+
+Current size: **44 queries**
+
+Labels:
+
+- `gold`: relevant course codes,
+- `category`: topic bucket,
+- `review_status`: `existing` or `provisional`.
+
+Review split:
+
+| Status | Count | Meaning |
+|---|---:|---|
+| `existing` | 34 | reviewed labels used as stable benchmark rows |
+| `provisional` | 10 | exploratory additions needing more human review |
+
+Examples:
+
+| Query | Gold |
+|---|---|
+| "I want to learn machine learning" | `CS 412`, `CS 415` |
+| "courses about neural networks and deep learning" | `CS 415`, `CS 412` |
+| "how operating systems work internally" | `CS 307` |
+| "designing and querying databases" | `CS 306` |
+
+### Agent Dataset
+
+File: `eval/agent_questions.json`
+
+Current size: **13 questions**
+
+Purpose: transcript-backed advising and factual correctness. The runner loads `data/transcript_cagan.json`, so the model should not re-ask for program, cohort, completed courses, or transcript when those facts are already available.
+
+Labels can specify:
+
+- required course codes,
+- allowed/forbidden course codes,
+- required/forbidden words or regexes,
+- credit facts,
+- required tool/action names,
+- forbidden tool/action names,
+- review status.
+
+The evaluator records raw answers in `eval/agent_transcript.md`, so failures are inspectable.
+
+Examples:
+
+| Question type | Example label |
+|---|---|
+| single fact | `CS 412` must be linked to `3 SU` |
+| prerequisite | `CS 301` answer must mention `CS 300` and `MATH 204` |
+| catalog explanation | `CS 445` answer must mention NLP/natural language |
+| timetable | `CS 412 + CS 302` must call `build_timetable` and mention conflict/no conflict-free result |
+| recommendation | networking answer must call `retrieve_catalog_courses` and stay inside accepted catalog codes |
+| UI schedule button | `a13` preloads schedule-builder picks and must call `get_current_schedule` |
+
+### General Conversation Dataset
+
+File: `eval/general_conversation_questions.json`
+
+Current size: **9 questions**
+
+Purpose: normal chat behavior without transcript upload. These are human-labeled examples of how the assistant should behave when a student asks exploratory questions such as "I want to learn networking" or "What does CS 412 cover?"
+
+This dataset checks that the agent:
+
+- uses FAISS RAG for open-ended course suggestions,
+- uses exact lookup for specific course-code questions,
+- does not invent a full plan during exploratory chat,
+- does not call `set_plan` unless planning is explicitly possible and requested,
+- asks for degree/cohort/transcript only when exact planning or takeability needs it,
+- can still use timetable tools for direct conflict questions.
+
+Examples:
+
+| ID | Question | Key expected behavior |
+|---|---|---|
+| `g01` | networking course suggestions | call `retrieve_catalog_courses`, mention relevant networking/security/distributed-systems courses |
+| `g02` | "What does CS 412 cover?" | call `get_course_details`, give a smooth content explanation |
+| `g04` | IE optimization interest | retrieve IE/OR-related courses, avoid unrelated CS hallucinations |
+| `g05` | "make this into a semester plan" | ask for missing profile context, do not call `set_plan` |
+| `g08` | CS 412 + CS 302 conflict | call `build_timetable`, include recitation/lab conflicts |
+| `g09` | transcript-free Check Schedule | call `get_current_schedule`, check conflicts/credits, avoid degree-progress claims |
+
+### Submission Coverage Matrix
+
+File: `eval/submission_human_cases.json`
+
+Current size: **20 representative human-labeled cases**
+
+Purpose: reviewer-facing coverage matrix used in the final report. It summarizes diverse behaviors across:
+
+- catalog RAG,
+- exact course facts,
+- prerequisite/corequisite lookup,
+- general exploratory chat,
+- degree-scoped electives,
+- transcript-backed requirements,
+- permission-bound planning,
+- timetable construction,
+- current-schedule checking,
+- candidate-vs-current-schedule checks,
+- minor and Engineering/Basic-Science credit tools.
+
+This file is not a separate paid live runner. It documents the human-labeled coverage design and points back to the runnable datasets and deterministic tests.
+
+---
+
+## 13. Known Limitations
+
+1. **Course substitutions are incomplete.** The Degree Evaluation may accept substitutions such as `MATH 201 + MATH 202` for a requirement that the graph stores as `MATH 212`.
+2. **Future scheduling uses proxy terms.** Until Fall 2026 offerings are published, the system uses the most recent same-season offering data.
+3. **Cross-encoder re-ranking is not always beneficial.** It hurts the current short-query retrieval benchmark.
+4. **Some grounding is not fully traceable.** Some correct answers use injected context without an explicit tool call in the visible trace.
+5. **Tool-calling can be brittle.** The ReAct agent sometimes emits slightly malformed parameters, small section-name typos, or arguments meant for a neighboring tool. JSON schemas and normalization reduce this, but production would need stricter validators and recovery paths.
+6. **Evaluation is still small.** Labels are human-created and useful, but not exhaustive. Provisional labels are separated for this reason.
+7. **Sessions are in memory.** Restarting the server clears the session.
+
+---
+
+## 14. Optional Cleanup
+
+These files are safe to remove from the GitHub repository before final submission because they are scratch or stale build artifacts, not runtime inputs:
+
+```bash
+git rm .ipynb_checkpoints/test-checkpoint.ipynb
+git rm test.ipynb
+git rm report/build_report.js
+```
+
+Do **not** remove these for the demo/submission unless you intentionally want to shrink the repository and update the docs accordingly:
+
+| Keep | Why |
+|---|---|
+| `embeddings/` | required for deterministic FAISS RAG demos |
+| `data/SU_full_catalog.json` | runtime catalog source |
+| `data/degree_graphs/` | scoped degree/cohort requirement graphs |
+| `data/offerings*.json` | schedule and offering-pattern data |
+| `data/eng_sci_credits.json` | Engineering / Basic-Science credit checks |
+| `data/minors.json` | minor advising tools |
+| `eval/*.json` and `eval/run_*.py` | reproducible evaluation datasets and runners |
+| `report/CS455_SuSchedule-r_Report.tex` | editable final report source |
+| `report/CS455_SuSchedule-r_Report.pdf` | ready-to-submit report output |
+
+The raw HTML caches under `courses/`, `degrees/`, `pools/`, and `offerings/` are not needed at runtime, but they are useful for scraper reproducibility and auditing. Keep them unless repository size becomes a problem.
+
+## 15. Use of LLM Assistants
+
+LLMs were used in two ways.
+
+First, LLMs are runtime components of the system. GPT-4o powers the ReAct advising loop and planner behavior. GPT-4o/GPT-4o-mini can be used for intent classification and retrieval-query rewriting depending on configuration.
+
+Second, coding assistants were used during development. The team designed the project structure, deterministic parser/graph architecture, evaluation plan, and iterative test cases. LLM coding assistants helped implement and refactor ReAct agent code, helper functions, UI code, evaluation runners, documentation, and trace tooling from our specifications. The team inspected, tested, corrected, and owns the final output.
+
+No evaluation numbers in this README or report were invented by an LLM. They come from the scripts and JSON results under `eval/`.

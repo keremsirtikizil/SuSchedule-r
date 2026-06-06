@@ -1,7 +1,7 @@
 # SuSchedule-r
-### A Retrieval-Augmented, Tool-Using Course-Planning Agent for Sabancı University
+### A Retrieval-Augmented, Tool-Using Course-Planning Agent for Sabanci University
 
-**CS 455 / CS 555 — Large Language Models · Final Project Report · Sabancı University**
+**CS 455 / CS 555 - Large Language Models · Final Project Report · Sabanci University**
 
 **Track:** CS 455 Project
 
@@ -14,464 +14,460 @@
 
 ## Abstract
 
-SuSchedule-r is a course-advising assistant that grounds a large-language-model
-agent in Sabancı University's real catalogue, prerequisite graph, degree
-requirements, and weekly section offerings. It pairs a two-stage semantic
-retriever (BGE bi-encoder + cross-encoder re-ranker over **688 courses**) with a
-tool-using **ReAct** agent (**21 tools**, GPT-4o) and an interactive web UI whose
-schedule builder renders a weekly calendar with live time-conflict detection.
+SuSchedule-r is a course-advising assistant that grounds a large-language-model agent in Sabanci University's real course catalogue, prerequisite graph, degree requirements, and weekly section offerings. The system combines a FAISS-backed two-stage semantic retriever (BGE bi-encoder plus optional cross-encoder re-ranker over **817 courses**) with a GPT-4o **ReAct** tool-calling agent and an interactive web UI whose schedule builder renders a weekly calendar with live conflict detection.
 
-We evaluate the system on four axes with labelled, reproducible test sets:
-retrieval quality, time-conflict detection, degree-requirement accuracy, and
-end-to-end answer grounding. Retrieval reaches **Hit@5 = 1.00** and
-**Recall@10 = 0.96**; the conflict checker is **100% accurate** on labelled pairs
-and the scheduler is **provably sound** (0 overlapping assignments); and the
-end-to-end agent answered **8/8** factual questions with correctly grounded facts.
-
-We also report, honestly, where the system falls short: the cross-encoder
-re-ranker does **not** help (it slightly *hurts*) on short topical queries; the
-graph-based requirement engine **over-counts** remaining required credits by 4 SU
-versus the official audit because of a course-substitution gap; and future-term
-scheduling relies on a **proxy term** whose CRNs do not match real registration.
+We evaluate the system on four axes with labeled, reproducible test sets: retrieval quality, time-conflict detection, degree-requirement accuracy, and end-to-end answer grounding. The bi-encoder retriever reaches **Hit@5 = 0.977** and **Recall@10 = 0.966**; the conflict checker is **100% accurate** on labeled meeting pairs and returns **0 unsound schedules** over corequisite-expanded real course bundles; and the ReAct agent grounds **11/12** end-to-end answers, with the single failure isolated to a provisional open-ended recommendation label. We also report negative results honestly: the cross-encoder re-ranker hurts short topical retrieval metrics, the graph requirement engine over-counts remaining required credits by **4 SU** because it lacks a course-substitution table, future-term schedules use a proxy offering term until the registrar publishes the target term, and the ReAct agent can still be inconsistent when it emits slightly malformed tool parameters.
 
 ---
 
 ## 1. Introduction
 
-### 1.1 The problem
+### 1.1 Problem
 
-Each semester a Sabancı student must assemble a course plan that simultaneously
-satisfies several constraints:
+Each semester, a Sabanci student needs to choose courses while balancing degree requirements, prerequisites, credit limits, and weekly meeting conflicts. The decision is not just a search problem. A course may be relevant to a student's interests but unavailable, ineligible because of prerequisites, outside the student's degree requirement pool, or impossible to fit into an existing schedule because of a lecture, lab, or recitation conflict.
 
-- **Degree requirements** still unmet (required courses, core/area/free electives),
-- **Prerequisite chains** (you cannot take CS 301 without CS 300 and MATH 204),
-- **Credit bounds** (12–21 SU) and a sensible workload balance, and
-- **Non-overlapping weekly meeting times** once specific sections are chosen.
+General-purpose LLMs are fluent but unreliable in this domain. They can invent course codes, confuse course titles, miss recitations, or ignore a student's actual degree audit. For an advising assistant to be useful, factual claims must come from data-backed tools rather than from model memory.
 
-General-purpose chatbots answer these questions fluently but unreliably: they
-hallucinate course codes, invent prerequisites, and cannot see the student's
-transcript or the term's real offerings.
+### 1.2 Design Principle
 
-### 1.2 Design principle
+Our design principle is:
 
-The project's guiding rule is: **never let the model answer from memory when a
-data-backed tool or injected context can answer instead.** Every factual claim —
-a credit value, a prerequisite, a meeting time, a remaining requirement — is
-sourced from parsed university data, not the model's prior.
+**Use the LLM for language, intent, explanation, and tool orchestration; use deterministic code for factual constraints.**
+
+The ReAct agent can decide whether to search, inspect a requirement graph, check prerequisites, or validate a schedule. However, the final facts come from deterministic parsers and tools:
+
+- course metadata from scraped Sabanci catalogue pages,
+- prerequisite/corequisite expressions parsed into boolean trees,
+- per-degree and per-cohort requirement graphs,
+- Degree Evaluation parsing for the student's official audit,
+- FAISS retrieval over course descriptions,
+- timetable conflict detection over normalized meeting intervals.
 
 ### 1.3 Contributions
 
-1. A **grounded RAG + ReAct advising agent** over the full SU catalogue, with 21
-   tools spanning retrieval, eligibility, requirements, minors, and scheduling.
-2. An **interactive schedule builder** with calendar-style, lane-split conflict
-   visualisation and an agent "Check Schedule" review grounded in server-computed
-   conflicts.
-3. A **reproducible four-part evaluation** with labelled test sets and an honest
-   error analysis.
+1. **A grounded course-advising system** for Sabanci University that combines RAG, graph-based requirements, transcript/degree-evaluation context, and timetable reasoning.
+2. **A GPT-4o ReAct agent** with a 22-tool toolbox for retrieval, requirements, eligibility, minors, science/engineering credits, timetable construction, and current-schedule checking.
+3. **A deterministic data layer**: scrapers, prerequisite parser, degree graph builder, offering parser, requirement evaluator, and schedule conflict engine.
+4. **A reproducible evaluation suite** with human-labeled retrieval and agent datasets, local deterministic tests, live agent tests, ablations, and honest error analysis.
 
 ---
 
 ## 2. Data and Knowledge Base
 
-All knowledge is scraped from public SU sources plus the student's own transcript
-/ Degree Evaluation export. A scraper pipeline enumerates courses from degree
-pages, fetches each course-detail page, and parses prerequisite expressions into
-a directed graph.
+All university knowledge is derived from public Sabanci catalogue/registration pages and the student's own uploaded academic records or Degree Evaluation export.
 
-| Asset | Contents | Scale |
-|---|---|---|
-| Course catalogue | code, title, description, SU credit, ECTS, prereq text, programs, seasons | **688 courses** |
-| Prerequisite graph | parsed prerequisite DAG over all courses | **721 nodes, 729 edges** |
-| Degree graphs | per-(program, cohort) requirement sub-graphs | Required / Core / Area / Free |
-| Offerings | per-term sections with normalised weekly meeting times (`days`, `start`, `end`) | terms 202401–202503 |
-| Student data | transcript + official Banner Degree Evaluation | BSCS-DM sample |
-| FAISS index | BGE-base embeddings of every course | 688 × 768-d vectors |
+| Asset | Contents | Current scale |
+|---|---|---:|
+| Course catalogue | code, title, description, SU credit, ECTS, prerequisites, corequisites, degree sections, seasons | **817 courses** |
+| Active RAG metadata | one row per indexed course | **817 rows** |
+| FAISS index | BGE-base course embeddings | **817 x 768** vectors |
+| Full prerequisite graph | parsed prerequisite dependencies | **721 nodes, 729 edges** |
+| Degree/cohort graphs | per-program, per-admit-year requirement slices | **14 programs x 5 cohorts x 4 sections** |
+| Degree graph files | JSON + gpickle requirement graphs | **268 JSON, 268 gpickle** |
+| Offerings | section meetings, CRNs, labs, recitations | terms **202401-202503** |
+| Student audit | official Banner Degree Evaluation / transcript-derived profile | BSCS-DM sample |
 
-**Validation.** Prerequisite parsing was audited to **100% coverage** (426 strict
-expressions, 0 failures), and the resulting full graph is verified **acyclic**
-(`Is DAG? True`) — a precondition for sound eligibility reasoning.
+### 2.1 Scraping and Preprocessing
+
+The scraper pipeline is intentionally deterministic and cache-backed. It discovers degree pages, course pools, and course-detail pages; parses course metadata; builds prerequisite graphs; and stores all outputs under `data/`, `courses/`, `degrees/`, `pools/`, and `offerings/`.
+
+The prerequisite parser is a recursive-descent parser. It preserves `AND`, `OR`, parentheses, minimum grades, and concurrent/corequisite conditions as a boolean expression tree. That tree is stored on graph nodes and evaluated later by the eligibility engine. This is important because prerequisites such as:
+
+```text
+(MATH 204 and CS 300) or instructor consent
+```
+
+cannot be represented safely as a flat list of required courses.
+
+Validation results:
+
+- strict prerequisite parse coverage: **426 strict expressions**,
+- parser failures: **0**,
+- full graph: **acyclic**,
+- external prerequisites are preserved as helper nodes when needed.
+
+### 2.2 Requirement Graphs
+
+The full graph is useful for diagnostics, but normal planning does **not** use the whole graph. The agent selects scoped graphs from:
+
+```text
+data/degree_graphs/{PROGRAM}/{COHORT}/{SECTION}.gpickle
+data/degree_graphs/{PROGRAM}/{COHORT}/{SECTION}.json
+```
+
+Examples:
+
+```text
+data/degree_graphs/BSCS-DM/202201/Required.gpickle
+data/degree_graphs/BSCS-DM/202201/Core_Elective.gpickle
+data/degree_graphs/BSCS-DM/202201/Area_Elective.gpickle
+data/degree_graphs/BSCS-DM/202201/Free_Elective.gpickle
+```
+
+This keeps retrieval and requirement reasoning efficient. `in_slice=True` nodes are actual members of the selected requirement/elective pool; upstream prerequisite-only nodes are retained only as validation helpers.
 
 ---
 
 ## 3. System Architecture
 
+```text
+User message / file upload
+        |
+        v
+FastAPI session endpoint
+        |
+        v
+PlannerSession
+  - conversation history
+  - degree/admit/cohort context
+  - parsed Degree Evaluation/transcript state
+  - current UI schedule
+  - current plan
+        |
+        +----------------------------+
+        |                            |
+        v                            v
+  ReAct agent                  Legacy fixed pipeline
+  GPT-4o + tools               8-stage planner path
+        |
+        v
+Toolbox
+  - select_degree_graphs
+  - get_requirement_state
+  - retrieve_catalog_courses
+  - get_degree_section_courses
+  - check_prereqs / validate_plan
+  - build_timetable
+  - get_current_schedule
+  - check_courses_against_current_schedule
+        |
+        v
+Deterministic engines
+  - FAISS retriever
+  - NetworkX degree graphs
+  - prerequisite evaluator
+  - offering-pattern layer
+  - timetable conflict checker
 ```
-                 ┌─────────────────────────── Web UI (FastAPI + JS) ───────────────────────────┐
-                 │  Chat advisor (left)            │   Schedule builder (right)                 │
-                 │  • markdown answers + trace     │   • add course → real sections             │
-                 │  • upload transcript            │   • Mon–Fri calendar, conflict rings       │
-                 │                                 │   • "Check Schedule" → agent review         │
-                 └───────────────┬─────────────────┴───────────────┬────────────────────────────┘
-                                 │  /turn  /check_schedule          │  /course_sections /schedule
-                 ┌───────────────▼──────────────────────────────────▼────────────┐
-                 │              PlannerSession  (react | pipeline)                │
-                 │   GPT-4o ReAct loop · 21 tools · profile/term/date injected    │
-                 └───┬───────────────┬────────────────┬───────────────┬──────────┘
-                     │               │                │               │
-              ┌──────▼─────┐  ┌──────▼──────┐  ┌───────▼──────┐ ┌──────▼───────┐
-              │ Retriever  │  │ Eligibility │  │ Requirements │ │  Timetable   │
-              │ BGE + FAISS│  │  + prereq   │  │   engine     │ │ conflict/    │
-              │ (+reranker)│  │   graph     │  │ (degree graph)│ │ build search │
-              └────────────┘  └─────────────┘  └──────────────┘ └──────────────┘
-```
 
-### 3.1 Two-stage semantic retriever
+### 3.1 RAG Pipeline
 
-**Stage 1** is a `BAAI/bge-base-en-v1.5` bi-encoder: every course is embedded once
-at build time and stored in a FAISS inner-product index (cosine on L2-normalised
-vectors). At query time the query is embedded and the top candidates are retrieved,
-with optional pre-filters (eligible set, subject, season, level).
-**Stage 2** is an optional `BAAI/bge-reranker-base` cross-encoder that re-scores
-each `(query, course)` pair for higher precision (§6.1 reports that it does not
-help here).
+The RAG pipeline has two stages:
 
-### 3.2 Tool-using agent
+1. **Bi-encoder first stage.** `BAAI/bge-base-en-v1.5` encodes the query and searches `embeddings/su_courses.index`, a FAISS `IndexFlatIP` index over L2-normalized vectors.
+2. **Cross-encoder re-ranking.** `BAAI/bge-reranker-base` can re-rank the first-stage candidates.
 
-The agent runs a **ReAct** loop on GPT-4o with **21 tools**: student-profile and
-requirement-state lookups, semantic retrieval, prerequisite checks, a
-science/engineering-credit finder, minor-progress tracking, timetable
-construction, and `get_current_schedule` (so the UI can ask the agent to review
-the student's assembled plan). A legacy fixed **8-stage "pipeline"** mode also
-exists. The student profile, remaining requirements, the current date, and the
-planning term are **injected into context** so the agent grounds answers rather
-than guessing.
+FAISS is mandatory. If the FAISS index is missing or inconsistent with the metadata/embedding matrix, the retriever raises an error instead of silently switching to a NumPy search backend. Filtered retrieval uses FAISS `IDSelectorBatch`, so degree, section, subject, and eligible-course scopes are enforced inside the vector search.
 
-### 3.3 Web UI and schedule builder
+For normal chat questions such as "What does CS 412 cover?" or "Suggest courses about theoretical CS", the model rewrites the latest user message into internal retrieval queries, retrieves catalog context, discards the rewritten queries, and answers the original user message.
 
-The UI (FastAPI + vanilla JS) places the AI advisor on the left and a weekly
-schedule builder on the right. Students add courses by code; the builder fetches
-the real sections, renders a Monday–Friday calendar with colour-coded,
-**lane-split** blocks (overlapping classes shown side-by-side), and flags time
-conflicts client-side. A **"Check Schedule"** button posts the assembled plan to
-the agent, which calls `get_current_schedule` and reviews conflicts, credit load,
-and requirement fit — and crucially, the conflicts it reports are **computed
-server-side**, so the critique is grounded too.
+### 3.2 ReAct Agent
 
-Because the planning term (Fall 2026–2027, `202601`) has no published offerings
-yet, the builder falls back to the most recent same-season term as a **proxy** and
-warns that days/times are indicative and CRNs/section numbers will differ. The UI
-was restyled to a Sabancı-branded light/dark theme and carries an explicit
-disclaimer that the assistant is an AI model whose results should be double-checked.
+The primary runtime mode is a single **tool-calling ReAct agent**, not a multi-agent system. GPT-4o receives a stable system prompt, recent chat history, structured student context, and 21 available tools. It can call tools for factual information and then produce a final answer.
+
+The loop is capped at **8 iterations** per turn. Conversation history is capped by turn count, while structured student state is kept outside history so it survives trimming. The model is proactive through options, but `set_plan()` is only allowed after the user explicitly asks to create or commit a plan.
+
+### 3.3 Deterministic Guardrails
+
+The LLM is not trusted to validate hard constraints. These are checked by code:
+
+- `eligibility.py` evaluates prerequisite/corequisite boolean trees.
+- `requirements.py` computes remaining required/core/area/free courses.
+- `degree_eval.py` parses official Degree Evaluation HTML and reads official credit gaps.
+- `timetable.py` detects time overlaps and searches feasible section combinations.
+- `react_agent.py` repairs unsupported course titles and schedule claims using tool traces.
+- `set_plan()` refuses to commit an invalid plan.
+
+### 3.4 Web UI
+
+The FastAPI + vanilla JavaScript UI has:
+
+- chat interface with trace visibility,
+- file upload for transcript JSON/PDF or Degree Evaluation HTML,
+- schedule builder with real course sections,
+- lab/recitation rows included through corequisite expansion,
+- weekly calendar rendering,
+- current-schedule conflict checking,
+- "Check Schedule" agent review grounded in server-computed conflicts.
+
+Because Fall 2026 (`202601`) does not have real published offerings yet, scheduling uses the most recent same-season proxy term (`202501`) and labels this clearly.
 
 ---
 
 ## 4. Evaluation Methodology
 
-Four components are evaluated with labelled, version-controlled test sets in
-`eval/`. Three runners are fully local (no API cost); `run_agent.py` makes live
-GPT-4o calls.
+The project announcement asks for a working system, appropriate metrics, honest error analysis, reproducibility, and a clear README. We evaluate four components using version-controlled datasets in `eval/`.
 
-### 4.1 Metric definitions
+### 4.1 Evaluation Runners
 
-For retrieval, given the gold set *G* for a query and the ranked result list:
+| Runner | Measures | Data | OpenAI? |
+|---|---|---|---|
+| `python -m eval.run_retrieval` | Hit@k, Recall@k, MRR@10, nDCG@10, re-ranker ablation, FAISS backend evidence | `eval/retrieval_queries.json` | No |
+| `python -m eval.run_conflicts` | interval-overlap accuracy, corequisite-expanded timetable soundness and feasibility | hand-labeled pairs + real course bundles | No |
+| `python -m eval.run_requirements` | official Degree Evaluation credit gaps vs graph engine | `DEGREE EVALUATION.html` | No |
+| `python -m eval.run_agent` | answer grounding, required tool/action success, task success, latency, token cost | `eval/agent_questions.json` | Yes |
+| `python -m eval.run_agent --dataset general_conversation_questions.json` | transcript-free catalog chat, RAG behavior, Check Schedule behavior, and forbidden planning actions | `eval/general_conversation_questions.json` | Yes |
+| `python -m eval.run_agent --rescore` | re-score saved agent answers after label edits | saved raw answers | No |
 
-- **Hit@k** = 1 if *G* intersects the top *k*, else 0 (averaged over queries).
-- **Recall@k** = |*G* ∩ top-*k*| / |*G*|.
-- **MRR@10** = 1 / (rank of the first gold hit), 0 if none in top 10.
-- **nDCG@10** = DCG / IDCG with binary relevance, DCG = Σ 1/log₂(rank+1) over gold
-  hits in the top 10.
+### 4.2 Human-Labeled Tests
 
-For the **re-ranker ablation**, every metric is computed twice — cross-encoder ON
-(production) and OFF (bi-encoder order only).
+The retrieval and agent datasets are human-labeled.
 
-### 4.2 Test sets
+`eval/retrieval_queries.json` contains **44 natural-language queries** with gold course codes. The labels are intentionally high-precision rather than exhaustive. For example:
 
-| Set | Size | Gold |
+| Query | Gold examples | Purpose |
 |---|---|---|
-| `retrieval_queries.json` | 34 NL queries | hand-assigned relevant course codes |
-| `agent_questions.json` | 8 questions | checkable facts (`must_contain` / `any_of` / `must_not`) |
-| Conflict pairs (in `run_conflicts.py`) | 12 labelled meeting pairs | known overlap / no-overlap |
-| Requirements | official Degree Evaluation | per-section SU credits |
+| "I want to learn machine learning" | `CS 412`, `CS 415` | topical CS retrieval |
+| "courses about neural networks and deep learning" | `CS 415`, `CS 412` | AI/deep-learning retrieval |
+| "how operating systems work internally" | `CS 307` | course-content retrieval |
+| "designing and querying databases" | `CS 306` | database retrieval |
 
-Gold labels are intentionally **small and high-precision** rather than exhaustive;
-results are therefore *indicative*, not population estimates. Every number below
-is regenerated by the scripts in `eval/`.
+The dataset uses `review_status`:
+
+- **existing**: 34 reviewed labels used for stable headline analysis,
+- **provisional**: 10 exploratory labels that should be reviewed/expanded before being treated as final benchmark labels.
+
+`eval/agent_questions.json` contains **13 conversation questions** with structured checks: required course codes, forbidden course codes, required terms, credit facts, regex patterns, required semantic actions, and forbidden actions. The final row preloads UI schedule-builder picks and tests the **Check Schedule** button path: the agent must call `get_current_schedule` rather than inventing a new timetable. One ambiguous recommendation case is marked provisional.
+
+`eval/general_conversation_questions.json` contains **9 transcript-free conversation questions**. These test normal course chat before a transcript is uploaded: RAG-backed recommendations, single-course explanations, permission-respecting planning behavior, direct timetable checks, and a transcript-free Check Schedule scenario that must avoid degree-progress claims.
+
+This design makes failures inspectable. If the model recommends an unsupported course, the evaluator can say whether the problem was answer grounding, missing tool use, or a weak/ambiguous label.
 
 ---
 
 ## 5. Results
 
-### 5.1 Retrieval quality
+### 5.1 Retrieval
 
-Over 34 labelled queries (k = 10):
+The current retriever uses FAISS `IndexFlatIP` with **817 vectors**. The retrieval evaluation confirms **88 FAISS searches** and no NumPy search backend.
 
-| Metric | Re-ranker **ON** | Re-ranker **OFF** | Δ (ON − OFF) |
+| Metric | Re-ranker ON | Re-ranker OFF | Delta |
 |---|---:|---:|---:|
-| Hit@1 | 0.912 | **0.971** | −0.059 |
-| Hit@5 | **1.000** | **1.000** | +0.000 |
-| Recall@5 | 0.941 | **0.966** | −0.025 |
-| Recall@10 | 0.961 | **0.975** | −0.015 |
-| MRR@10 | 0.956 | **0.985** | −0.029 |
-| nDCG@10 | 0.924 | **0.963** | −0.039 |
+| Hit@1 | 0.773 | **0.909** | -0.136 |
+| Hit@5 | 0.955 | **0.977** | -0.023 |
+| Recall@5 | 0.875 | **0.928** | -0.053 |
+| Recall@10 | 0.943 | **0.966** | -0.023 |
+| MRR@10 | 0.859 | **0.938** | -0.079 |
+| nDCG@10 | 0.849 | **0.922** | -0.073 |
 
-The retriever finds at least one gold course in the top 5 for **every** query
-(Hit@5 = 1.00) and recovers 96–98% of all gold courses by rank 10. The headline
-surprise is that the cross-encoder **lowers every metric** (analysed in §6.1).
+Recall@10 by review status:
 
-**Recall@10 by category (re-ranker ON):**
-
-| Category | Recall@10 | n |
+| Label group | n | Recall@10, re-ranker ON |
 |---|---:|---:|
-| CS core | 1.000 | 8 |
-| MATH | 1.000 | 6 |
-| IE | 1.000 | 1 |
-| Cross-subject | 1.000 | 2 |
-| CS elective | 0.933 | 15 |
-| EE | 0.833 | 2 |
+| existing | 34 | 0.985 |
+| provisional | 10 | 0.800 |
 
-### 5.2 Time-conflict detection and scheduler soundness
+The bi-encoder alone outperforms the cross-encoder on all six metrics. This is an important negative result: for short topical catalogue queries, exact semantic embedding search is already strong and the cross-encoder sometimes promotes broadly related but less appropriate courses.
+
+### 5.2 Conflict Detection and Timetable Soundness
 
 | Check | Result |
 |---|---:|
-| Labelled meeting pairs (n = 12): accuracy | **1.000** |
-| Labelled pairs: precision / recall | 1.000 / 1.000 |
-| Scheduler soundness: unsound results / bundles | **0 / 4** |
-| Feasible bundles scheduled conflict-free | 3 of 4 |
-| Infeasible bundle correctly reported | 1 of 4 |
+| Labeled meeting pairs | 12 |
+| Accuracy / precision / recall | **1.000 / 1.000 / 1.000** |
+| Real course bundles | 6 |
+| Unsound schedules returned | **0** |
+| Wrong feasibility classifications | **0** |
+| Missing required lab/recitation picks | **0** |
+| Feasibility accuracy | **1.000** |
 
-The detector classifies all boundary cases correctly — including the tricky ones:
-back-to-back classes that *touch* but do not overlap, shared-day-but-different-time
-pairs, multi-day meetings, and one-minute boundaries. The backtracking scheduler
-never returns an overlapping assignment.
+The bundle tests start with lecture choices and then auto-add direct catalog corequisites such as `CS 412R`, `CS 308L`, `MATH 101R`. This directly tests a practical scheduling issue: a lecture-only plan can look conflict-free while its required lab/recitation makes it impossible.
 
-### 5.3 End-to-end agent grounding
+### 5.3 Degree Requirements
 
-Eight factual questions through the full ReAct agent (GPT-4o, real transcript
-loaded):
+The official Banner Degree Evaluation is treated as ground truth for credit completion.
+
+| Section | Min SU | Completed SU | Remaining SU |
+|---|---:|---:|---:|
+| University Courses | 41 | 41 | 0 |
+| Core Electives | 31 | 31 | 0 |
+| Required Courses | 29 | 26 | 3 |
+| Area Electives | 9 | 9 | 0 |
+| Free Electives | 15 | 15 | 0 |
+| General | 125 | 122 | 3 |
+
+The graph engine reports:
+
+- required left: `CS 395`, `ENS 492`, `MATH 212`,
+- required credits left: **7 SU**,
+- discrepancy against official Required bucket: **+4 SU**.
+
+This is a conservative over-count caused by missing course-substitution/equivalence logic, discussed below.
+
+### 5.4 End-to-End ReAct Agent
+
+The saved result below is the latest completed live run over the earlier 12-question agent set. After adding the `a13` Check Schedule row and the 9-row general conversation set, the live agent evaluation should be rerun before quoting final updated metrics.
 
 | Metric | Value |
 |---|---:|
-| Grounding accuracy | **1.000 (8 / 8)** |
-| Average latency | 6.7 s / question |
-| Average token cost | 6,156 tokens / question |
-| Average tool calls | 0.5 / question |
+| Questions | 12 |
+| Answer grounding accuracy | **0.917** |
+| Action success accuracy | **1.000** |
+| Task success accuracy | **0.917** |
+| Existing-label task success | **11/11** |
+| Provisional-label task success | **0/1** |
+| Average latency | 8.59 s |
+| Average tokens | 6,691 |
+| Average tool calls | 0.5 |
 
-Every answer contained the correct, catalogue-grounded fact with no hallucination
-markers. Prerequisite questions triggered an explicit lookup tool call; some
-credit/topic questions were answered from injected context with no tool call
-(see §6.4). Full per-question detail is in **Appendix A**.
+The single failed item is the provisional optimization/operations-research recommendation. The model suggested `CS 306` and justified it through database query optimization, but the provisional gold labels expected IE/OR-flavored courses such as `IE 311`, `IE 312`, or `IE 313`. We count this as a real failure in the reported 12-question score, while also flagging that the accepted answer set for this broad recommendation needs human review.
 
-### 5.4 Degree-requirement accuracy
+### 5.5 Scoreboard
 
-The student's official Banner Degree Evaluation (ground truth) reports SU credits
-per requirement section:
-
-| Section (official audit) | Min SU | Done SU | Remaining |
-|---|---:|---:|---:|
-| University courses | 41 | 41 | 0 |
-| Core electives | 31 | 31 | 0 |
-| **Required courses** | 29 | 26 | **3** |
-| Area electives | 9 | 9 | 0 |
-| Free electives | 15 | 15 | 0 |
-| Overall (Banner rollup) | 125 | 122 | **3** |
-
-The graph-based engine agrees the student is nearly finished but lists three
-required items still open — **CS 395, ENS 492, MATH 212** — totalling **7 SU**, a
-**+4 SU over-count** versus the official 3 SU (root cause in §6.2).
-
-### 5.5 Summary scoreboard
-
-| Axis | Headline metric | Result |
-|---|---|---:|
-| Retrieval | Hit@5 / Recall@10 | 1.00 / 0.96 |
-| Conflict detection | accuracy / unsound schedules | 1.00 / 0 |
-| End-to-end agent | grounding accuracy | 8 / 8 |
-| Requirements | required-bucket error vs audit | +4 SU |
-| Prereq parser | coverage / failures | 100% / 0 |
+| Axis | Headline result |
+|---|---:|
+| FAISS retrieval | bi-encoder Hit@5 **0.977**, Recall@10 **0.966** |
+| Re-ranker ablation | cross-encoder hurts all six retrieval metrics |
+| Conflict detection | **1.000** accuracy, precision, recall |
+| Timetable scheduler | **0** unsound schedules over 6 bundles |
+| End-to-end agent | **11/12** grounded, **11/11** on reviewed labels |
+| Requirements | **+4 SU** conservative required-bucket discrepancy |
+| Prereq parser | **100%** strict parse coverage, **0** failures |
 
 ---
 
-## 6. Error Analysis — What Did Not Work
+## 6. Error Analysis
 
-Per the project brief, failures are reported as carefully as successes.
+### 6.1 Cross-Encoder Re-Ranker Hurts Short Queries
 
-### 6.1 The cross-encoder re-ranker does not help
+We expected the cross-encoder to improve precision. It did not. On the 44-query dataset, the re-ranker reduced Hit@1 from **0.909** to **0.773** and MRR@10 from **0.938** to **0.859**.
 
-We expected the BGE cross-encoder to improve precision. Instead it **reduced every
-retrieval metric** (Table 5.1): Hit@1 fell from 0.971 to 0.912 and MRR from 0.985
-to 0.956. Concretely, for the query *"I want to learn machine learning"* (gold
-`CS 412`, `CS 415`), the re-ranker keeps `CS 412` at rank 1 but fills the rest of
-the top 5 with `ECON 494`, `ENT 201`, `EE 48009`, `OPIM 413` and **drops
-`CS 415`** out of the top 5 — courses that mention "learning"/"models"
-generically. On short topical queries against a small, well-separated catalogue,
-the bi-encoder already ranks the exact-match course first, and the cross-encoder
-occasionally rewards generic topical overlap. It also adds ~0.5 s of CPU latency.
-**Conclusion:** on *this* query distribution the cross-encoder is not worth its
-cost — the bi-encoder alone is already at ceiling, so the ablation is a genuine
-negative result and we report it in full. We nevertheless keep the re-ranker
-**on by default** (`rerank=True`) as a deliberate product choice: it is the more
-robust option for the longer, more ambiguous questions we expect in real advising
-use (where bi-encoder cosine is weakest), the ~0.5 s overhead is acceptable in an
-interactive setting, and retrieval **transparently falls back to bi-encoder order
-whenever the re-ranker model is unavailable**, so the worst case is exactly the
-strong bi-encoder baseline. `eval/run_retrieval.py` prints both ON and OFF on
-every run so the trade-off stays visible rather than hidden behind the default.
-
-### 6.2 The requirement engine over-counts required credits
-
-The engine reports **MATH 212** (Linear Algebra *and* Differential Equations) as an
-open requirement; the official audit does not. The student satisfied this through
-an accepted **substitution** — the separate `MATH 201` + `MATH 202` sequence —
-which the degree-graph encoding does not treat as equivalent. Combined with how
-internship/graduation-project credits (`CS 395`, `ENS 492`) are counted, this
-yields the +4 SU over-count. The engine is therefore *conservative* (it never
-under-states what is owed) but needs an explicit **course-equivalence/substitution
-table** to match Banner exactly.
-
-### 6.3 Future-term scheduling relies on a proxy term
-
-The planning term Fall 2026–2027 (`202601`) has no published offerings, so the
-builder schedules against Fall 2025–2026 (`202501`). Meeting days/times are
-therefore **indicative**, and the **CRNs/section numbers shown will not match
-actual registration** — the UI states this explicitly and proxy CRNs are scrubbed
-from agent output. A side effect: bundles that will likely be feasible in the real
-term can be reported infeasible in the proxy term (e.g. `CS 300 + CS 301 + MATH 201`
-had no conflict-free combination in the limited 202501 sections).
-
-### 6.4 Grounding is not always mechanically traceable
-
-Several credit/topic questions (e.g. *"How many SU credits is CS 412?"*) were
-answered correctly with **zero tool calls**, relying on context injected into the
-prompt and possibly the model's prior. Answers were verified correct, but the
-system does not yet **force** a citation-producing tool call for every atomic
-fact, so grounding is not always auditable from the trace.
-
-### 6.5 Other shortcomings
-
-- **Latency variance.** The ReAct loop plus a lazy retriever load produces a 26 s
-  worst-case on the first retrieval-bearing question; subsequent queries are 1–3 s.
-- **Cost.** ~6k tokens/question on GPT-4o. An earlier experiment with a smaller,
-  cheaper model produced noticeably weaker scheduling explanations.
-- **UI state.** Reloading the page resets the client-side schedule builder and
-  starts a new session, so an in-progress schedule is not persisted.
-- **Evaluation scale.** 34 retrieval and 8 end-to-end items are high-precision but
-  small, and one program (BSCS-DM) was tested in depth — results are indicative.
-- **Build verification.** The `.docx`/`.pptx` deliverables could not be rendered to
-  images in the build environment (no LibreOffice), so their text was verified but
-  their visual layout was not.
-
----
-
-## 7. Limitations and Future Work
-
-| Limitation | Concrete next step |
-|---|---|
-| Re-ranker doesn't help on short queries | Kept on by default (robust on long/ambiguous queries, graceful bi-encoder fallback); A/B and tune a query-length trigger on a larger long-query set |
-| Requirement substitution gap | Add a course-equivalence table (MATH 212 ≡ MATH 201 + 202, etc.) |
-| Proxy-term scheduling | Ingest real offerings once the registrar publishes `202601` |
-| Untraceable grounding | Require a citation tool call per atomic fact; surface sources in the UI |
-| Narrow evaluation | Grow test sets; cover more programs and conversational/multi-turn cases |
-| No session persistence | Persist the builder + session server-side and restore on reload |
-
----
-
-## 8. Reproducibility
-
-The repository runs from a clean clone. Setup, the data pipeline, FAISS build, CLI,
-web UI, and data formats are documented in the top-level `README`; the evaluation
-suite has its own `eval/README`. Secrets are handled safely: `.env` is git-ignored
-and only `.env.example` (a placeholder) is committed.
-
-```bash
-pip install -r requirements.txt          # Python 3.10+
-cp .env.example .env                      # set OPENAI_API_KEY
-# FAISS index is prebuilt in embeddings/  (rebuild script documented in README §6)
-
-# Evaluation (3 local, 1 live):
-python -m eval.run_retrieval
-python -m eval.run_conflicts
-python -m eval.run_requirements
-python -m eval.run_agent                  # needs OPENAI_API_KEY
-
-# Web UI:
-uvicorn api.main:app --port 8000          # open http://localhost:8000
-```
-
-The test sets are JSON and version-controlled, so any reviewer can extend them and
-re-run to regenerate every table in §5. (Note: a stray local `.venv` built on
-Python 3.9 exists in the tree; the supported interpreter is 3.10+, and all
-evaluation here used Python 3.12.)
-
----
-
-## 9. Use of AI Assistants
-
-Per the course's academic-integrity policy, we disclose how large-language-model
-assistants were used in producing this project.
-
-- **Design and direction are ours.** The team planned the entire project: the
-  problem framing, the system architecture, the module breakdown, the evaluation
-  design, and the detailed step-by-step instructions that drove every build stage.
-  The LLM was given *our* specifications to implement against — it did not decide
-  what to build or how the system should be structured.
-- **The techniques are course material.** The methods we apply are drawn directly
-  from the CS 455 syllabus — retrieval-augmented generation (RAG), the **ReAct**
-  tool-using agent loop, prompting and structured outputs, and evaluation
-  methodology. We chose these deliberately to exercise what we learned in the
-  course, rather than adopting them from the assistant.
-- **The LLM implemented code to our spec.** Coding assistants (Claude, GPT) were
-  used mainly to write and refactor implementation code from our instructions —
-  retriever wiring, the evaluation harness in `eval/`, FastAPI/JS UI code, and
-  docstrings. Every artefact was read, tested, and verified by the team, and we
-  take full responsibility for the final submission. All numbers in §5 are
-  reproducible from the scripts in `eval/`; none were generated or estimated by
-  an LLM.
-- **As system components (not authoring aids).** SuSchedule-r itself calls
-  OpenAI GPT-4o (planner + ReAct agent) and GPT-4o-mini (intent classifier) at
-  run time; these are part of the system under study, documented in §3–§5.
-
----
-
-## 10. Conclusion
-
-SuSchedule-r shows that a disciplined "ground everything" approach turns an LLM
-into a trustworthy course advisor: strong semantic retrieval (Hit@5 = 1.00), a
-provably sound conflict checker (100% on labelled pairs), and 8/8 grounded
-end-to-end answers. Equally important are the negative results — the re-ranker that
-does not earn its keep, the requirement engine's substitution gap, and the
-proxy-term caveat — each of which points to a concrete next step. The system is
-reproducible end-to-end and the evaluation harness makes future regression-checking
-straightforward.
-
----
-
-## Appendix A — Per-question end-to-end results
-
-Mode: ReAct · GPT-4o · transcript `transcript_cagan.json` · term 202601 ·
-session total 49,247 tokens.
-
-| ID | Kind | Question | Grounded | Latency | Tokens | Tool calls |
-|---|---|---|:---:|---:|---:|---:|
-| a01 | credit | How many SU credits is CS 412? | ✓ | 2.7 s | 3,611 | 0 |
-| a02 | prereq | Prerequisites for CS 301? | ✓ | 2.6 s | 7,442 | 1 |
-| a03 | prereq | Prerequisite for CS 307? | ✓ | 2.4 s | 7,557 | 1 |
-| a04 | topic | What does CS 445 cover? | ✓ | 3.1 s | 8,291 | 1 |
-| a05 | prereq | Does CS 411 need a math prereq? | ✓ | 2.0 s | 7,913 | 1 |
-| a06 | topic | Is CS 412 a machine-learning course? | ✓ | 1.4 s | 4,009 | 0 |
-| a07 | topic | What is CS 307 about? | ✓ | 13.5 s | 4,095 | 0 |
-| a08 | recommend | Recommend a theoretical CS elective | ✓ | 26.0 s | 6,329 | 0 |
-
-*(a07/a08 latency includes the one-time retriever model load.)*
-
-## Appendix B — Retrieval examples (re-ranker ON)
+Example:
 
 | Query | Gold | Re-ranked top-5 |
 |---|---|---|
-| "I want to learn machine learning" | CS 412, CS 415 | CS 412, ECON 494, ENT 201, EE 48009, OPIM 413 |
-| "neural networks and deep learning" | CS 415, CS 412 | PSY 416, CS 415, CS 445, CS 412, PHIL 310 |
-| "how operating systems work internally" | CS 307 | CS 307, CS 48008, CS 432, CS 437, OPIM 301 |
-| "designing and querying databases" | CS 306 | CS 306, IE 413, MGMT 203, DSA 301, DSA 210 |
+| "I want to learn machine learning" | `CS 412`, `CS 415` | `CS 412`, `ECON 495`, `ECON 494`, `ENT 201`, `EE 48009` |
+| "courses about neural networks and deep learning" | `CS 415`, `CS 412` | `PSY 416`, `CS 415`, `CS 445`, `CS 412`, `IF 467` |
 
-The first two rows illustrate §6.1: the re-ranker admits generically "topical"
-courses (ENT 201, PSY 416, PHIL 310) and can demote a true match.
+The cross-encoder sometimes rewards generic topical overlap and demotes a course that is semantically and institutionally more relevant. The product can still keep the re-ranker behind a flag for longer, more ambiguous questions, but our measured result says the bi-encoder should be treated as the stronger default baseline for short catalogue queries.
 
-## Appendix C — Artifacts
+### 6.2 Requirement Engine Needs Course Equivalences
 
-- `eval/` — runners (`run_retrieval`, `run_conflicts`, `run_requirements`,
-  `run_agent`), datasets, results JSON, and `agent_transcript.md`.
-- `report/` — this report, the `.docx`/`.pptx` deliverables, and `DEMO_SCRIPT.md`.
+The official audit does not require the student to take `MATH 212`, but the graph engine still marks it open. The likely cause is a substitution: the student satisfied that requirement through a `MATH 201` + `MATH 202` path accepted by Banner. The current graph stores the catalogue requirement literally and does not yet encode equivalence classes or advisor-approved substitutions.
+
+The engine is conservative: it overstates remaining work rather than understating it. Still, exact graduation advising needs an explicit substitution table.
+
+### 6.3 Future-Term Scheduling Uses Proxy Offerings
+
+The target term `202601` represents Fall 2026-2027, but the real offerings are not published yet. The scheduler therefore uses the most recent same-season term (`202501`) as a proxy. This is useful for planning but not registration-final. CRNs and section numbers from proxy terms must not be presented as future facts.
+
+### 6.4 Grounding Is Not Always Mechanically Traceable
+
+Some correct answers use injected context and do not call tools during the visible ReAct loop. This can be acceptable for latency, but it weakens trace auditability. The next version should require citation-producing tool calls for recommendations and factual course claims, especially for broad questions such as "optimization", "operations", "networking", or "security".
+
+### 6.5 Tool-Calling Is Sometimes Brittle
+
+The ReAct agent is not perfectly consistent in function calling. In some runs it may pass a near-miss parameter, use a section name with a small typo, omit a required argument, or choose a tool with arguments shaped for a neighboring use case. These are usually small LLM errors, but they can produce tool exceptions or inconsistent behavior if the backend does not normalize inputs and return clear recoverable errors.
+
+This is a real limitation of using a general LLM as an orchestrator. The current system mitigates it with JSON schemas, normalization helpers, trace logging, deterministic validation, and guardrails around high-impact actions such as `set_plan()`. A production version should add stricter argument validators, alias maps for common typos, typed recovery messages from every tool, and more evaluation rows that intentionally stress malformed or ambiguous tool arguments.
+
+### 6.6 Evaluation Limits
+
+The evaluation is meaningful but not exhaustive. Retrieval labels are small high-precision sets, not complete relevance judgments. Most end-to-end tests use a BSCS-DM sample student. Provisional labels are separated so they do not quietly pretend to be final ground truth.
 
 ---
 
-*Models: BAAI/bge-base-en-v1.5 (bi-encoder), BAAI/bge-reranker-base
-(cross-encoder), OpenAI GPT-4o (planner + ReAct). License: MIT.*
+## 7. Reproducibility
+
+The repository is runnable from a clean clone with Python 3.10+.
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+# edit .env and add OPENAI_API_KEY for live agent tests
+```
+
+The FAISS artifacts are versioned for deterministic demos:
+
+```text
+embeddings/su_courses.parquet
+embeddings/id_map.json
+embeddings/su_courses_embeddings.npy
+embeddings/su_courses.index
+```
+
+Run the local tests:
+
+```bash
+python -m eval.run_retrieval
+python -m eval.run_conflicts
+python -m eval.run_requirements
+```
+
+Run the live agent test:
+
+```bash
+python -m eval.run_agent
+```
+
+Start the UI:
+
+```bash
+uvicorn api.main:app --reload --port 8000
+```
+
+Run the debug CLI for a demo trace:
+
+```bash
+python -m scheduler.cli \
+  --transcript data/transcript_cagan.json \
+  --term 202601 \
+  --mode react \
+  --debug-trace
+```
+
+---
+
+## 8. Use of LLM Assistants and Team Responsibility
+
+The project announcement explicitly allows LLM assistants but requires disclosure. We used them in two distinct roles.
+
+First, LLMs are part of the **system under study**: GPT-4o runs the ReAct advising loop, GPT-4o is also used by the legacy structured planner path, and GPT-4o-mini/GPT-4o can be used for intent/query rewriting depending on configuration.
+
+Second, coding assistants were used as **implementation aids**. The project structure, problem framing, deterministic parser design, graph/requirement architecture, evaluation goals, and iterative test cases were designed by the team. We then used LLM coding assistants to implement and refactor modules such as the ReAct agent loop, helper functions, UI code, evaluation runners, documentation, and trace/debug tooling. The team reviewed outputs, ran tests, corrected failures, and takes responsibility for the final code and report.
+
+We did not use LLMs to fabricate results. Metrics in this report come from version-controlled scripts and JSON outputs under `eval/`.
+
+---
+
+## 9. Conclusion
+
+SuSchedule-r satisfies the CS 455 application/system-building goal: it is a working LLM-powered course scheduler-assistant with RAG, ReAct tool use, deterministic parsing, symbolic validation, a web UI, and reproducible evaluation. The system is more complex than a plain chatbot because the LLM is only one layer in a larger grounded architecture. The strongest engineering result is the separation of responsibilities: the model orchestrates and explains, while deterministic tools own catalogue facts, prerequisites, degree requirements, and schedule conflicts.
+
+The project is not perfect. The re-ranker ablation is negative, the requirement engine needs substitution logic, broad recommendation questions still need stronger citation enforcement, and LLM tool calls can still be brittle around small parameter mistakes. These limitations are visible because the evaluation suite is designed to expose them. That makes the project ready for submission: it works, it is runnable, it is evaluated, and it reports its failures honestly.
+
+---
+
+## Appendix A - Per-Question Agent Results
+
+Mode: ReAct · model: GPT-4o · transcript: `data/transcript_cagan.json` · term: `202601` · total session tokens: **80,292**.
+
+| ID | Kind | Question | Grounded | Latency | Tokens | Tool calls | Review |
+|---|---|---|:---:|---:|---:|---:|---|
+| a01 | fact-credit | How many SU credits is CS 412? | yes | 2.64s | 7,932 | 1 | existing |
+| a02 | fact-prereq | What are the prerequisites for CS 301? | yes | 2.17s | 7,483 | 1 | existing |
+| a03 | fact-prereq | What is the prerequisite for CS 307? | yes | 1.99s | 7,637 | 1 | existing |
+| a04 | fact-topic | What does CS 445 cover? | yes | 8.83s | 8,382 | 1 | existing |
+| a05 | fact-prereq | Does CS 411 require a math prerequisite? | yes | 2.13s | 8,014 | 1 | existing |
+| a06 | fact-topic | Is CS 412 a machine learning course? | yes | 9.49s | 4,022 | 0 | existing |
+| a07 | fact-topic | What is CS 307 about? | yes | 8.73s | 4,115 | 0 | existing |
+| a08 | recommendation | Recommend one theoretical CS elective. | yes | 21.72s | 6,364 | 0 | existing |
+| a09 | recommendation | Recommend one course about computer networks. | yes | 11.67s | 6,211 | 0 | existing |
+| a10 | fact-corequisite | Does CS 412 require a recitation? | yes | 1.29s | 4,466 | 0 | existing |
+| a11 | timetable | Can CS 412 and CS 302 be scheduled together? | yes | 17.76s | 9,276 | 1 | existing |
+| a12 | recommendation | I enjoy optimization and operations research. Suggest one course. | no | 14.64s | 6,390 | 0 | provisional |
+
+---
+
+## Appendix B - Main Artifacts
+
+- `README.md`: setup, architecture, file map, tests, demo commands.
+- `api/`: FastAPI backend and browser UI.
+- `scheduler/`: runtime agent, deterministic engines, retriever, timetable, requirements.
+- `scraper/`: data ingestion and graph-building pipeline.
+- `data/`: catalog, degree graphs, offerings, engineering/science credit table.
+- `embeddings/`: deterministic FAISS RAG artifacts.
+- `eval/`: datasets, runners, result JSON, agent transcript.
+- `report/`: final report, demo script, slides.

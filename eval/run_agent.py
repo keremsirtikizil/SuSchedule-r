@@ -1,8 +1,8 @@
 """
 End-to-end agent evaluation for SuSchedule-r (LIVE -- calls OpenAI).
 
-Runs a labeled set of student questions (eval/agent_questions.json) through the
-full ReAct agent with a real transcript loaded, then measures:
+Runs a labeled set of student questions through the full ReAct agent, then
+measures:
 
   - Answer grounding : structured checks for required course codes, terms,
                        credit facts, and forbidden claims.
@@ -17,6 +17,7 @@ eval/results_agent.json. Cost: a handful of gpt-4o calls per question.
 
 Usage (needs OPENAI_API_KEY in .env):
     python -m eval.run_agent
+    python -m eval.run_agent --dataset general_conversation_questions.json
 """
 from __future__ import annotations
 
@@ -227,9 +228,10 @@ def _print_summary(summary: dict) -> None:
 
 
 def _render_transcript(spec: dict, rows: list[dict]) -> str:
+    transcript_label = spec.get("transcript") or "none"
     md = [
         "# SuSchedule-r — end-to-end agent transcript\n",
-        f"Transcript: `{spec['transcript']}` · term {spec['target_term']} · mode {spec['mode']}\n",
+        f"Transcript: `{transcript_label}` · term {spec['target_term']} · mode {spec['mode']}\n",
     ]
     for row in rows:
         md.append(f"\n## [{row['id']}] {row['q']}\n")
@@ -240,8 +242,13 @@ def _render_transcript(spec: dict, rows: list[dict]) -> str:
         )
         failures = row["failures"]
         missing_actions = row["missing_actions"]
-        if failures or missing_actions:
-            scoring_failures = failures + ([f"missing actions: {missing_actions}"] if missing_actions else [])
+        forbidden_actions = row.get("forbidden_actions_seen", [])
+        if failures or missing_actions or forbidden_actions:
+            scoring_failures = (
+                failures
+                + ([f"missing actions: {missing_actions}"] if missing_actions else [])
+                + ([f"forbidden actions seen: {forbidden_actions}"] if forbidden_actions else [])
+            )
             md.append(f"\nScoring failures: `{scoring_failures}`\n")
         clean_answer = "\n".join(line.rstrip() for line in row["answer"].splitlines()).strip()
         md.append(f"\n{clean_answer}\n")
@@ -249,17 +256,16 @@ def _render_transcript(spec: dict, rows: list[dict]) -> str:
 
 
 def _write_outputs(spec: dict, summary: dict) -> None:
-    (EVAL_DIR / "results_agent.json").write_text(json.dumps(summary, indent=2))
-    (EVAL_DIR / "agent_transcript.md").write_text(
-        _render_transcript(spec, summary["per_question"])
-    )
-    print("\nSaved -> eval/results_agent.json, eval/agent_transcript.md")
+    paths = _result_paths(spec)
+    paths["json"].write_text(json.dumps(summary, indent=2))
+    paths["transcript"].write_text(_render_transcript(spec, summary["per_question"]))
+    print(f"\nSaved -> {paths['json'].relative_to(ROOT)}, {paths['transcript'].relative_to(ROOT)}")
 
 
 def _score_saved_answers(spec: dict, dataset_bytes: bytes, known_subjects: set[str]) -> dict:
-    result_path = EVAL_DIR / "results_agent.json"
+    result_path = _result_paths(spec)["json"]
     if not result_path.exists():
-        raise SystemExit("No eval/results_agent.json exists to rescore. Run the live evaluation first.")
+        raise SystemExit(f"No {result_path} exists to rescore. Run the live evaluation first.")
     previous = json.loads(result_path.read_text())
     previous_by_id = {row["id"]: row for row in previous.get("per_question", [])}
     rows = []
@@ -274,7 +280,10 @@ def _score_saved_answers(spec: dict, dataset_bytes: bytes, known_subjects: set[s
         actions = set(old.get("observed_actions", []))
         answer_ok, failures, mentioned_codes = evaluate_answer(answer, q, known_subjects)
         missing_actions = sorted(set(q.get("required_actions", [])) - actions)
+        forbidden_actions = sorted(set(q.get("forbidden_actions", [])) & actions)
         action_ok = not missing_actions
+        if forbidden_actions:
+            action_ok = False
         rows.append({
             **old,
             "kind": q["kind"],
@@ -286,6 +295,7 @@ def _score_saved_answers(spec: dict, dataset_bytes: bytes, known_subjects: set[s
             "failures": failures,
             "mentioned_course_codes": mentioned_codes,
             "missing_actions": missing_actions,
+            "forbidden_actions_seen": forbidden_actions,
         })
     return _summarize_rows(
         rows,
@@ -295,8 +305,97 @@ def _score_saved_answers(spec: dict, dataset_bytes: bytes, known_subjects: set[s
     )
 
 
+def _result_paths(spec: dict) -> dict[str, Path]:
+    stem = spec.get("output_stem") or "agent"
+    return {
+        "json": EVAL_DIR / f"results_{stem}.json",
+        "transcript": EVAL_DIR / f"{stem}_transcript.md",
+    }
+
+
+def _resolve_dataset_path(value: str) -> Path:
+    path = Path(value)
+    if not path.is_absolute():
+        path = EVAL_DIR / path
+    return path
+
+
+def _meeting_when(meetings: list[dict]) -> str:
+    return "; ".join(
+        f"{'/'.join(m.get('day_labels', []))} {m.get('start_label', '')}-{m.get('end_label', '')}"
+        for m in meetings
+    )
+
+
+def _resolve_schedule_fixture(session: PlannerSession, picks: list[dict]) -> list[dict]:
+    """Resolve eval [{code, crn?}] picks into the same shape the UI stores."""
+    from scheduler.catalog import corequisite_codes
+    from scheduler.timetable import (
+        annotate_meeting,
+        load_offerings,
+        resolve_schedule_term,
+        sections_for,
+    )
+
+    session._ensure_heavy_state()
+    offerings = session._offerings or load_offerings()
+    schedule_term, _ = resolve_schedule_term(offerings, session.base_request.target_term)
+    catalog = session.catalog
+
+    provided_crns: dict[str, str] = {}
+    requested_order: list[str] = []
+    for pick in picks:
+        code = str(pick.get("code", "")).upper().strip()
+        crn = str(pick.get("crn") or "").strip()
+        if not code:
+            continue
+        if code not in provided_crns:
+            requested_order.append(code)
+        if crn or code not in provided_crns:
+            provided_crns[code] = crn
+
+    expanded: list[tuple[str, str, bool, str | None]] = []
+    seen: set[str] = set()
+    for code in requested_order:
+        if code in seen:
+            continue
+        expanded.append((code, provided_crns.get(code, ""), False, None))
+        seen.add(code)
+        for coreq in corequisite_codes(catalog, code):
+            if coreq not in seen:
+                expanded.append((coreq, provided_crns.get(coreq, ""), True, code))
+                seen.add(coreq)
+
+    resolved: list[dict] = []
+    for code, crn, is_coreq, parent_code in expanded:
+        sections = sections_for(offerings, schedule_term, code) if schedule_term else []
+        section = next((s for s in sections if crn and str(s.get("crn")) == crn), None)
+        if section is None and sections:
+            section = sections[0]
+        course = catalog.get(code)
+        meetings = [annotate_meeting(dict(m)) for m in (section.get("meetings", []) if section else [])]
+        resolved.append({
+            "code": code,
+            "crn": str(section.get("crn")) if section else None,
+            "section": section.get("section") if section else None,
+            "title": course.title if course else (section.get("title") if section else ""),
+            "su_credit": course.su_credit if course else None,
+            "meetings": meetings,
+            "when": _meeting_when(meetings),
+            "offered": section is not None,
+            "is_corequisite": is_coreq,
+            "corequisite_for": parent_code,
+        })
+    return resolved
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--dataset",
+        default="agent_questions.json",
+        help="Dataset JSON path. Relative paths are resolved under eval/.",
+    )
     parser.add_argument(
         "--rescore",
         action="store_true",
@@ -304,7 +403,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    dataset_path = EVAL_DIR / "agent_questions.json"
+    dataset_path = _resolve_dataset_path(args.dataset)
     dataset_bytes = dataset_path.read_bytes()
     spec = json.loads(dataset_bytes)
     catalog = Catalog.load()
@@ -318,7 +417,7 @@ def main() -> None:
     req = PlannerRequest(
         target_term=spec["target_term"],
         user_request="",
-        transcript_json=ROOT / spec["transcript"],
+        transcript_json=(ROOT / spec["transcript"]) if spec.get("transcript") else None,
         mode=spec["mode"],
     )
     session = PlannerSession.from_request(req)
@@ -327,6 +426,11 @@ def main() -> None:
     rows = []
 
     for q in spec["questions"]:
+        if "schedule_picks" in q:
+            session.user_schedule = _resolve_schedule_fixture(session, q["schedule_picks"])
+        elif q.get("clear_schedule"):
+            session.user_schedule = []
+
         usage_before = llm_client.get_session_usage()["total_tokens"]
         t0 = time.time()
         try:
@@ -344,11 +448,13 @@ def main() -> None:
         actions = trace_actions(session.last_trace)
         required_actions = set(q.get("required_actions", []))
         missing_actions = sorted(required_actions - actions)
-        action_ok = not missing_actions
+        forbidden_actions = sorted(set(q.get("forbidden_actions", [])) & actions)
+        action_ok = not missing_actions and not forbidden_actions
         ok = answer_ok and action_ok
         rows.append({
             "id": q["id"], "kind": q["kind"], "q": q["q"],
             "review_status": q.get("review_status", "existing"),
+            "schedule_fixture_codes": [p.get("code") for p in q.get("schedule_picks", [])],
             "answer": answer,
             "answer_grounded": answer_ok,
             "action_ok": action_ok,
@@ -357,6 +463,7 @@ def main() -> None:
             "mentioned_course_codes": mentioned_codes,
             "observed_actions": sorted(actions),
             "missing_actions": missing_actions,
+            "forbidden_actions_seen": forbidden_actions,
             "latency_s": round(dt, 2),
             "tokens": tokens,
             "tool_calls": calls,

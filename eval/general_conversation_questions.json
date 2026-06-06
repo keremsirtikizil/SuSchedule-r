@@ -1,0 +1,101 @@
+{
+  "_comment": "Human-labeled general-conversation benchmark for SuSchedule-r. These questions test transcript-free exploratory advising, smooth follow-up behavior, RAG-backed course explanations, and permission-respecting planning. Unlike agent_questions.json, this dataset intentionally starts with no transcript or Degree Evaluation loaded.",
+  "transcript": null,
+  "target_term": "202601",
+  "mode": "react",
+  "output_stem": "agent_general_conversation",
+  "questions": [
+    {
+      "id": "g01",
+      "q": "Hi, I am a Sabanci student and I want to take some courses about Networking, what do you suggest, and what are those courses covering?",
+      "any_course_codes": ["CS 403", "CS 408", "CS 432"],
+      "allowed_course_codes": ["CS 307", "CS 403", "CS 408", "CS 432", "EE 414", "EE 417"],
+      "any_terms": ["network", "protocol", "security", "distributed"],
+      "required_actions": ["retrieve_catalog_courses"],
+      "forbidden_actions": ["set_plan", "validate_plan"],
+      "forbidden_patterns": ["\\bI need (?:your|to know).{0,80}(?:transcript|completed courses|admit term).{0,80}before"],
+      "kind": "general-course-recommendation"
+    },
+    {
+      "id": "g02",
+      "q": "What does CS 412 cover?",
+      "required_terms": ["machine learning"],
+      "allowed_course_codes": ["CS 412"],
+      "required_actions": ["get_course_details"],
+      "forbidden_actions": ["set_plan", "validate_plan"],
+      "kind": "single-course-explanation"
+    },
+    {
+      "id": "g03",
+      "q": "I am interested in theoretical computer science. Suggest a few courses and briefly explain why.",
+      "any_course_codes": ["CS 400", "CS 407"],
+      "allowed_course_codes": ["CS 300", "CS 301", "CS 302", "CS 306", "CS 400", "CS 407"],
+      "any_terms": ["algorithm", "complexity", "formal", "theory"],
+      "required_actions": ["retrieve_catalog_courses"],
+      "forbidden_actions": ["set_plan", "validate_plan"],
+      "kind": "general-course-recommendation"
+    },
+    {
+      "id": "g04",
+      "q": "I am an IE major who has interest in optimization area, what courses do you suggest?",
+      "any_course_codes": ["IE 311", "IE 312", "IE 313"],
+      "allowed_course_codes": ["IE 301", "IE 305", "IE 309", "IE 311", "IE 312", "IE 313", "IE 405", "IE 406"],
+      "any_terms": ["optimization", "operations research", "linear", "decision"],
+      "required_actions": ["retrieve_catalog_courses"],
+      "forbidden_actions": ["set_plan", "validate_plan"],
+      "kind": "degree-aware-general-recommendation"
+    },
+    {
+      "id": "g05",
+      "q": "Can you make this into a semester plan for me?",
+      "required_patterns": ["(?:degree|program|transcript|degree evaluation|completed|admit|cohort)"],
+      "forbidden_actions": ["set_plan"],
+      "kind": "planning-permission-with-missing-profile"
+    },
+    {
+      "id": "g06",
+      "q": "I like LLMs and NLP. Which catalog courses should I look at first?",
+      "any_course_codes": ["CS 445", "CS 412", "CS 415"],
+      "allowed_course_codes": ["CS 412", "CS 415", "CS 445"],
+      "any_terms": ["natural language", "nlp", "machine learning", "information retrieval"],
+      "required_actions": ["retrieve_catalog_courses"],
+      "forbidden_actions": ["set_plan", "validate_plan"],
+      "kind": "general-course-recommendation"
+    },
+    {
+      "id": "g07",
+      "q": "Does CS 412 require a recitation?",
+      "required_course_codes": ["CS 412R"],
+      "allowed_course_codes": ["CS 412", "CS 412R"],
+      "required_actions": ["get_course_details"],
+      "forbidden_actions": ["set_plan", "validate_plan"],
+      "kind": "general-corequisite-fact"
+    },
+    {
+      "id": "g08",
+      "q": "Do CS 412 and CS 302 conflict in the target term?",
+      "required_course_codes": ["CS 412", "CS 302"],
+      "allowed_course_codes": ["CS 412", "CS 412R", "CS 302", "CS 302R"],
+      "any_terms": ["conflict", "clash", "no conflict-free", "cannot"],
+      "required_actions": ["build_timetable"],
+      "forbidden_actions": ["set_plan"],
+      "kind": "general-timetable-check"
+    },
+    {
+      "id": "g09",
+      "q": "I clicked Check Schedule after adding courses in the builder. Please review my current schedule for conflicts and credit load. I have not uploaded a transcript yet, so do not make degree-progress claims.",
+      "schedule_picks": [
+        {"code": "CS 412"},
+        {"code": "CS 302"},
+        {"code": "CS 308"}
+      ],
+      "required_course_codes": ["CS 412", "CS 302"],
+      "allowed_course_codes": ["CS 412", "CS 412R", "CS 302", "CS 302R", "CS 308", "CS 308L"],
+      "any_terms": ["conflict", "credit"],
+      "required_actions": ["get_current_schedule"],
+      "forbidden_actions": ["build_timetable", "set_plan"],
+      "forbidden_patterns": ["graduation requirements|remaining degree requirements|you still need"],
+      "kind": "general-ui-check-schedule"
+    }
+  ]
+}

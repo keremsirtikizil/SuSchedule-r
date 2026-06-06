@@ -19,3 +19,8 @@ env/
 # Editors
 .idea/
 .vscode/
+
+# Generated local evaluation/report artifacts
+eval/reports/
+eval/runs/
+report/CS455_SuSchedule-r_Report.html

@@ -1,0 +1,125 @@
+{
+  "_comment": "Representative 20-case human-labeled coverage matrix for the final report. These rows combine existing runnable evaluation themes with additional reviewer-facing coverage goals; they document what a human label checks, not a separate paid runner.",
+  "cases": [
+    {
+      "id": "H01",
+      "category": "catalog-rag",
+      "prompt": "I want to learn machine learning. Which courses should I inspect first?",
+      "expected_signal": "FAISS retrieval should surface CS 412 and/or CS 415 and explain relevance from catalog descriptions."
+    },
+    {
+      "id": "H02",
+      "category": "catalog-rag",
+      "prompt": "I want to understand operating systems internally.",
+      "expected_signal": "Retrieval should identify CS 307 and explain operating-system content."
+    },
+    {
+      "id": "H03",
+      "category": "catalog-rag",
+      "prompt": "Which course covers designing and querying databases?",
+      "expected_signal": "Retrieval should identify CS 306 and avoid unrelated data-mining courses."
+    },
+    {
+      "id": "H04",
+      "category": "catalog-rag",
+      "prompt": "Suggest courses related to energy and sustainability.",
+      "expected_signal": "Retriever should use full-catalog search and return energy/sustainability-related catalog entries rather than CS-only guesses."
+    },
+    {
+      "id": "H05",
+      "category": "exact-course-fact",
+      "prompt": "How many SU credits is CS 412?",
+      "expected_signal": "Agent should call get_course_details and state CS 412 carries 3 SU credits."
+    },
+    {
+      "id": "H06",
+      "category": "prerequisite-fact",
+      "prompt": "What are the prerequisites for CS 301?",
+      "expected_signal": "Answer should mention CS 300 and MATH 204 from the catalog prerequisite rule."
+    },
+    {
+      "id": "H07",
+      "category": "corequisite-fact",
+      "prompt": "Does CS 412 require a recitation?",
+      "expected_signal": "Answer should mention CS 412R and not label it as an unknown course."
+    },
+    {
+      "id": "H08",
+      "category": "course-explanation",
+      "prompt": "What does CS 445 cover?",
+      "expected_signal": "Answer should explain natural language processing / language-processing content smoothly."
+    },
+    {
+      "id": "H09",
+      "category": "general-chat",
+      "prompt": "I am interested in networking. What courses do you suggest and what do they cover?",
+      "expected_signal": "Agent should use RAG, suggest relevant networking/security/distributed-systems courses, and not create a plan."
+    },
+    {
+      "id": "H10",
+      "category": "focus-area",
+      "prompt": "I am interested in theoretical computer science. Suggest a few courses.",
+      "expected_signal": "Agent should surface theory-flavored CS courses such as algorithms/complexity/formal-language options."
+    },
+    {
+      "id": "H11",
+      "category": "cross-program-focus",
+      "prompt": "I am an IE major interested in optimization and operations research.",
+      "expected_signal": "Agent should prefer IE/OR-flavored courses such as IE 311, IE 312, or IE 313 and avoid unrelated CS courses."
+    },
+    {
+      "id": "H12",
+      "category": "llm-nlp-interest",
+      "prompt": "I like LLMs and NLP. Which catalog courses should I look at first?",
+      "expected_signal": "RAG should retrieve NLP/ML/IR-related courses such as CS 445, CS 412, or CS 415."
+    },
+    {
+      "id": "H13",
+      "category": "degree-requirements",
+      "prompt": "What are my remaining graduation requirements according to my loaded degree evaluation?",
+      "expected_signal": "Agent should use loaded profile/requirement state and not ask again for degree, cohort, or transcript."
+    },
+    {
+      "id": "H14",
+      "category": "scoped-electives",
+      "prompt": "For my CS degree, suggest Core or Area electives about security and networking.",
+      "expected_signal": "Agent should select the correct degree/cohort graphs and retrieve inside the scoped Core/Area pools."
+    },
+    {
+      "id": "H15",
+      "category": "permission-bound-planning",
+      "prompt": "Can you make this into a semester plan for me?",
+      "expected_signal": "Without profile context, agent should ask for degree/cohort/completed courses or Degree Evaluation and must not call set_plan."
+    },
+    {
+      "id": "H16",
+      "category": "validated-planning",
+      "prompt": "Plan my next semester using my loaded profile.",
+      "expected_signal": "Agent should validate prerequisites/credits before committing any plan with set_plan."
+    },
+    {
+      "id": "H17",
+      "category": "timetable",
+      "prompt": "Can CS 412 and CS 302 be scheduled together in the target term?",
+      "expected_signal": "Agent should call build_timetable and include required recitation conflicts in the verdict."
+    },
+    {
+      "id": "H18",
+      "category": "ui-check-schedule",
+      "prompt": "I clicked Check Schedule after adding CS 412, CS 302, CS 308, and MKTG 301.",
+      "expected_signal": "Agent should call get_current_schedule, keep existing selected sections fixed, and report conflicts/credit load."
+    },
+    {
+      "id": "H19",
+      "category": "candidate-vs-current-schedule",
+      "prompt": "Can I add CS 405 to my current builder schedule?",
+      "expected_signal": "Agent should call check_courses_against_current_schedule instead of rebuilding the whole timetable."
+    },
+    {
+      "id": "H20",
+      "category": "minor-and-credit-rules",
+      "prompt": "How close am I to a finance minor, and do these courses help engineering/basic-science credits?",
+      "expected_signal": "Agent should use get_minor_requirements and science/engineering credit tools instead of inferring credits from course titles."
+    }
+  ]
+}

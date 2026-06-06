@@ -6,79 +6,89 @@
   "questions": [
     {
       "id": "a01",
-      "q": "How many SU credits is CS 412?",
+      "q": "I am comparing workload for next term. Please look up CS 412 from the catalog and tell me only how many SU credits it carries.",
       "course_credit": {"code": "CS 412", "credits": 3},
       "allowed_course_codes": ["CS 412"],
+      "required_actions": ["get_course_details"],
       "kind": "fact-credit"
     },
     {
       "id": "a02",
-      "q": "What are the prerequisites for CS 301?",
+      "q": "Before I plan around CS 301, check the official prerequisite rule and tell me which courses I must have completed.",
       "required_course_codes": ["CS 300", "MATH 204"],
       "allowed_course_codes": ["CS 301", "CS 300", "MATH 204", "CS 301R"],
+      "required_actions": ["get_course_details"],
       "kind": "fact-prereq"
     },
     {
       "id": "a03",
-      "q": "What is the prerequisite for CS 307?",
+      "q": "Can you check CS 307 specifically and explain its prerequisite in one concise sentence?",
       "required_course_codes": ["CS 204"],
       "allowed_course_codes": ["CS 307", "CS 204", "CS 307R"],
+      "required_actions": ["get_course_details"],
       "kind": "fact-prereq"
     },
     {
       "id": "a04",
-      "q": "What does CS 445 cover?",
+      "q": "What does CS 445 cover? I want a smooth explanation of the course content, not a raw catalog dump.",
       "any_terms": ["natural language", "nlp", "language processing"],
       "allowed_course_codes": ["CS 445"],
+      "required_actions": ["get_course_details"],
       "kind": "fact-topic"
     },
     {
       "id": "a05",
-      "q": "Does CS 411 require a math prerequisite, and which one?",
+      "q": "Does CS 411 require any math prerequisite? Please check the catalog rule and name the math course if there is one.",
       "required_course_codes": ["MATH 204"],
       "allowed_course_codes": ["CS 411", "MATH 204"],
+      "required_actions": ["get_course_details"],
       "kind": "fact-prereq"
     },
     {
       "id": "a06",
-      "q": "Is CS 412 a machine learning course?",
+      "q": "I saw CS 412 in the catalog. Is it actually a machine learning course, and what kind of ML topics does it introduce?",
       "required_terms": ["machine learning"],
       "allowed_course_codes": ["CS 412"],
+      "required_actions": ["get_course_details"],
       "kind": "fact-topic"
     },
     {
       "id": "a07",
-      "q": "What is CS 307 about?",
+      "q": "Give me a short student-friendly explanation of what CS 307 is about and what systems topics it covers.",
       "required_terms": ["operating system"],
       "allowed_course_codes": ["CS 307"],
+      "required_actions": ["get_course_details"],
       "kind": "fact-topic"
     },
     {
       "id": "a08",
-      "q": "Recommend one theoretical computer science elective I could take.",
+      "q": "Using my loaded transcript context, recommend one theoretical computer science elective that could make sense for me. Explain why it fits theory, but do not create a full semester plan.",
       "any_course_codes": ["CS 400", "CS 407"],
       "allowed_course_codes": ["CS 400", "CS 407"],
       "required_actions": ["retrieve_catalog_courses"],
+      "forbidden_actions": ["set_plan"],
       "kind": "recommendation"
     },
     {
       "id": "a09",
-      "q": "Recommend one course about computer networks and explain what it covers.",
+      "q": "I want to deepen my computer networks knowledge. Recommend one relevant course from the catalog, explain what it covers, and keep it as advice rather than a committed plan.",
       "any_course_codes": ["CS 403", "CS 408", "CS 432"],
       "allowed_course_codes": ["CS 403", "CS 408", "CS 432"],
       "required_actions": ["retrieve_catalog_courses"],
+      "forbidden_actions": ["set_plan"],
       "kind": "recommendation"
     },
     {
       "id": "a10",
-      "q": "Does CS 412 require a recitation?",
+      "q": "For scheduling purposes, check whether CS 412 has a required recitation or lab component.",
       "required_course_codes": ["CS 412R"],
       "allowed_course_codes": ["CS 412", "CS 412R"],
+      "required_actions": ["get_course_details"],
       "kind": "fact-corequisite"
     },
     {
       "id": "a11",
-      "q": "Can CS 412 and CS 302 be scheduled together in the target term?",
+      "q": "If I try to take CS 412 and CS 302 together in the target term, can the system find a conflict-free timetable including their recitations?",
       "required_course_codes": ["CS 412", "CS 302"],
       "any_terms": ["conflict", "no conflict-free", "cannot"],
       "allowed_course_codes": ["CS 412", "CS 412R", "CS 302", "CS 302R"],
@@ -87,12 +97,28 @@
     },
     {
       "id": "a12",
-      "q": "I enjoy optimization and operations research. Suggest one course I could explore.",
+      "q": "I enjoy optimization and operations research. Suggest one catalog course I could explore, and avoid unrelated courses that only mention optimization casually.",
       "any_course_codes": ["IE 311", "IE 312", "IE 313"],
       "allowed_course_codes": ["IE 311", "IE 312", "IE 313"],
       "required_actions": ["retrieve_catalog_courses"],
       "review_status": "provisional",
       "kind": "recommendation"
+    },
+    {
+      "id": "a13",
+      "q": "I clicked the Check Schedule button. Please review my current builder schedule, including recitations/labs, time conflicts, total SU credits, and whether the choices look reasonable for my loaded CS degree context.",
+      "schedule_picks": [
+        {"code": "CS 412"},
+        {"code": "CS 302"},
+        {"code": "CS 308"},
+        {"code": "MKTG 301"}
+      ],
+      "required_course_codes": ["CS 412", "CS 302"],
+      "allowed_course_codes": ["CS 412", "CS 412R", "CS 302", "CS 302R", "CS 308", "CS 308L", "MKTG 301"],
+      "any_terms": ["conflict", "credit"],
+      "required_actions": ["get_current_schedule"],
+      "forbidden_actions": ["build_timetable", "set_plan"],
+      "kind": "ui-check-schedule"
     }
   ]
 }
